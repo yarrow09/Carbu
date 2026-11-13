@@ -29,7 +29,8 @@ Prérequis : Home Assistant **2026.10** ou plus récent.
 ### Avec HACS (recommandé)
 
 1. Dans HACS, ouvrez le menu **⋮ → Dépôts personnalisés**.
-2. Ajoutez l'URL de ce dépôt avec la catégorie **Intégration**.
+2. Ajoutez l'URL du dépôt `https://github.com/OWNER/yarrow` avec la catégorie
+   **Intégration**.
 3. Recherchez **Vehicle Log**, puis cliquez sur **Télécharger**.
 4. Redémarrez Home Assistant une fois. Ce redémarrage est demandé par HACS pour toute
    nouvelle intégration. L'intégration elle-même ne demande ensuite aucun redémarrage.
@@ -292,4 +293,10 @@ tests/             tests (core/ : calculs purs ; perf/ : 5 ans de données)
 
 ## Licence
 
-À définir.
+Vehicle Log (dépôt `yarrow`) est un logiciel libre distribué sous la
+**GNU General Public License, version 3 ou toute version ultérieure**
+(`GPL-3.0-or-later`). Voir le fichier [LICENSE](LICENSE).
+
+Les icônes des cartes proviennent de [Material Design Icons](https://pictogrammers.com/library/mdi/)
+(paquet `@mdi/js`, licence Apache 2.0) ; les cartes utilisent [Lit](https://lit.dev)
+(licence BSD-3-Clause). Ces licences sont compatibles avec la GPL v3.
