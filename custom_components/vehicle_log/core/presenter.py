@@ -16,9 +16,12 @@ from .models import (
     Expense,
     FuelEntry,
     FuelType,
+    Reminder,
     Vehicle,
     VolumeUnit,
 )
+from .reminders import ReminderStatus
+from .statistics import ConsumptionPoint, PeriodStats
 from .summary import VehicleSummary
 from .validation import CoherenceWarning, WarningCode
 
@@ -199,4 +202,71 @@ class VehicleUnits:
             "consumption": {
                 f.value: self.consumption_label(f) for f in self.vehicle.fuel_types
             },
+        }
+
+    def reminder_view(
+        self, reminder: Reminder, status: ReminderStatus
+    ) -> dict[str, Any]:
+        """Rappel et son état, distances dans l'unité du véhicule."""
+        return {
+            "id": reminder.id,
+            "label": reminder.label,
+            "kind": reminder.kind.value,
+            "due_date": reminder.due_date.isoformat() if reminder.due_date else None,
+            "due_odometer": self.distance_out(reminder.due_odometer),
+            "alert_days": reminder.alert_days,
+            "alert_distance": self.distance_out(reminder.alert_distance),
+            "interval_days": reminder.interval_days,
+            "interval_distance": self.distance_out(reminder.interval_distance),
+            "active": reminder.active,
+            "recurring": reminder.is_recurring,
+            "last_done_date": (
+                reminder.last_done_date.isoformat() if reminder.last_done_date else None
+            ),
+            "last_done_odometer": self.distance_out(reminder.last_done_odometer),
+            "state": status.state.value,
+            "days_left": status.days_left,
+            "distance_left": self.distance_out(status.distance_left),
+            "criterion": status.criterion.value if status.criterion else None,
+        }
+
+    def stats_view(self, stats: PeriodStats) -> dict[str, Any]:
+        """Statistiques d'une période dans les unités du véhicule."""
+        km_per_unit = self.distance_in(1.0)
+
+        def _per_distance(value: float | None) -> float | None:
+            return value * km_per_unit if value is not None else None
+
+        return {
+            "start": stats.start.isoformat(),
+            "end": stats.end.isoformat(),
+            "days": stats.days,
+            "distance": self.distance_out(stats.distance),
+            "fuel_volume": {
+                f.value: self.volume_out(v, f) for f, v in stats.fuel_volume.items()
+            },
+            "consumption": {
+                f.value: self.consumption_out(v, f)
+                for f, v in stats.consumption.items()
+            },
+            "fuel_cost": stats.fuel_cost,
+            "expense_cost": stats.expense_cost,
+            "total_cost": stats.total_cost,
+            "cost_per_distance": _per_distance(stats.cost_per_km),
+            "fuel_cost_per_distance": _per_distance(stats.fuel_cost_per_km),
+            "expenses_by_category": stats.expenses_by_category,
+            "fill_count": stats.fill_count,
+            "expense_count": stats.expense_count,
+        }
+
+    def consumption_point_view(
+        self, point: ConsumptionPoint, fuel: FuelType
+    ) -> dict[str, Any]:
+        """Point de la courbe de consommation."""
+        return {
+            "entry_id": point.entry_id,
+            "date": point.date.isoformat(),
+            "odometer": self.distance_out(point.odometer),
+            "value": self.consumption_out(point.l_per_100km, fuel),
+            "moving_average": self.consumption_out(point.moving_average, fuel),
         }

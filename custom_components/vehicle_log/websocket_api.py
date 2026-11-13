@@ -26,10 +26,10 @@ import probatio as vol
 from .const import DOMAIN, SIGNAL_UPDATED
 from .coordinator import VehicleLogCoordinator, VehicleNotFoundError, local_now
 from .core.aggregation import filter_expenses, latest, monthly_costs_by_category
-from .core.models import Expense, FuelEntry, FuelType, new_id
+from .core.models import FuelType, ReminderKind
 from .core.presenter import VehicleUnits
 from .core.repository import CategoryError, RecordNotFoundError
-from .core.validation import complete_fill_amounts
+from .core.statistics import StatsPeriod, consumption_series, period_stats
 
 ERR_NOT_LOADED = "not_loaded"
 ERR_NOT_FOUND = "not_found"
@@ -92,6 +92,11 @@ def async_register_websocket_commands(hass: HomeAssistant) -> None:
         ws_expense_list,
         ws_expense_save,
         ws_expense_delete,
+        ws_reminders,
+        ws_reminder_save,
+        ws_reminder_delete,
+        ws_reminder_done,
+        ws_stats,
     ):
         async_register_command(hass, handler)
 
@@ -401,49 +406,20 @@ def ws_fuel_save(
     n'est enregistré et les avertissements sont renvoyés.
     """
     vehicle_id = msg["vehicle_id"]
-    vehicle = coordinator.vehicle(vehicle_id)
-    units = VehicleUnits(vehicle)
-    rec = coordinator.records(vehicle_id)
-    existing = rec.fuel.get(msg["entry_id"]) if "entry_id" in msg else None
-
-    fuel = FuelType(
-        msg.get("fuel_type") or (existing.fuel_type if existing else vehicle.fuel_type)
+    units = coordinator.units(vehicle_id)
+    outcome = coordinator.async_save_fuel(
+        vehicle_id,
+        msg,
+        entry_id=msg.get("entry_id"),
+        save_with_warnings=msg["confirm"],
     )
-    volume, price, total = complete_fill_amounts(
-        msg.get("volume"), msg.get("unit_price"), msg.get("total_cost")
-    )
-    now = local_now()
-    day: dt.date = msg.get("date") or (existing.date if existing else now.date())
-    if "time" in msg:
-        at: dt.time | None = msg["time"]
-    elif existing:
-        at = existing.time
-    else:
-        at = now.time().replace(second=0, microsecond=0) if "date" not in msg else None
-    entry = FuelEntry(
-        id=existing.id if existing else new_id(),
-        date=day,
-        time=at,
-        odometer=units.distance_in(msg["odometer"]),
-        volume=units.volume_in(volume, fuel),
-        unit_price=units.unit_price_in(price, fuel),
-        total_cost=total,
-        fuel_type=fuel,
-        full_tank=msg["full_tank"],
-        station=(msg.get("station") or "").strip() or None,
-        notes=msg["notes"],
-    )
-    warnings = coordinator.check_fuel(vehicle_id, entry)
+    fuel = outcome.record.fuel_type
     result: dict[str, Any] = {
-        "warnings": [units.warning_view(w, fuel) for w in warnings],
-        "saved": False,
+        "warnings": [units.warning_view(w, fuel) for w in outcome.warnings],
+        "saved": outcome.saved,
     }
-    if not warnings or msg["confirm"]:
-        if existing:
-            coordinator.async_update_fuel(vehicle_id, entry)
-        else:
-            coordinator.async_add_fuel(vehicle_id, entry)
-        result.update(saved=True, entry=units.fuel_entry_view(entry))
+    if outcome.saved:
+        result["entry"] = units.fuel_entry_view(outcome.record)
     connection.send_result(msg["id"], result)
 
 
@@ -487,23 +463,10 @@ def ws_expense_save(
 ) -> None:
     """Ajouter ou modifier une dépense."""
     vehicle_id = msg["vehicle_id"]
-    units = VehicleUnits(coordinator.vehicle(vehicle_id))
-    rec = coordinator.records(vehicle_id)
-    existing = rec.expenses.get(msg["expense_id"]) if "expense_id" in msg else None
-    odometer = msg.get("odometer")
-    expense = Expense(
-        id=existing.id if existing else new_id(),
-        date=msg.get("date") or (existing.date if existing else local_now().date()),
-        odometer=units.distance_in(odometer) if odometer is not None else None,
-        amount=msg["amount"],
-        category_id=msg["category_id"],
-        description=msg["description"].strip(),
-        attachment=existing.attachment if existing else None,
+    expense = coordinator.async_save_expense(
+        vehicle_id, msg, expense_id=msg.get("expense_id")
     )
-    if existing:
-        coordinator.async_update_expense(vehicle_id, expense)
-    else:
-        coordinator.async_add_expense(vehicle_id, expense)
+    units = coordinator.units(vehicle_id)
     connection.send_result(msg["id"], units.expense_view(expense))
 
 
@@ -524,3 +487,160 @@ def ws_expense_delete(
     """Supprimer une dépense."""
     coordinator.async_delete_expense(msg["vehicle_id"], msg["expense_id"])
     connection.send_result(msg["id"])
+
+
+# --- Rappels -------------------------------------------------------------------
+
+
+def _reminders_view(
+    coordinator: VehicleLogCoordinator, vehicle_id: str
+) -> list[dict[str, Any]]:
+    units = coordinator.units(vehicle_id)
+    return [
+        units.reminder_view(r, coordinator.reminder_status(vehicle_id, r))
+        for r in coordinator.records(vehicle_id).reminders
+    ]
+
+
+@websocket_command({vol.Required("type"): f"{DOMAIN}/reminders", **_VEHICLE})
+@_guarded
+def ws_reminders(
+    hass: HomeAssistant,
+    connection: ActiveConnection,
+    msg: dict[str, Any],
+    coordinator: VehicleLogCoordinator,
+) -> None:
+    """Rappels d'un véhicule avec leur état."""
+    connection.send_result(msg["id"], _reminders_view(coordinator, msg["vehicle_id"]))
+
+
+_OPT_POSITIVE_INT = vol.Any(None, vol.All(vol.Coerce(int), vol.Range(min=0)))
+
+
+@websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/reminder/save",
+        **_VEHICLE,
+        vol.Optional("reminder_id"): str,
+        vol.Required("label"): str,
+        vol.Required("kind"): vol.In([k.value for k in ReminderKind]),
+        vol.Optional("due_date"): vol.Any(None, cv.date),
+        vol.Optional("due_odometer"): vol.Any(None, _POSITIVE),
+        vol.Optional("alert_days"): _OPT_POSITIVE_INT,
+        vol.Optional("alert_distance"): vol.Any(None, _POSITIVE),
+        vol.Optional("interval_days"): _OPT_POSITIVE_INT,
+        vol.Optional("interval_distance"): vol.Any(None, _POSITIVE),
+    }
+)
+@_guarded
+def ws_reminder_save(
+    hass: HomeAssistant,
+    connection: ActiveConnection,
+    msg: dict[str, Any],
+    coordinator: VehicleLogCoordinator,
+) -> None:
+    """Créer ou modifier un rappel."""
+    vehicle_id = msg["vehicle_id"]
+    reminder = coordinator.async_save_reminder(
+        vehicle_id, msg, reminder_id=msg.get("reminder_id")
+    )
+    connection.send_result(
+        msg["id"],
+        coordinator.units(vehicle_id).reminder_view(
+            reminder, coordinator.reminder_status(vehicle_id, reminder)
+        ),
+    )
+
+
+@websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/reminder/delete",
+        **_VEHICLE,
+        vol.Required("reminder_id"): str,
+    }
+)
+@_guarded
+def ws_reminder_delete(
+    hass: HomeAssistant,
+    connection: ActiveConnection,
+    msg: dict[str, Any],
+    coordinator: VehicleLogCoordinator,
+) -> None:
+    """Supprimer un rappel."""
+    coordinator.async_delete_reminder(msg["vehicle_id"], msg["reminder_id"])
+    connection.send_result(msg["id"])
+
+
+@websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/reminder/done",
+        **_VEHICLE,
+        vol.Required("reminder_id"): str,
+        vol.Optional("date"): cv.date,
+        vol.Optional("odometer"): _POSITIVE,
+    }
+)
+@_guarded
+def ws_reminder_done(
+    hass: HomeAssistant,
+    connection: ActiveConnection,
+    msg: dict[str, Any],
+    coordinator: VehicleLogCoordinator,
+) -> None:
+    """Marquer un rappel comme fait (échéance suivante si récurrent)."""
+    vehicle_id = msg["vehicle_id"]
+    reminder = coordinator.async_mark_reminder_done(
+        vehicle_id, msg["reminder_id"], msg.get("date"), msg.get("odometer")
+    )
+    connection.send_result(
+        msg["id"],
+        coordinator.units(vehicle_id).reminder_view(
+            reminder, coordinator.reminder_status(vehicle_id, reminder)
+        ),
+    )
+
+
+# --- Statistiques ---------------------------------------------------------------
+
+
+@websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/stats",
+        **_VEHICLE,
+        vol.Optional("period", default=StatsPeriod.MONTHS_12.value): vol.In(
+            [p.value for p in StatsPeriod]
+        ),
+    }
+)
+@_guarded
+def ws_stats(
+    hass: HomeAssistant,
+    connection: ActiveConnection,
+    msg: dict[str, Any],
+    coordinator: VehicleLogCoordinator,
+) -> None:
+    """Statistiques d'une période et courbe de consommation par plein."""
+    vehicle_id = msg["vehicle_id"]
+    vehicle = coordinator.vehicle(vehicle_id)
+    units = coordinator.units(vehicle_id)
+    records = coordinator.records(vehicle_id)
+    stats = period_stats(
+        vehicle, records, StatsPeriod(msg["period"]), local_now().date()
+    )
+    window = coordinator.moving_average_window
+    connection.send_result(
+        msg["id"],
+        {
+            **units.stats_view(stats),
+            "moving_average_window": window,
+            "series": {
+                fuel.value: [
+                    units.consumption_point_view(point, fuel)
+                    for point in consumption_series(
+                        records.fuel.items, fuel, window, stats.start
+                    )
+                ]
+                for fuel in vehicle.fuel_types
+            },
+        },
+    )

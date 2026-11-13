@@ -30,6 +30,28 @@
       "current_odometer": {
         "default": "mdi:counter"
       }
+    },
+    "binary_sensor": {
+      "reminder": {
+        "default": "mdi:bell-outline",
+        "state": {
+          "on": "mdi:bell-alert"
+        }
+      }
+    }
+  },
+  "services": {
+    "add_fuel": {
+      "service": "mdi:gas-station"
+    },
+    "add_expense": {
+      "service": "mdi:cash-plus"
+    },
+    "update_odometer": {
+      "service": "mdi:counter"
+    },
+    "export_data": {
+      "service": "mdi:file-export"
     }
   }
 }

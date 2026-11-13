@@ -16,16 +16,18 @@ from .const import DOMAIN, SIGNAL_UPDATED, SUBENTRY_TYPE_VEHICLE
 from .coordinator import VehicleLogCoordinator
 from .core.models import Vehicle
 from .frontend import async_register_frontend
+from .services import async_register_services
 from .storage import VehicleLogStorage
 from .websocket_api import async_register_websocket_commands
 
-PLATFORMS: list[Platform] = [Platform.NUMBER, Platform.SENSOR]
+PLATFORMS: list[Platform] = [Platform.BINARY_SENSOR, Platform.NUMBER, Platform.SENSOR]
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Enregistrer l'API websocket utilisée par les cartes."""
     async_register_websocket_commands(hass)
+    async_register_services(hass)
     hass.http.register_view(AttachmentView())
     await async_register_frontend(hass)
     return True

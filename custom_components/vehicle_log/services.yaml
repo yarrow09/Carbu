@@ -1,0 +1,115 @@
+add_fuel:
+  fields:
+    vehicle:
+      required: true
+      selector:
+        device:
+          integration: vehicle_log
+    odometer:
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 9999999
+          step: 0.1
+          mode: box
+    volume:
+      selector:
+        number:
+          min: 0
+          step: 0.01
+          mode: box
+    total_cost:
+      selector:
+        number:
+          min: 0
+          step: 0.01
+          mode: box
+    unit_price:
+      selector:
+        number:
+          min: 0
+          step: 0.001
+          mode: box
+    date:
+      selector:
+        date:
+    time:
+      selector:
+        time:
+    fuel_type:
+      selector:
+        select:
+          translation_key: fuel_type
+          options:
+            - gasoline
+            - diesel
+            - lpg
+            - cng
+    full_tank:
+      default: true
+      selector:
+        boolean:
+    station:
+      selector:
+        text:
+    notes:
+      selector:
+        text:
+          multiline: true
+    strict:
+      default: false
+      selector:
+        boolean:
+add_expense:
+  fields:
+    vehicle:
+      required: true
+      selector:
+        device:
+          integration: vehicle_log
+    amount:
+      required: true
+      selector:
+        number:
+          min: 0
+          step: 0.01
+          mode: box
+    category:
+      required: true
+      example: maintenance
+      selector:
+        text:
+    date:
+      selector:
+        date:
+    odometer:
+      selector:
+        number:
+          min: 0
+          max: 9999999
+          step: 0.1
+          mode: box
+    description:
+      selector:
+        text:
+update_odometer:
+  fields:
+    vehicle:
+      required: true
+      selector:
+        device:
+          integration: vehicle_log
+    odometer:
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 9999999
+          step: 0.1
+          mode: box
+    strict:
+      default: false
+      selector:
+        boolean:
+export_data:

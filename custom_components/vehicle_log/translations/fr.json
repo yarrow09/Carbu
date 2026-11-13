@@ -249,11 +249,183 @@
       "current_odometer": {
         "name": "Kilométrage actuel"
       }
+    },
+    "binary_sensor": {
+      "reminder": {
+        "name": "Rappel",
+        "state_attributes": {
+          "state": {
+            "name": "État",
+            "state": {
+              "ok": "OK",
+              "alert": "Bientôt dû",
+              "due": "Dû",
+              "inactive": "Fait"
+            }
+          },
+          "kind": {
+            "name": "Déclenchement",
+            "state": {
+              "date": "Date",
+              "distance": "Kilométrage",
+              "both": "Date ou kilométrage"
+            }
+          },
+          "due_date": {
+            "name": "Date d'échéance"
+          },
+          "due_odometer": {
+            "name": "Kilométrage d'échéance"
+          },
+          "days_left": {
+            "name": "Jours restants"
+          },
+          "distance_left": {
+            "name": "Distance restante"
+          },
+          "criterion": {
+            "name": "Critère",
+            "state": {
+              "date": "Date",
+              "distance": "Kilométrage"
+            }
+          },
+          "recurring": {
+            "name": "Récurrent"
+          },
+          "last_done_date": {
+            "name": "Dernière réalisation"
+          }
+        }
+      }
     }
   },
   "exceptions": {
     "odometer_decrease": {
       "message": "Le kilométrage {value} {unit} est inférieur au dernier relevé ({current} {unit})."
+    },
+    "not_loaded": {
+      "message": "Vehicle Log n'est pas chargé."
+    },
+    "vehicle_not_found": {
+      "message": "Véhicule inconnu : {vehicle}."
+    },
+    "invalid_input": {
+      "message": "Saisie invalide : {error}"
+    },
+    "unknown_category": {
+      "message": "Catégorie de dépense inconnue : {category}."
+    },
+    "coherence_warnings": {
+      "message": "Non enregistré (mode strict), avertissements de cohérence : {warnings}."
+    }
+  },
+  "services": {
+    "add_fuel": {
+      "name": "Ajouter un plein",
+      "description": "Enregistre un plein. Les valeurs sont dans les unités du véhicule ; deux valeurs parmi quantité, montant et prix unitaire suffisent. Les avertissements de cohérence sont journalisés et renvoyés, sans bloquer l'enregistrement, sauf en mode strict.",
+      "fields": {
+        "vehicle": {
+          "name": "Véhicule",
+          "description": "Appareil du véhicule."
+        },
+        "odometer": {
+          "name": "Kilométrage",
+          "description": "Relevé du compteur, dans l'unité de distance du véhicule."
+        },
+        "volume": {
+          "name": "Quantité",
+          "description": "Litres, gallons, ou kg pour le GNV."
+        },
+        "total_cost": {
+          "name": "Montant",
+          "description": "Montant total payé."
+        },
+        "unit_price": {
+          "name": "Prix unitaire",
+          "description": "Prix par litre, gallon ou kg."
+        },
+        "date": {
+          "name": "Date",
+          "description": "Par défaut : maintenant."
+        },
+        "time": {
+          "name": "Heure",
+          "description": "Facultative."
+        },
+        "fuel_type": {
+          "name": "Carburant",
+          "description": "Par défaut : le carburant principal du véhicule."
+        },
+        "full_tank": {
+          "name": "Plein complet",
+          "description": "Désactivé pour un plein partiel."
+        },
+        "station": {
+          "name": "Station",
+          "description": "Facultative."
+        },
+        "notes": {
+          "name": "Notes",
+          "description": "Facultatives."
+        },
+        "strict": {
+          "name": "Strict",
+          "description": "Refuser le plein si un contrôle de cohérence échoue."
+        }
+      }
+    },
+    "add_expense": {
+      "name": "Ajouter une dépense",
+      "description": "Enregistre une dépense pour un véhicule.",
+      "fields": {
+        "vehicle": {
+          "name": "Véhicule",
+          "description": "Appareil du véhicule."
+        },
+        "amount": {
+          "name": "Montant",
+          "description": "Montant payé."
+        },
+        "category": {
+          "name": "Catégorie",
+          "description": "Identifiant de catégorie (maintenance, insurance, parking, toll, inspection, repair, other) ou nom."
+        },
+        "date": {
+          "name": "Date",
+          "description": "Par défaut : aujourd'hui."
+        },
+        "odometer": {
+          "name": "Kilométrage",
+          "description": "Facultatif, dans l'unité de distance du véhicule."
+        },
+        "description": {
+          "name": "Description",
+          "description": "Facultative."
+        }
+      }
+    },
+    "update_odometer": {
+      "name": "Mettre à jour le kilométrage",
+      "description": "Enregistre un relevé du compteur daté de maintenant.",
+      "fields": {
+        "vehicle": {
+          "name": "Véhicule",
+          "description": "Appareil du véhicule."
+        },
+        "odometer": {
+          "name": "Kilométrage",
+          "description": "Relevé, dans l'unité de distance du véhicule."
+        },
+        "strict": {
+          "name": "Strict",
+          "description": "Refuser un relevé inférieur au précédent."
+        }
+      }
+    },
+    "export_data": {
+      "name": "Exporter les données",
+      "description": "Écrit tous les pleins, dépenses, relevés, rappels et catégories en fichiers CSV dans le dossier vehicle_log/exports de la configuration."
     }
   }
 }

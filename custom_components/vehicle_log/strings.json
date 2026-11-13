@@ -249,11 +249,183 @@
       "current_odometer": {
         "name": "Current odometer"
       }
+    },
+    "binary_sensor": {
+      "reminder": {
+        "name": "Reminder",
+        "state_attributes": {
+          "state": {
+            "name": "State",
+            "state": {
+              "ok": "OK",
+              "alert": "Coming up",
+              "due": "Due",
+              "inactive": "Done"
+            }
+          },
+          "kind": {
+            "name": "Trigger",
+            "state": {
+              "date": "Date",
+              "distance": "Distance",
+              "both": "Date or distance"
+            }
+          },
+          "due_date": {
+            "name": "Due date"
+          },
+          "due_odometer": {
+            "name": "Due odometer"
+          },
+          "days_left": {
+            "name": "Days left"
+          },
+          "distance_left": {
+            "name": "Distance left"
+          },
+          "criterion": {
+            "name": "Criterion",
+            "state": {
+              "date": "Date",
+              "distance": "Distance"
+            }
+          },
+          "recurring": {
+            "name": "Recurring"
+          },
+          "last_done_date": {
+            "name": "Last done"
+          }
+        }
+      }
     }
   },
   "exceptions": {
     "odometer_decrease": {
       "message": "The odometer value {value} {unit} is lower than the last reading ({current} {unit})."
+    },
+    "not_loaded": {
+      "message": "Vehicle Log is not loaded."
+    },
+    "vehicle_not_found": {
+      "message": "Unknown vehicle: {vehicle}."
+    },
+    "invalid_input": {
+      "message": "Invalid input: {error}"
+    },
+    "unknown_category": {
+      "message": "Unknown expense category: {category}."
+    },
+    "coherence_warnings": {
+      "message": "Not saved (strict mode), coherence warnings: {warnings}."
+    }
+  },
+  "services": {
+    "add_fuel": {
+      "name": "Add a fill-up",
+      "description": "Records a fill-up. Values are in the vehicle's units; two of quantity, amount and unit price are enough. Coherence warnings are logged and returned, but do not block saving unless strict mode is on.",
+      "fields": {
+        "vehicle": {
+          "name": "Vehicle",
+          "description": "Vehicle device."
+        },
+        "odometer": {
+          "name": "Odometer",
+          "description": "Odometer reading, in the vehicle's distance unit."
+        },
+        "volume": {
+          "name": "Quantity",
+          "description": "Litres, gallons, or kg for CNG."
+        },
+        "total_cost": {
+          "name": "Amount",
+          "description": "Total amount paid."
+        },
+        "unit_price": {
+          "name": "Unit price",
+          "description": "Price per litre, gallon or kg."
+        },
+        "date": {
+          "name": "Date",
+          "description": "Defaults to now."
+        },
+        "time": {
+          "name": "Time",
+          "description": "Optional."
+        },
+        "fuel_type": {
+          "name": "Fuel",
+          "description": "Defaults to the vehicle's main fuel."
+        },
+        "full_tank": {
+          "name": "Full tank",
+          "description": "Off for a partial fill-up."
+        },
+        "station": {
+          "name": "Station",
+          "description": "Optional."
+        },
+        "notes": {
+          "name": "Notes",
+          "description": "Optional."
+        },
+        "strict": {
+          "name": "Strict",
+          "description": "Refuse the fill-up if a coherence check fails."
+        }
+      }
+    },
+    "add_expense": {
+      "name": "Add an expense",
+      "description": "Records an expense for a vehicle.",
+      "fields": {
+        "vehicle": {
+          "name": "Vehicle",
+          "description": "Vehicle device."
+        },
+        "amount": {
+          "name": "Amount",
+          "description": "Amount paid."
+        },
+        "category": {
+          "name": "Category",
+          "description": "Category identifier (maintenance, insurance, parking, toll, inspection, repair, other) or name."
+        },
+        "date": {
+          "name": "Date",
+          "description": "Defaults to today."
+        },
+        "odometer": {
+          "name": "Odometer",
+          "description": "Optional, in the vehicle's distance unit."
+        },
+        "description": {
+          "name": "Description",
+          "description": "Optional."
+        }
+      }
+    },
+    "update_odometer": {
+      "name": "Update odometer",
+      "description": "Records an odometer reading dated now.",
+      "fields": {
+        "vehicle": {
+          "name": "Vehicle",
+          "description": "Vehicle device."
+        },
+        "odometer": {
+          "name": "Odometer",
+          "description": "Reading, in the vehicle's distance unit."
+        },
+        "strict": {
+          "name": "Strict",
+          "description": "Refuse a reading lower than the previous one."
+        }
+      }
+    },
+    "export_data": {
+      "name": "Export data",
+      "description": "Writes all fill-ups, expenses, odometer readings, reminders and categories as CSV files in the vehicle_log/exports folder of the configuration directory."
     }
   }
 }
