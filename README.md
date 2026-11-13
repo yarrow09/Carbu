@@ -1,5 +1,9 @@
 # Carbu — carnet de bord véhicule pour Home Assistant
 
+Carbu suit votre consommation de carburant directement dans Home Assistant. Ajoutez
+un plein, voyez vos litres aux 100 km, vos coûts et vos statistiques — sans quitter
+votre tableau de bord.
+
 Intégration personnalisée qui tient le carnet de bord de vos véhicules thermiques :
 pleins, consommation réelle, dépenses par catégorie, coût par kilomètre, rappels
 d'entretien.
