@@ -447,6 +447,10 @@
     "export_data": {
       "name": "Export data",
       "description": "Writes all fill-ups, expenses, odometer readings, reminders and categories as CSV files in the vehicle_log/exports folder of the configuration directory."
+    },
+    "backup": {
+      "name": "Create a full backup",
+      "description": "Writes a ZIP archive with every vehicle, all data and attachments to the vehicle_log/backups folder of the configuration directory. It can be restored from the integration settings."
     }
   }
 }

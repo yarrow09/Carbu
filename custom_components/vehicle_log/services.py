@@ -39,6 +39,7 @@ SERVICE_ADD_FUEL = "add_fuel"
 SERVICE_ADD_EXPENSE = "add_expense"
 SERVICE_UPDATE_ODOMETER = "update_odometer"
 SERVICE_EXPORT_DATA = "export_data"
+SERVICE_BACKUP = "backup"
 
 ATTR_VEHICLE = "vehicle"
 ATTR_STRICT = "strict"
@@ -79,6 +80,7 @@ UPDATE_ODOMETER_SCHEMA = vol.Schema(
     }
 )
 EXPORT_SCHEMA = vol.Schema({})
+BACKUP_SCHEMA = vol.Schema({})
 
 
 def _coordinator(hass: HomeAssistant) -> VehicleLogCoordinator:
@@ -240,6 +242,18 @@ async def _export_data(call: ServiceCall) -> ServiceResponse:
     return cast(ServiceResponse, {"folder": str(folder), "files": written})
 
 
+async def _backup(call: ServiceCall) -> ServiceResponse:
+    """Service ``backup`` : sauvegarde complète (archive ZIP)."""
+    from .backup_archive import async_create_backup  # noqa: PLC0415
+
+    hass = call.hass
+    _coordinator(hass)  # contrôle : intégration chargée
+    entry = hass.config_entries.async_loaded_entries(DOMAIN)[0]
+    path = await async_create_backup(hass, entry)
+    _LOGGER.info("Sauvegarde Vehicle Log créée : %s", path)
+    return cast(ServiceResponse, {"path": str(path)})
+
+
 @callback
 def async_register_services(hass: HomeAssistant) -> None:
     """Enregistrer les services du domaine."""
@@ -248,6 +262,7 @@ def async_register_services(hass: HomeAssistant) -> None:
         (SERVICE_ADD_EXPENSE, _add_expense, ADD_EXPENSE_SCHEMA),
         (SERVICE_UPDATE_ODOMETER, _update_odometer, UPDATE_ODOMETER_SCHEMA),
         (SERVICE_EXPORT_DATA, _export_data, EXPORT_SCHEMA),
+        (SERVICE_BACKUP, _backup, BACKUP_SCHEMA),
     ):
         hass.services.async_register(
             DOMAIN, name, handler, schema, supports_response=SupportsResponse.OPTIONAL

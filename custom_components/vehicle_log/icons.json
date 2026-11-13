@@ -52,6 +52,9 @@
     },
     "export_data": {
       "service": "mdi:file-export"
+    },
+    "backup": {
+      "service": "mdi:archive-arrow-down"
     }
   }
 }

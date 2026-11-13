@@ -15,6 +15,7 @@ from .attachments import AttachmentStore, AttachmentView
 from .const import DOMAIN, SIGNAL_UPDATED, SUBENTRY_TYPE_VEHICLE
 from .coordinator import VehicleLogCoordinator
 from .core.models import Vehicle
+from .csv_import_view import CsvImportView
 from .frontend import async_register_frontend
 from .services import async_register_services
 from .storage import VehicleLogStorage
@@ -29,6 +30,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     async_register_websocket_commands(hass)
     async_register_services(hass)
     hass.http.register_view(AttachmentView())
+    hass.http.register_view(CsvImportView())
     await async_register_frontend(hass)
     return True
 
