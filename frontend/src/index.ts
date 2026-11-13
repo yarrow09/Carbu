@@ -7,6 +7,7 @@ import { VlConfirmDialog } from "./components/confirm-dialog";
 import { VlConsumptionChart } from "./components/consumption-chart";
 import { VlExpenseDialog } from "./components/expense-dialog";
 import { VlFuelDialog } from "./components/fuel-dialog";
+import { VlImportDialog } from "./components/import-dialog";
 import { VlMonthlyChart } from "./components/monthly-chart";
 import { VlReminderDialog } from "./components/reminder-dialog";
 import { VlReminderList } from "./components/reminder-list";
@@ -25,6 +26,7 @@ const elements: Record<string, CustomElementConstructor> = {
   "vl-consumption-chart": VlConsumptionChart,
   "vl-reminder-dialog": VlReminderDialog,
   "vl-reminder-list": VlReminderList,
+  "vl-import-dialog": VlImportDialog,
 };
 
 for (const [name, ctor] of Object.entries(elements)) {

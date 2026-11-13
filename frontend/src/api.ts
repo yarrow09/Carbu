@@ -7,6 +7,8 @@ import type {
   FuelEntryView,
   FuelSaveResult,
   HomeAssistant,
+  ImportPreview,
+  ImportResult,
   Page,
   ReminderView,
   StatsPeriod,
@@ -177,3 +179,19 @@ export const markReminderDone = (
 
 export const fetchStats = (hass: HomeAssistant, vehicleId: string, period: StatsPeriod) =>
   hass.callWS<StatsView>({ type: `${P}/stats`, vehicle_id: vehicleId, period });
+
+/** Analyse (``apply`` faux) ou import (``apply`` vrai) d'un fichier CSV. */
+export async function importCsv(
+  hass: HomeAssistant,
+  vehicleId: string,
+  file: File,
+  apply: boolean,
+): Promise<ImportPreview | ImportResult> {
+  const body = new FormData();
+  body.append("file", file);
+  const path = `/api/${P}/import/${encodeURIComponent(vehicleId)}${apply ? "?apply=1" : ""}`;
+  const response = await hass.fetchWithAuth(path, { method: "POST", body });
+  const payload = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+  if (!response.ok) throw new Error(String(payload.code ?? response.status));
+  return payload as unknown as ImportPreview | ImportResult;
+}

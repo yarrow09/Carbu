@@ -212,7 +212,27 @@ const makeHass = () => ({
   language,
   locale: { language },
   callWS,
-  fetchWithAuth: async () => new Response("{}", { status: 200 }),
+  fetchWithAuth: async (path) => {
+    if (path.includes("/import/")) {
+      const body = path.includes("apply=1")
+        ? { added: 2, counts: { new: 2, duplicate: 1, error: 1 } }
+        : {
+            kind: "expenses", counts: { new: 2, duplicate: 1, error: 1 },
+            new_categories: ["Lavage"], truncated: false,
+            lines: [
+              { line: 4, status: "error", message: "amount manquant", values: null },
+              { line: 2, status: "new", message: null,
+                values: { date: "2026-04-01", amount: 12.5, category_id: "x", description: "Lavage auto" } },
+              { line: 3, status: "new", message: null,
+                values: { date: "2026-04-03", amount: 8, category_id: "toll", description: "" } },
+              { line: 5, status: "duplicate", message: null,
+                values: { date: "2026-03-15", amount: 8, category_id: "toll", description: "" } },
+            ],
+          };
+      return new Response(JSON.stringify(body), { status: 200 });
+    }
+    return new Response("{}", { status: 200 });
+  },
   connection: {
     subscribeMessage: async (cb) => {
       listeners.add(cb);

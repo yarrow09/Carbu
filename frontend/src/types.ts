@@ -182,3 +182,24 @@ export interface StatsView {
   moving_average_window: number;
   series: Record<string, ConsumptionPoint[]>;
 }
+
+export type ImportKind = "fuel" | "expenses" | "odometer" | "reminders";
+export type ImportStatus = "new" | "duplicate" | "error";
+
+export interface ImportPreview {
+  kind: ImportKind;
+  counts: Record<ImportStatus, number>;
+  new_categories: string[];
+  lines: {
+    line: number;
+    status: ImportStatus;
+    message: string | null;
+    values: Record<string, unknown> | null;
+  }[];
+  truncated: boolean;
+}
+
+export interface ImportResult {
+  added: number;
+  counts: Record<ImportStatus, number>;
+}

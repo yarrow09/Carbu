@@ -12,10 +12,11 @@ import {
 import type { VlConfirmDialog } from "../components/confirm-dialog";
 import type { VlExpenseDialog } from "../components/expense-dialog";
 import type { VlFuelDialog } from "../components/fuel-dialog";
+import type { VlImportDialog } from "../components/import-dialog";
 import { icon } from "../components/icon";
 import { isoDate, money, num, parseNumber, shortDate } from "../format";
 import { t } from "../i18n";
-import { mdiDelete, mdiPaperclip, mdiPencil, mdiPlus, sharedStyles } from "../styles";
+import { mdiDelete, mdiPaperclip, mdiPencil, mdiPlus, mdiUpload, sharedStyles } from "../styles";
 import type { CardConfig, Category, ExpenseView, FuelEntryView } from "../types";
 import { VehicleCardBase } from "./base";
 import { listStyles } from "./dashboard-card";
@@ -65,6 +66,16 @@ export class VehicleLogJournalCard extends VehicleCardBase {
         margin: 0;
         font-size: 1.25rem;
         font-weight: 500;
+      }
+      .head-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .head-actions button {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
       }
       [role="tablist"] {
         display: flex;
@@ -422,6 +433,13 @@ export class VehicleLogJournalCard extends VehicleCardBase {
     return html`<ha-card>
       <div class="head">
         <h2>${this._config.title || `${t(hass, "journal.name")} · ${vehicle.name}`}</h2>
+        <div class="head-actions">
+        <button
+          aria-label=${t(hass, "import.button_long")}
+          @click=${() => (this.renderRoot.querySelector("vl-import-dialog") as VlImportDialog).open()}
+        >
+          ${icon(mdiUpload)} ${t(hass, "import.button")}
+        </button>
         <button
           class="primary"
           aria-label=${t(hass, isFuel ? "action.add_fuel_long" : "action.add_expense_long")}
@@ -432,6 +450,7 @@ export class VehicleLogJournalCard extends VehicleCardBase {
         >
           ${icon(mdiPlus)} ${t(hass, isFuel ? "action.add_fuel" : "action.add_expense")}
         </button>
+        </div>
       </div>
       <div role="tablist" aria-label=${vehicle.name}>
         ${this._tabButton("fuel", t(hass, "journal.tab_fuel"))}
@@ -442,6 +461,8 @@ export class VehicleLogJournalCard extends VehicleCardBase {
         @saved=${() => this.reload()}></vl-fuel-dialog>
       <vl-expense-dialog .hass=${hass} .vehicle=${vehicle} .categories=${this._categories}
         .currency=${this._currency} @saved=${() => this.reload()}></vl-expense-dialog>
+      <vl-import-dialog .hass=${hass} .vehicle=${vehicle} .categories=${this._categories}
+        .currency=${this._currency} @saved=${() => this.reload()}></vl-import-dialog>
       <vl-confirm-dialog .hass=${hass}></vl-confirm-dialog>
     </ha-card>`;
   }

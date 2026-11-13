@@ -156,4 +156,5 @@ export {
   mdiPaperclip,
   mdiPencil,
   mdiPlus,
+  mdiUpload,
 } from "@mdi/js";
