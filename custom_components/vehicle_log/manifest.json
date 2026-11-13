@@ -1,0 +1,14 @@
+{
+  "domain": "vehicle_log",
+  "name": "Vehicle Log",
+  "codeowners": ["@OWNER"],
+  "config_flow": true,
+  "dependencies": ["frontend", "http", "websocket_api"],
+  "documentation": "https://github.com/OWNER/vehicle_log",
+  "integration_type": "hub",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/OWNER/vehicle_log/issues",
+  "requirements": [],
+  "single_config_entry": true,
+  "version": "0.1.0"
+}
