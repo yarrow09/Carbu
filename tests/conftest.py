@@ -1,14 +1,6 @@
-"""Fixtures communes."""
+"""Fixtures communes.
 
-from collections.abc import Generator
-
-import pytest
-
-
-@pytest.fixture(autouse=True)
-def auto_enable_custom_integrations(
-    enable_custom_integrations: None,
-) -> Generator[None]:
-    """Autoriser le chargement des intégrations personnalisées dans les tests."""
-    return
-    yield
+Les tests de ``tests/core`` n'utilisent aucune fixture Home Assistant : ils
+valident le cœur métier pur. Les tests d'intégration activent explicitement
+``enable_custom_integrations``.
+"""
