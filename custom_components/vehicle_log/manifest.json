@@ -3,7 +3,7 @@
   "name": "Vehicle Log",
   "codeowners": ["@OWNER"],
   "config_flow": true,
-  "dependencies": [],
+  "dependencies": ["websocket_api"],
   "documentation": "https://github.com/OWNER/vehicle_log",
   "integration_type": "hub",
   "iot_class": "calculated",

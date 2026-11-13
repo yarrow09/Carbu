@@ -171,5 +171,67 @@
         "other": "Autre"
       }
     }
+  },
+  "entity": {
+    "sensor": {
+      "consumption": {
+        "name": "Consommation moyenne"
+      },
+      "consumption_secondary": {
+        "name": "Consommation moyenne (second carburant)"
+      },
+      "month_cost": {
+        "name": "Coût du mois",
+        "state_attributes": {
+          "fuel": {
+            "name": "Carburant"
+          },
+          "expenses": {
+            "name": "Dépenses"
+          }
+        }
+      },
+      "cost_per_distance": {
+        "name": "Coût par distance",
+        "state_attributes": {
+          "fuel_only": {
+            "name": "Carburant seul"
+          },
+          "total_cost": {
+            "name": "Coût total"
+          },
+          "distance": {
+            "name": "Distance"
+          }
+        }
+      },
+      "odometer": {
+        "name": "Kilométrage total",
+        "state_attributes": {
+          "distance_logged": {
+            "name": "Distance enregistrée"
+          }
+        }
+      },
+      "distance_week": {
+        "name": "Distance cette semaine"
+      },
+      "distance_month": {
+        "name": "Distance ce mois-ci"
+      },
+      "distance_year": {
+        "name": "Distance cette année"
+      }
+    },
+    "number": {
+      "current_odometer": {
+        "name": "Kilométrage actuel"
+      }
+    }
+  },
+  "exceptions": {
+    "odometer_decrease": {
+      "message": "Le kilométrage {value} {unit} est inférieur au dernier relevé ({current} {unit})."
+    }
   }
 }

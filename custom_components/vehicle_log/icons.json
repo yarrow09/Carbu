@@ -1,0 +1,35 @@
+{
+  "entity": {
+    "sensor": {
+      "consumption": {
+        "default": "mdi:gas-station"
+      },
+      "consumption_secondary": {
+        "default": "mdi:gas-station-outline"
+      },
+      "month_cost": {
+        "default": "mdi:cash"
+      },
+      "cost_per_distance": {
+        "default": "mdi:cash-marker"
+      },
+      "odometer": {
+        "default": "mdi:counter"
+      },
+      "distance_week": {
+        "default": "mdi:map-marker-distance"
+      },
+      "distance_month": {
+        "default": "mdi:map-marker-distance"
+      },
+      "distance_year": {
+        "default": "mdi:map-marker-distance"
+      }
+    },
+    "number": {
+      "current_odometer": {
+        "default": "mdi:counter"
+      }
+    }
+  }
+}

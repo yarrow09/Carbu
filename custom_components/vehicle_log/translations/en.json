@@ -171,5 +171,67 @@
         "other": "Other"
       }
     }
+  },
+  "entity": {
+    "sensor": {
+      "consumption": {
+        "name": "Average consumption"
+      },
+      "consumption_secondary": {
+        "name": "Average consumption (second fuel)"
+      },
+      "month_cost": {
+        "name": "Cost this month",
+        "state_attributes": {
+          "fuel": {
+            "name": "Fuel"
+          },
+          "expenses": {
+            "name": "Expenses"
+          }
+        }
+      },
+      "cost_per_distance": {
+        "name": "Cost per distance",
+        "state_attributes": {
+          "fuel_only": {
+            "name": "Fuel only"
+          },
+          "total_cost": {
+            "name": "Total cost"
+          },
+          "distance": {
+            "name": "Distance"
+          }
+        }
+      },
+      "odometer": {
+        "name": "Odometer",
+        "state_attributes": {
+          "distance_logged": {
+            "name": "Distance logged"
+          }
+        }
+      },
+      "distance_week": {
+        "name": "Distance this week"
+      },
+      "distance_month": {
+        "name": "Distance this month"
+      },
+      "distance_year": {
+        "name": "Distance this year"
+      }
+    },
+    "number": {
+      "current_odometer": {
+        "name": "Current odometer"
+      }
+    }
+  },
+  "exceptions": {
+    "odometer_decrease": {
+      "message": "The odometer value {value} {unit} is lower than the last reading ({current} {unit})."
+    }
   }
 }

@@ -6,7 +6,6 @@ from typing import Any
 from homeassistant.config_entries import (
     SOURCE_RECONFIGURE,
     SOURCE_USER,
-    ConfigSubentryData,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType, InvalidData
@@ -17,22 +16,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from custom_components.vehicle_log.const import DOMAIN, SUBENTRY_TYPE_VEHICLE
 from custom_components.vehicle_log.core.models import Expense, FuelType
 
-CLIO: dict[str, Any] = {
-    "name": "Clio",
-    "make": "Renault",
-    "model": "Clio IV",
-    "plate": None,
-    "fuel_type": "gasoline",
-    "secondary_fuel_type": None,
-    "tank_capacity": 45.0,
-    "secondary_tank_capacity": None,
-    "distance_unit": "km",
-    "volume_unit": "L",
-    "consumption_unit": "l_100km",
-    "acquisition_date": "2020-05-01",
-    "consumption_min": 3.0,
-    "consumption_max": 20.0,
-}
+from .common import CLIO, setup_integration
 
 
 @pytest.fixture(autouse=True)
@@ -43,22 +27,9 @@ def _custom_integrations(enable_custom_integrations: None) -> None:
 async def _setup(
     hass: HomeAssistant, vehicles: list[dict[str, Any]] | None = None
 ) -> MockConfigEntry:
-    subentries = [
-        ConfigSubentryData(
-            data=v,
-            subentry_type=SUBENTRY_TYPE_VEHICLE,
-            title=v["name"],
-            unique_id=None,
-        )
-        for v in vehicles or []
-    ]
-    entry = MockConfigEntry(
-        domain=DOMAIN, title="Carnet de bord", data={}, subentries_data=subentries
+    return await setup_integration(
+        hass, {f"v{i}": v for i, v in enumerate(vehicles or [])}
     )
-    entry.add_to_hass(hass)
-    assert await hass.config_entries.async_setup(entry.entry_id)
-    await hass.async_block_till_done()
-    return entry
 
 
 async def _start_vehicle_flow(

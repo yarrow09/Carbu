@@ -7,12 +7,23 @@ from dataclasses import dataclass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers.typing import ConfigType
 
-from .const import SUBENTRY_TYPE_VEHICLE
+from .const import DOMAIN, SUBENTRY_TYPE_VEHICLE
+from .coordinator import VehicleLogCoordinator
 from .core.models import Vehicle
 from .storage import VehicleLogStorage
+from .websocket_api import async_register_websocket_commands
 
-PLATFORMS: list[Platform] = []
+PLATFORMS: list[Platform] = [Platform.NUMBER, Platform.SENSOR]
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+
+
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """Enregistrer l'API websocket utilisée par les cartes."""
+    async_register_websocket_commands(hass)
+    return True
 
 
 @dataclass(slots=True)
@@ -21,6 +32,7 @@ class VehicleLogRuntime:
 
     storage: VehicleLogStorage
     vehicles: dict[str, Vehicle]
+    coordinator: VehicleLogCoordinator
 
 
 type VehicleLogConfigEntry = ConfigEntry[VehicleLogRuntime]
@@ -48,7 +60,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: VehicleLogConfigEntry) -
     if orphans:
         storage.async_schedule_save()
 
-    entry.runtime_data = VehicleLogRuntime(storage=storage, vehicles=vehicles)
+    coordinator = VehicleLogCoordinator(hass, entry, storage, vehicles)
+    await coordinator.async_config_entry_first_refresh()
+    entry.runtime_data = VehicleLogRuntime(
+        storage=storage, vehicles=vehicles, coordinator=coordinator
+    )
     entry.async_on_unload(entry.add_update_listener(_async_reload_entry))
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
