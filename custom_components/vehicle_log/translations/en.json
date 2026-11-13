@@ -85,7 +85,9 @@
           "edit_category": "Edit a category",
           "delete_category": "Delete a category",
           "notifications": "Reminder notifications",
-          "statistics": "Statistics"
+          "statistics": "Statistics",
+          "backup": "Create a full backup",
+          "restore": "Restore a backup"
         }
       },
       "add_category": {
@@ -141,14 +143,33 @@
         "data_description": {
           "moving_average_window": "Number of consecutive full-tank segments averaged on the consumption chart."
         }
+      },
+      "restore": {
+        "title": "Restore a backup",
+        "description": "Choose a backup from the vehicle_log/backups folder, or upload a backup archive (.zip). Nothing is changed before the next confirmation screen.",
+        "data": {
+          "backup": "Existing backup",
+          "upload": "Upload an archive"
+        }
+      },
+      "restore_confirm": {
+        "title": "Restore this backup?",
+        "description": "Backup from {created_at} (version {version}):\n{vehicles}\n{categories} categories.\n\n**All current vehicles and data will be replaced.** Create a backup first if needed. Submit to restore."
       }
     },
     "error": {
       "name_required": "A name is required.",
-      "category_exists": "A category with this name already exists."
+      "category_exists": "A category with this name already exists.",
+      "no_backup_selected": "Choose a backup or upload an archive.",
+      "backup_not_a_backup": "This file is not a Vehicle Log backup.",
+      "backup_unsupported_version": "This backup was made by an incompatible version.",
+      "backup_corrupted": "The backup is damaged or unreadable.",
+      "backup_too_large": "The backup is too large."
     },
     "abort": {
-      "not_loaded": "The integration must be loaded to change these settings."
+      "not_loaded": "The integration must be loaded to change these settings.",
+      "backup_created": "Backup created: {path}",
+      "restore_done": "Backup restored."
     }
   },
   "selector": {

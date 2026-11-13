@@ -85,7 +85,9 @@
           "edit_category": "Modifier une catégorie",
           "delete_category": "Supprimer une catégorie",
           "notifications": "Notifications des rappels",
-          "statistics": "Statistiques"
+          "statistics": "Statistiques",
+          "backup": "Créer une sauvegarde complète",
+          "restore": "Restaurer une sauvegarde"
         }
       },
       "add_category": {
@@ -141,14 +143,33 @@
         "data_description": {
           "moving_average_window": "Nombre de segments entre pleins complets moyennés sur la courbe de consommation."
         }
+      },
+      "restore": {
+        "title": "Restaurer une sauvegarde",
+        "description": "Choisissez une sauvegarde du dossier vehicle_log/backups, ou envoyez une archive de sauvegarde (.zip). Rien n'est modifié avant l'écran de confirmation suivant.",
+        "data": {
+          "backup": "Sauvegarde existante",
+          "upload": "Envoyer une archive"
+        }
+      },
+      "restore_confirm": {
+        "title": "Restaurer cette sauvegarde ?",
+        "description": "Sauvegarde du {created_at} (version {version}) :\n{vehicles}\n{categories} catégories.\n\n**Tous les véhicules et toutes les données actuels seront remplacés.** Créez d'abord une sauvegarde si besoin. Validez pour restaurer."
       }
     },
     "error": {
       "name_required": "Le nom est obligatoire.",
-      "category_exists": "Une catégorie porte déjà ce nom."
+      "category_exists": "Une catégorie porte déjà ce nom.",
+      "no_backup_selected": "Choisissez une sauvegarde ou envoyez une archive.",
+      "backup_not_a_backup": "Ce fichier n'est pas une sauvegarde Vehicle Log.",
+      "backup_unsupported_version": "Cette sauvegarde provient d'une version incompatible.",
+      "backup_corrupted": "La sauvegarde est endommagée ou illisible.",
+      "backup_too_large": "La sauvegarde est trop volumineuse."
     },
     "abort": {
-      "not_loaded": "L'intégration doit être chargée pour modifier ces paramètres."
+      "not_loaded": "L'intégration doit être chargée pour modifier ces paramètres.",
+      "backup_created": "Sauvegarde créée : {path}",
+      "restore_done": "Sauvegarde restaurée."
     }
   },
   "selector": {

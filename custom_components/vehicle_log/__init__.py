@@ -40,6 +40,8 @@ class VehicleLogRuntime:
     storage: VehicleLogStorage
     vehicles: dict[str, Vehicle]
     coordinator: VehicleLogCoordinator
+    # Restauration en cours : les changements de véhicules ne rechargent pas.
+    restoring: bool = False
 
 
 type VehicleLogConfigEntry = ConfigEntry[VehicleLogRuntime]
@@ -90,6 +92,8 @@ async def _async_reload_entry(
     hass: HomeAssistant, entry: VehicleLogConfigEntry
 ) -> None:
     """Recharger après l'ajout, la modification ou la suppression d'un véhicule."""
+    if entry.runtime_data.restoring:
+        return
     await hass.config_entries.async_reload(entry.entry_id)
 
 

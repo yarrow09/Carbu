@@ -9,6 +9,8 @@
 from __future__ import annotations
 
 import datetime as dt
+from pathlib import Path
+import shutil
 from typing import TYPE_CHECKING, Any
 
 from homeassistant.config_entries import (
@@ -28,6 +30,8 @@ from homeassistant.helpers.selector import (
     DateSelector,
     EntitySelector,
     EntitySelectorConfig,
+    FileSelector,
+    FileSelectorConfig,
     IconSelector,
     NumberSelector,
     NumberSelectorConfig,
@@ -50,6 +54,7 @@ from .const import (
     DOMAIN,
     SUBENTRY_TYPE_VEHICLE,
 )
+from .core.backup import BackupContent, InvalidBackupError, summarize
 from .core.models import (
     CATEGORY_OTHER,
     Category,
@@ -456,6 +461,7 @@ class VehicleLogOptionsFlow(OptionsFlow):
     def __init__(self) -> None:
         """Initialiser."""
         self._category_id: str | None = None
+        self._restore: tuple[BackupContent, dict[str, bytes]] | None = None
 
     @property
     def _entry(self) -> VehicleLogConfigEntry:
@@ -486,6 +492,8 @@ class VehicleLogOptionsFlow(OptionsFlow):
                 "delete_category",
                 "notifications",
                 "statistics",
+                "backup",
+                "restore",
             ],
         )
 
@@ -571,6 +579,102 @@ class VehicleLogOptionsFlow(OptionsFlow):
                     )
                 },
             ),
+        )
+
+    async def async_step_backup(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Créer une sauvegarde complète."""
+        from .backup_archive import async_create_backup  # noqa: PLC0415
+
+        path = await async_create_backup(self.hass, self._entry)
+        return self.async_abort(
+            reason="backup_created",
+            description_placeholders={"path": str(path)},
+        )
+
+    async def async_step_restore(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Choisir une sauvegarde existante ou envoyer une archive."""
+        from .backup_archive import (  # noqa: PLC0415
+            async_read_backup,
+            backup_dir,
+            list_backups,
+        )
+
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            path: Path | None = None
+            if user_input.get("upload"):
+                path = await self._async_store_upload(user_input["upload"])
+            elif user_input.get("backup"):
+                path = backup_dir(self.hass) / Path(user_input["backup"]).name
+            if path is None:
+                errors["base"] = "no_backup_selected"
+            else:
+                try:
+                    self._restore = await async_read_backup(self.hass, path)
+                except (InvalidBackupError, OSError) as err:
+                    errors["base"] = (
+                        f"backup_{err}"
+                        if isinstance(err, InvalidBackupError)
+                        else "backup_corrupted"
+                    )
+                else:
+                    return await self.async_step_restore_confirm()
+
+        backups = await self.hass.async_add_executor_job(list_backups, self.hass)
+        schema = vol.Schema(
+            {
+                vol.Optional("backup"): SelectSelector(
+                    SelectSelectorConfig(
+                        options=backups, mode=SelectSelectorMode.DROPDOWN
+                    )
+                ),
+                vol.Optional("upload"): FileSelector(
+                    FileSelectorConfig(accept=".zip,application/zip")
+                ),
+            }
+        )
+        return self.async_show_form(
+            step_id="restore", data_schema=schema, errors=errors
+        )
+
+    async def _async_store_upload(self, file_id: str) -> Path:
+        """Copier l'archive envoyée dans le dossier des sauvegardes."""
+        from homeassistant.components.file_upload import (  # noqa: PLC0415
+            process_uploaded_file,
+        )
+
+        from .backup_archive import BACKUP_PREFIX, backup_dir  # noqa: PLC0415
+
+        stamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")  # noqa: DTZ005
+        target = backup_dir(self.hass) / f"{BACKUP_PREFIX}{stamp}-import.zip"
+
+        def _copy() -> None:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            with process_uploaded_file(self.hass, file_id) as uploaded:
+                shutil.copyfile(uploaded, target)
+
+        await self.hass.async_add_executor_job(_copy)
+        return target
+
+    async def async_step_restore_confirm(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Aperçu de la sauvegarde, puis restauration après confirmation."""
+        from .backup_archive import async_restore_backup  # noqa: PLC0415
+
+        assert self._restore is not None
+        content, files = self._restore
+        if user_input is not None:
+            await async_restore_backup(self.hass, self._entry, content, files)
+            return self.async_abort(reason="restore_done")
+        return self.async_show_form(
+            step_id="restore_confirm",
+            data_schema=vol.Schema({}),
+            description_placeholders=_backup_placeholders(content),
         )
 
     async def async_step_add_category(
@@ -724,3 +828,20 @@ class VehicleLogOptionsFlow(OptionsFlow):
                 "other": labels[CATEGORY_OTHER],
             },
         )
+
+
+def _backup_placeholders(content: BackupContent) -> dict[str, str]:
+    """Résumé lisible d'une sauvegarde pour l'écran de confirmation."""
+    summary = summarize(content)
+    lines = [
+        f"- {v['name']} : {v['fuel']} plein(s), {v['expenses']} dépense(s), "
+        f"{v['odometer']} relevé(s), {v['reminders']} rappel(s), "
+        f"{v['attachments']} pièce(s) jointe(s)"
+        for v in summary["vehicles"]
+    ]
+    return {
+        "created_at": summary["created_at"].replace("T", " ")[:16],
+        "version": summary["integration_version"],
+        "vehicles": "\n".join(lines) or "-",
+        "categories": str(summary["categories"]),
+    }
