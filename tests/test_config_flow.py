@@ -85,7 +85,7 @@ async def test_add_vehicle_multistep(hass: HomeAssistant) -> None:
     result = await _configure(
         hass,
         result["flow_id"],
-        {"distance_unit": "km", "volume_unit": "L", "consumption_unit": "l_100km"},
+        {"distance_unit": "km", "volume_unit": "l", "consumption_unit": "l_100km"},
     )
     assert result["step_id"] == "fuel"
     result = await _configure(
@@ -165,7 +165,7 @@ async def test_invalid_consumption_range(hass: HomeAssistant) -> None:
     result = await _configure(
         hass,
         result["flow_id"],
-        {"distance_unit": "km", "volume_unit": "L", "consumption_unit": "km_l"},
+        {"distance_unit": "km", "volume_unit": "l", "consumption_unit": "km_l"},
     )
     result = await _configure(
         hass, result["flow_id"], {"fuel_type": "diesel", "bifuel": False}
@@ -190,7 +190,7 @@ async def test_reconfigure_vehicle(hass: HomeAssistant) -> None:
     result = await _configure(
         hass,
         result["flow_id"],
-        {"distance_unit": "km", "volume_unit": "L", "consumption_unit": "l_100km"},
+        {"distance_unit": "km", "volume_unit": "l", "consumption_unit": "l_100km"},
     )
     result = await _configure(
         hass,

@@ -88,7 +88,7 @@ def _volume_label(fuel: FuelType, unit: VolumeUnit) -> str:
     """Unité de quantité affichée pour un carburant."""
     if fuel is FuelType.CNG:
         return "kg"
-    return {"L": "L", "gal_us": "gal (US)", "gal_uk": "gal (UK)"}[unit.value]
+    return {"l": "L", "gal_us": "gal (US)", "gal_uk": "gal (UK)"}[unit.value]
 
 
 def _capacity_to_liters(

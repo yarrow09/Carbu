@@ -25,7 +25,7 @@ CLIO: dict[str, Any] = {
     "tank_capacity": 45.0,
     "secondary_tank_capacity": None,
     "distance_unit": "km",
-    "volume_unit": "L",
+    "volume_unit": "l",
     "consumption_unit": "l_100km",
     "acquisition_date": "2020-05-01",
     "consumption_min": 3.0,

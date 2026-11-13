@@ -146,7 +146,7 @@
     },
     "volume_unit": {
       "options": {
-        "L": "Litres",
+        "l": "Litres",
         "gal_us": "Gallons US",
         "gal_uk": "Gallons impériaux (UK)"
       }

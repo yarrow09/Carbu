@@ -43,7 +43,7 @@ class DistanceUnit(StrEnum):
 class VolumeUnit(StrEnum):
     """Unité de volume d'affichage (ignorée pour le GNV, toujours en kg)."""
 
-    LITERS = "L"
+    LITERS = "l"
     GALLONS_US = "gal_us"
     GALLONS_UK = "gal_uk"
 
@@ -157,7 +157,7 @@ class Vehicle:
             tank_capacity=_opt_float(data.get("tank_capacity")),
             secondary_tank_capacity=_opt_float(data.get("secondary_tank_capacity")),
             distance_unit=DistanceUnit(data.get("distance_unit", "km")),
-            volume_unit=VolumeUnit(data.get("volume_unit", "L")),
+            volume_unit=VolumeUnit(data.get("volume_unit", "l")),
             consumption_unit=ConsumptionUnit(data.get("consumption_unit", "l_100km")),
             acquisition_date=_date(data.get("acquisition_date")),
             consumption_min=float(data.get("consumption_min", 3.0)),
