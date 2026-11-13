@@ -83,7 +83,9 @@
         "menu_options": {
           "add_category": "Ajouter une catégorie de dépense",
           "edit_category": "Modifier une catégorie",
-          "delete_category": "Supprimer une catégorie"
+          "delete_category": "Supprimer une catégorie",
+          "notifications": "Notifications des rappels",
+          "statistics": "Statistiques"
         }
       },
       "add_category": {
@@ -119,6 +121,26 @@
       "confirm_delete": {
         "title": "Supprimer « {category} » ?",
         "description": "{count} dépense(s) utilisent cette catégorie. Elles seront réassignées à « {other} ». Cette action est irréversible. Validez pour confirmer."
+      },
+      "notifications": {
+        "title": "Notifications des rappels",
+        "description": "Choisissez qui reçoit les notifications des rappels : un message au seuil d'alerte, un autre à l'échéance.",
+        "data": {
+          "notify_entities": "Entités de notification",
+          "notify_services": "Services de notification (ex. application mobile)"
+        },
+        "data_description": {
+          "notify_services": "Anciens services de notification, par exemple notify.mobile_app_telephone. Laissez les deux champs vides pour désactiver les notifications."
+        }
+      },
+      "statistics": {
+        "title": "Statistiques",
+        "data": {
+          "moving_average_window": "Moyenne mobile (nombre de pleins)"
+        },
+        "data_description": {
+          "moving_average_window": "Nombre de segments entre pleins complets moyennés sur la courbe de consommation."
+        }
       }
     },
     "error": {

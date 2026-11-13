@@ -311,3 +311,35 @@ async def test_options_other_category_not_deletable(hass: HomeAssistant) -> None
     options = next(iter(schema.values())).config["options"]
     assert "other" not in {o["value"] for o in options}
     assert any(o["label"] == "Péage" or o["label"] == "Toll" for o in options)
+
+
+async def test_options_notifications_and_statistics(hass: HomeAssistant) -> None:
+    hass.services.async_register("notify", "mobile_app_phone", lambda call: None)
+    entry = await _setup(hass, [CLIO])
+
+    result = await _options(hass, entry, "notifications")
+    services = next(
+        v for k, v in result["data_schema"].schema.items() if k == "notify_services"
+    ).config["options"]
+    assert services == ["mobile_app_phone"]
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        {
+            "notify_entities": ["notify.kitchen"],
+            "notify_services": ["mobile_app_phone"],
+        },
+    )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    await hass.async_block_till_done()
+
+    result = await _options(hass, entry, "statistics")
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {"moving_average_window": 8}
+    )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    await hass.async_block_till_done()
+    assert entry.options == {
+        "notify_entities": ["notify.kitchen"],
+        "notify_services": ["mobile_app_phone"],
+        "moving_average_window": 8,
+    }

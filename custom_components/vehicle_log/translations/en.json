@@ -83,7 +83,9 @@
         "menu_options": {
           "add_category": "Add an expense category",
           "edit_category": "Edit a category",
-          "delete_category": "Delete a category"
+          "delete_category": "Delete a category",
+          "notifications": "Reminder notifications",
+          "statistics": "Statistics"
         }
       },
       "add_category": {
@@ -119,6 +121,26 @@
       "confirm_delete": {
         "title": "Delete \"{category}\"?",
         "description": "{count} expense(s) use this category. They will be moved to \"{other}\". This cannot be undone. Submit to confirm."
+      },
+      "notifications": {
+        "title": "Reminder notifications",
+        "description": "Choose who receives reminder notifications: one message when the alert threshold is reached, one when the reminder is due.",
+        "data": {
+          "notify_entities": "Notification entities",
+          "notify_services": "Notification services (e.g. mobile app)"
+        },
+        "data_description": {
+          "notify_services": "Legacy notify services such as notify.mobile_app_phone. Leave both fields empty to disable notifications."
+        }
+      },
+      "statistics": {
+        "title": "Statistics",
+        "data": {
+          "moving_average_window": "Moving average (number of fill-ups)"
+        },
+        "data_description": {
+          "moving_average_window": "Number of consecutive full-tank segments averaged on the consumption chart."
+        }
       }
     },
     "error": {

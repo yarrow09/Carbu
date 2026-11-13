@@ -15,3 +15,9 @@ SUBENTRY_TYPE_VEHICLE: Final = "vehicle"
 
 # Signal émis à chaque mise à jour des données (abonnement des cartes)
 SIGNAL_UPDATED: Final = f"{DOMAIN}_updated"
+
+# Options globales
+CONF_NOTIFY_ENTITIES: Final = "notify_entities"
+CONF_NOTIFY_SERVICES: Final = "notify_services"
+CONF_MOVING_AVERAGE: Final = "moving_average_window"
+DEFAULT_MOVING_AVERAGE: Final = 5
