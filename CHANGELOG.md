@@ -3,6 +3,44 @@
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Le projet
 suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
+## [0.2.0] — non publiée (phase 2)
+
+### Ajouté
+
+- **Rappels** :
+  - déclenchement par date, par kilométrage, ou par le premier des deux atteint ;
+  - seuil d'alerte en jours et en km ;
+  - récurrence facultative, et bouton « Fait » qui calcule l'échéance suivante ;
+  - un `binary_sensor` « dû » par rappel, ajouté et retiré sans redémarrage.
+- **Notifications** des rappels via des entités `notify` ou d'anciens services
+  `notify.xxx` : une à l'alerte, une à l'échéance, sans répétition.
+- **Services** `vehicle_log.add_fuel`, `add_expense`, `update_odometer` et
+  `export_data` :
+  - réponse facultative ;
+  - valeurs dans les unités du véhicule ;
+  - les avertissements sont journalisés sans bloquer l'enregistrement, sauf avec
+    `strict`.
+- **Export CSV complet** : pleins, dépenses, relevés, rappels et catégories. UTF-8 avec
+  BOM, séparateur « ; », point décimal, format documenté.
+- **Carte `vehicle-log-stats-card`** : statistiques sur 30 jours, 3 mois, 12 mois ou
+  depuis l'acquisition, courbe de consommation par plein avec moyenne mobile
+  pondérée, dépenses par catégorie.
+- **Section rappels** dans la carte principale.
+- **Options** : destinataires des notifications, taille de la moyenne mobile.
+
+### Modifié
+
+- Stockage en version 1.2, avec migration automatique depuis la 1.1 : récurrence et
+  suivi des notifications des rappels.
+- Couleurs d'état assombries dans les cartes, pour garder un contraste AA quel que soit
+  le thème.
+
+### Retiré du périmètre
+
+- La recherche des prix des carburants en ligne (sources, cache, entités de prix,
+  carte des stations, service `refresh_fuel_prices`) a été abandonnée à la demande
+  du porteur du projet. L'intégration se concentre sur le suivi de la consommation.
+
 ## [0.1.0] — non publiée (phase 1 : MVP)
 
 ### Ajouté
