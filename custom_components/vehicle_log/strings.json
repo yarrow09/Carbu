@@ -1,0 +1,175 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Vehicle Log",
+        "description": "Install the vehicle log. You will then add your vehicles with the \"Add vehicle\" button on the integration page."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Vehicle Log is already configured."
+    }
+  },
+  "config_subentries": {
+    "vehicle": {
+      "entry_type": "Vehicle",
+      "initiate_flow": {
+        "user": "Add vehicle",
+        "reconfigure": "Edit vehicle"
+      },
+      "step": {
+        "identity": {
+          "title": "Vehicle (1/4): identity",
+          "data": {
+            "name": "Name",
+            "make": "Make",
+            "model": "Model",
+            "plate": "Registration plate",
+            "acquisition_date": "Acquisition date"
+          },
+          "data_description": {
+            "name": "Shown on the dashboard and in entity names.",
+            "plate": "Optional."
+          }
+        },
+        "units": {
+          "title": "Vehicle (2/4): units",
+          "description": "Units used to enter and display data for this vehicle. Data is stored in metric units, so you can change them at any time.",
+          "data": {
+            "distance_unit": "Distance",
+            "volume_unit": "Volume",
+            "consumption_unit": "Consumption"
+          }
+        },
+        "fuel": {
+          "title": "Vehicle (3/4): fuel",
+          "data": {
+            "fuel_type": "Fuel",
+            "tank_capacity": "Tank capacity ({volume_unit}, kg for CNG)",
+            "bifuel": "Bi-fuel vehicle"
+          },
+          "data_description": {
+            "tank_capacity": "Optional. Used to flag fill-ups larger than the tank."
+          }
+        },
+        "secondary_fuel": {
+          "title": "Vehicle (3/4): second fuel",
+          "data": {
+            "secondary_fuel_type": "Second fuel",
+            "secondary_tank_capacity": "Second tank capacity ({volume_unit}, kg for CNG)"
+          }
+        },
+        "consumption": {
+          "title": "Vehicle (4/4): plausible consumption",
+          "description": "A fill-up whose consumption falls outside this range triggers a warning (in the consumption unit chosen for the vehicle).",
+          "data": {
+            "consumption_min": "Minimum",
+            "consumption_max": "Maximum"
+          }
+        }
+      },
+      "error": {
+        "name_required": "A name is required.",
+        "name_exists": "A vehicle with this name already exists.",
+        "same_fuel": "The second fuel must differ from the main fuel.",
+        "invalid_range": "Invalid range: both values must be positive and different."
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Vehicle Log settings",
+        "menu_options": {
+          "add_category": "Add an expense category",
+          "edit_category": "Edit a category",
+          "delete_category": "Delete a category"
+        }
+      },
+      "add_category": {
+        "title": "New category",
+        "data": {
+          "name": "Name",
+          "color": "Colour",
+          "icon": "Icon"
+        }
+      },
+      "edit_category": {
+        "title": "Edit a category",
+        "data": {
+          "category": "Category"
+        }
+      },
+      "edit_category_details": {
+        "title": "Edit \"{category}\"",
+        "description": "Leave the name empty on a default category to restore its original label.",
+        "data": {
+          "name": "Name",
+          "color": "Colour",
+          "icon": "Icon"
+        }
+      },
+      "delete_category": {
+        "title": "Delete a category",
+        "description": "The \"other\" category cannot be deleted.",
+        "data": {
+          "category": "Category"
+        }
+      },
+      "confirm_delete": {
+        "title": "Delete \"{category}\"?",
+        "description": "{count} expense(s) use this category. They will be moved to \"{other}\". This cannot be undone. Submit to confirm."
+      }
+    },
+    "error": {
+      "name_required": "A name is required.",
+      "category_exists": "A category with this name already exists."
+    },
+    "abort": {
+      "not_loaded": "The integration must be loaded to change these settings."
+    }
+  },
+  "selector": {
+    "fuel_type": {
+      "options": {
+        "gasoline": "Petrol",
+        "diesel": "Diesel",
+        "lpg": "LPG",
+        "cng": "CNG"
+      }
+    },
+    "distance_unit": {
+      "options": {
+        "km": "Kilometres",
+        "mi": "Miles"
+      }
+    },
+    "volume_unit": {
+      "options": {
+        "L": "Litres",
+        "gal_us": "US gallons",
+        "gal_uk": "UK (imperial) gallons"
+      }
+    },
+    "consumption_unit": {
+      "options": {
+        "l_100km": "L/100 km",
+        "km_l": "km/L",
+        "mpg_us": "MPG (US)",
+        "mpg_uk": "MPG (UK)"
+      }
+    },
+    "category": {
+      "options": {
+        "fuel": "Fuel",
+        "maintenance": "Maintenance",
+        "insurance": "Insurance",
+        "parking": "Parking",
+        "toll": "Toll",
+        "inspection": "Roadworthiness test",
+        "repair": "Repair",
+        "other": "Other"
+      }
+    }
+  }
+}

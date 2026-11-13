@@ -1,0 +1,175 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Carnet de bord véhicule",
+        "description": "Installer le carnet de bord. Vous ajouterez ensuite vos véhicules avec le bouton « Ajouter un véhicule » de la page de l'intégration."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Le carnet de bord est déjà configuré."
+    }
+  },
+  "config_subentries": {
+    "vehicle": {
+      "entry_type": "Véhicule",
+      "initiate_flow": {
+        "user": "Ajouter un véhicule",
+        "reconfigure": "Modifier le véhicule"
+      },
+      "step": {
+        "identity": {
+          "title": "Véhicule (1/4) : identité",
+          "data": {
+            "name": "Nom",
+            "make": "Marque",
+            "model": "Modèle",
+            "plate": "Immatriculation",
+            "acquisition_date": "Date d'acquisition"
+          },
+          "data_description": {
+            "name": "Affiché dans le tableau de bord et dans le nom des entités.",
+            "plate": "Facultative."
+          }
+        },
+        "units": {
+          "title": "Véhicule (2/4) : unités",
+          "description": "Unités de saisie et d'affichage pour ce véhicule. Les données sont stockées en unités métriques : vous pouvez en changer à tout moment.",
+          "data": {
+            "distance_unit": "Distance",
+            "volume_unit": "Volume",
+            "consumption_unit": "Consommation"
+          }
+        },
+        "fuel": {
+          "title": "Véhicule (3/4) : carburant",
+          "data": {
+            "fuel_type": "Carburant",
+            "tank_capacity": "Capacité du réservoir ({volume_unit}, kg pour le GNV)",
+            "bifuel": "Véhicule bi-carburant"
+          },
+          "data_description": {
+            "tank_capacity": "Facultative. Sert à signaler un plein supérieur au réservoir."
+          }
+        },
+        "secondary_fuel": {
+          "title": "Véhicule (3/4) : second carburant",
+          "data": {
+            "secondary_fuel_type": "Second carburant",
+            "secondary_tank_capacity": "Capacité du second réservoir ({volume_unit}, kg pour le GNV)"
+          }
+        },
+        "consumption": {
+          "title": "Véhicule (4/4) : consommation plausible",
+          "description": "Un plein dont la consommation sort de cette plage déclenche un avertissement (dans l'unité de consommation choisie pour le véhicule).",
+          "data": {
+            "consumption_min": "Minimum",
+            "consumption_max": "Maximum"
+          }
+        }
+      },
+      "error": {
+        "name_required": "Le nom est obligatoire.",
+        "name_exists": "Un véhicule porte déjà ce nom.",
+        "same_fuel": "Le second carburant doit être différent du carburant principal.",
+        "invalid_range": "Plage invalide : les deux valeurs doivent être positives et différentes."
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Paramètres du carnet de bord",
+        "menu_options": {
+          "add_category": "Ajouter une catégorie de dépense",
+          "edit_category": "Modifier une catégorie",
+          "delete_category": "Supprimer une catégorie"
+        }
+      },
+      "add_category": {
+        "title": "Nouvelle catégorie",
+        "data": {
+          "name": "Nom",
+          "color": "Couleur",
+          "icon": "Icône"
+        }
+      },
+      "edit_category": {
+        "title": "Modifier une catégorie",
+        "data": {
+          "category": "Catégorie"
+        }
+      },
+      "edit_category_details": {
+        "title": "Modifier « {category} »",
+        "description": "Laissez le nom vide sur une catégorie par défaut pour retrouver son libellé d'origine.",
+        "data": {
+          "name": "Nom",
+          "color": "Couleur",
+          "icon": "Icône"
+        }
+      },
+      "delete_category": {
+        "title": "Supprimer une catégorie",
+        "description": "La catégorie « autre » ne peut pas être supprimée.",
+        "data": {
+          "category": "Catégorie"
+        }
+      },
+      "confirm_delete": {
+        "title": "Supprimer « {category} » ?",
+        "description": "{count} dépense(s) utilisent cette catégorie. Elles seront réassignées à « {other} ». Cette action est irréversible. Validez pour confirmer."
+      }
+    },
+    "error": {
+      "name_required": "Le nom est obligatoire.",
+      "category_exists": "Une catégorie porte déjà ce nom."
+    },
+    "abort": {
+      "not_loaded": "L'intégration doit être chargée pour modifier ces paramètres."
+    }
+  },
+  "selector": {
+    "fuel_type": {
+      "options": {
+        "gasoline": "Essence",
+        "diesel": "Diesel",
+        "lpg": "GPL",
+        "cng": "GNV"
+      }
+    },
+    "distance_unit": {
+      "options": {
+        "km": "Kilomètres",
+        "mi": "Miles"
+      }
+    },
+    "volume_unit": {
+      "options": {
+        "L": "Litres",
+        "gal_us": "Gallons US",
+        "gal_uk": "Gallons impériaux (UK)"
+      }
+    },
+    "consumption_unit": {
+      "options": {
+        "l_100km": "L/100 km",
+        "km_l": "km/L",
+        "mpg_us": "MPG (US)",
+        "mpg_uk": "MPG (UK)"
+      }
+    },
+    "category": {
+      "options": {
+        "fuel": "Carburant",
+        "maintenance": "Entretien",
+        "insurance": "Assurance",
+        "parking": "Stationnement",
+        "toll": "Péage",
+        "inspection": "Contrôle technique",
+        "repair": "Réparation",
+        "other": "Autre"
+      }
+    }
+  }
+}
