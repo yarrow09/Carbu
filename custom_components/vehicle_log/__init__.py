@@ -10,6 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.typing import ConfigType
 
+from .attachments import AttachmentStore, AttachmentView
 from .const import DOMAIN, SUBENTRY_TYPE_VEHICLE
 from .coordinator import VehicleLogCoordinator
 from .core.models import Vehicle
@@ -23,6 +24,7 @@ CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Enregistrer l'API websocket utilisée par les cartes."""
     async_register_websocket_commands(hass)
+    hass.http.register_view(AttachmentView())
     return True
 
 
@@ -55,12 +57,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: VehicleLogConfigEntry) -
 
     # Un véhicule supprimé dans l'interface : ses données sont effacées.
     orphans = set(storage.data.vehicles) - set(vehicles)
+    attachments = AttachmentStore(hass)
     for vehicle_id in orphans:
         storage.data.remove_vehicle(vehicle_id)
+        await attachments.async_delete_vehicle(vehicle_id)
     if orphans:
         storage.async_schedule_save()
 
-    coordinator = VehicleLogCoordinator(hass, entry, storage, vehicles)
+    coordinator = VehicleLogCoordinator(hass, entry, storage, vehicles, attachments)
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = VehicleLogRuntime(
         storage=storage, vehicles=vehicles, coordinator=coordinator
@@ -88,3 +92,4 @@ async def async_unload_entry(hass: HomeAssistant, entry: VehicleLogConfigEntry) 
 async def async_remove_entry(hass: HomeAssistant, entry: VehicleLogConfigEntry) -> None:
     """Supprimer le fichier de données à la suppression de l'intégration."""
     await VehicleLogStorage(hass).async_remove()
+    await AttachmentStore(hass).async_delete_all()

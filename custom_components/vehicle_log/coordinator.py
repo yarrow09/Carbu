@@ -15,6 +15,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.util import dt as dt_util
 
+from .attachments import AttachmentStore
 from .const import DOMAIN
 from .core.distance import Reading, collect_readings
 from .core.models import Expense, FuelEntry, OdometerReading, Vehicle
@@ -48,6 +49,7 @@ class VehicleLogCoordinator(DataUpdateCoordinator[dict[str, VehicleSummary]]):
         entry: ConfigEntry,
         storage: VehicleLogStorage,
         vehicles: dict[str, Vehicle],
+        attachments: AttachmentStore,
     ) -> None:
         """Initialiser."""
         super().__init__(
@@ -59,6 +61,7 @@ class VehicleLogCoordinator(DataUpdateCoordinator[dict[str, VehicleSummary]]):
         )
         self.storage = storage
         self.vehicles = vehicles
+        self.attachments = attachments
 
     async def _async_update_data(self) -> dict[str, VehicleSummary]:
         return self._compute()
@@ -154,7 +157,12 @@ class VehicleLogCoordinator(DataUpdateCoordinator[dict[str, VehicleSummary]]):
     def async_delete_expense(self, vehicle_id: str, expense_id: str) -> None:
         """Supprimer une dépense."""
         self.vehicle(vehicle_id)
-        self.records(vehicle_id).expenses.delete(expense_id)
+        expense = self.records(vehicle_id).expenses.delete(expense_id)
+        if expense.attachment:
+            self.hass.async_create_task(
+                self.attachments.async_delete(vehicle_id, expense.attachment),
+                "vehicle_log_delete_attachment",
+            )
         self.async_commit()
 
     @callback

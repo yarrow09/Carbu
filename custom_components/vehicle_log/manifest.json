@@ -1,9 +1,17 @@
 {
   "domain": "vehicle_log",
   "name": "Vehicle Log",
-  "codeowners": ["@OWNER"],
+  "after_dependencies": [
+    "frontend"
+  ],
+  "codeowners": [
+    "@OWNER"
+  ],
   "config_flow": true,
-  "dependencies": ["websocket_api"],
+  "dependencies": [
+    "http",
+    "websocket_api"
+  ],
   "documentation": "https://github.com/OWNER/vehicle_log",
   "integration_type": "hub",
   "iot_class": "calculated",
