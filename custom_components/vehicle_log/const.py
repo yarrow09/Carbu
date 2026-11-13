@@ -12,3 +12,6 @@ STORAGE_SAVE_DELAY: Final = 5  # secondes
 
 # Type de subentry représentant un véhicule
 SUBENTRY_TYPE_VEHICLE: Final = "vehicle"
+
+# Signal émis à chaque mise à jour des données (abonnement des cartes)
+SIGNAL_UPDATED: Final = f"{DOMAIN}_updated"

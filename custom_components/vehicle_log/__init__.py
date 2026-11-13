@@ -8,12 +8,14 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.helpers.typing import ConfigType
 
 from .attachments import AttachmentStore, AttachmentView
-from .const import DOMAIN, SUBENTRY_TYPE_VEHICLE
+from .const import DOMAIN, SIGNAL_UPDATED, SUBENTRY_TYPE_VEHICLE
 from .coordinator import VehicleLogCoordinator
 from .core.models import Vehicle
+from .frontend import async_register_frontend
 from .storage import VehicleLogStorage
 from .websocket_api import async_register_websocket_commands
 
@@ -25,6 +27,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Enregistrer l'API websocket utilisée par les cartes."""
     async_register_websocket_commands(hass)
     hass.http.register_view(AttachmentView())
+    await async_register_frontend(hass)
     return True
 
 
@@ -70,7 +73,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: VehicleLogConfigEntry) -
         storage=storage, vehicles=vehicles, coordinator=coordinator
     )
     entry.async_on_unload(entry.add_update_listener(_async_reload_entry))
+    entry.async_on_unload(
+        coordinator.async_add_listener(
+            lambda: async_dispatcher_send(hass, SIGNAL_UPDATED)
+        )
+    )
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    # Les cartes ouvertes rechargent leurs données (véhicules modifiés).
+    async_dispatcher_send(hass, SIGNAL_UPDATED)
     return True
 
 

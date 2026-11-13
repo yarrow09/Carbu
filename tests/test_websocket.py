@@ -242,3 +242,21 @@ async def test_errors(call: Call) -> None:
 async def test_categories(call: Call) -> None:
     result = (await call("categories"))["result"]
     assert {c["id"] for c in result} >= {"other", "toll", "maintenance"}
+
+
+async def test_subscription_survives_reload(
+    hass: HomeAssistant, call: Call, hass_ws_client: WebSocketGenerator
+) -> None:
+    client = await hass_ws_client(hass)
+    await client.send_json_auto_id({"type": f"{DOMAIN}/subscribe"})
+    assert (await client.receive_json())["success"]
+
+    await call("expense/save", vehicle_id="ref", amount=5, category_id="parking")
+    event = await client.receive_json()
+    assert event["type"] == "event"
+    assert event["event"] == {"updated": True}
+
+    entry = hass.config_entries.async_entries(DOMAIN)[0]
+    assert await hass.config_entries.async_reload(entry.entry_id)
+    await hass.async_block_till_done()
+    assert (await client.receive_json())["event"] == {"updated": True}

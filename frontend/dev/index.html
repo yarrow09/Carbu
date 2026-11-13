@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vehicle Log – banc d'essai des cartes</title>
+    <style>
+      /* Variables imitant les thèmes clair / sombre par défaut de Home Assistant. */
+      :root {
+        --primary-color: #03a9f4;
+        --text-primary-color: #ffffff;
+        --primary-text-color: #212121;
+        --secondary-text-color: #727272;
+        --divider-color: rgba(0, 0, 0, 0.12);
+        --card-background-color: #ffffff;
+        --error-color: #db4437;
+        --warning-color: #ffa600;
+        --background: #fafafa;
+        font-family: Roboto, "Segoe UI", system-ui, sans-serif;
+      }
+      :root[data-theme="dark"] {
+        --primary-color: #03a9f4;
+        --primary-text-color: #e1e1e1;
+        --secondary-text-color: #9b9b9b;
+        --divider-color: rgba(225, 225, 225, 0.12);
+        --card-background-color: #1c1c1c;
+        --background: #111111;
+      }
+      body {
+        margin: 0;
+        padding: 16px;
+        background: var(--background);
+        color: var(--primary-text-color);
+      }
+      .toolbar {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+      }
+      .cards {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 480px), 1fr));
+      }
+    </style>
+  </head>
+  <body>
+    <div class="toolbar">
+      <button id="theme">Basculer clair / sombre</button>
+      <button id="lang">FR / EN</button>
+    </div>
+    <div class="cards" id="cards"></div>
+    <script type="module" src="./mock-hass.js"></script>
+  </body>
+</html>

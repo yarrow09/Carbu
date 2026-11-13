@@ -17,11 +17,13 @@ from homeassistant.components.websocket_api.decorators import (
     async_response,
     websocket_command,
 )
+from homeassistant.components.websocket_api.messages import event_message
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers.dispatcher import async_dispatcher_connect
 import probatio as vol
 
-from .const import DOMAIN
+from .const import DOMAIN, SIGNAL_UPDATED
 from .coordinator import VehicleLogCoordinator, VehicleNotFoundError, local_now
 from .core.aggregation import filter_expenses, latest, monthly_costs_by_category
 from .core.models import Expense, FuelEntry, FuelType, new_id
@@ -79,6 +81,7 @@ def _guarded(func: _Handler) -> WebSocketCommandHandler:
 def async_register_websocket_commands(hass: HomeAssistant) -> None:
     """Enregistrer les commandes."""
     for handler in (
+        ws_subscribe,
         ws_vehicles,
         ws_dashboard,
         ws_categories,
@@ -127,6 +130,26 @@ def _vehicle_view(
 
 
 # --- Lecture ---------------------------------------------------------------
+
+
+@websocket_command({vol.Required("type"): f"{DOMAIN}/subscribe"})
+@callback
+def ws_subscribe(
+    hass: HomeAssistant, connection: ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Être notifié de chaque modification (les cartes rechargent leurs données).
+
+    L'abonnement survit au rechargement de l'intégration.
+    """
+
+    @callback
+    def _forward() -> None:
+        connection.send_message(event_message(msg["id"], {"updated": True}))
+
+    connection.subscriptions[msg["id"]] = async_dispatcher_connect(
+        hass, SIGNAL_UPDATED, _forward
+    )
+    connection.send_result(msg["id"])
 
 
 @websocket_command({vol.Required("type"): f"{DOMAIN}/vehicles"})

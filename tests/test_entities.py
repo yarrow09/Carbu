@@ -128,3 +128,11 @@ async def test_number_sets_odometer(hass: HomeAssistant) -> None:
             blocking=True,
         )
     assert err.value.translation_key == "odometer_decrease"
+
+
+async def test_cards_bundle_is_served(hass: HomeAssistant, hass_client: Any) -> None:
+    await setup_integration(hass, {})
+    client = await hass_client()
+    response = await client.get("/vehicle_log/vehicle-log-cards.js")
+    assert response.status == 200
+    assert "vehicle-log-card" in await response.text()
