@@ -13,11 +13,11 @@ select = [
     "E", "F", "W", "I", "B", "UP", "SIM", "C4", "RUF", "PL", "PT", "D", "ASYNC", "DTZ",
 ]
 ignore = [
-    "D203", "D213", "D401", "PLR0913", "PLR2004", "PLR0911", "PLR0912",
+    "D203", "D213", "D401", "RUF001", "RUF002", "RUF003", "PLR0913", "PLR2004", "PLR0911", "PLR0912",
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["D", "PLR2004", "S101"]
+"tests/**" = ["D", "PLR2004", "PLR0917", "DTZ"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["custom_components"]
