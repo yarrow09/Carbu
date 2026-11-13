@@ -9,6 +9,7 @@ from custom_components.vehicle_log.core.models import (
     Expense,
     FuelEntry,
     FuelType,
+    NotificationStage,
     OdometerReading,
     Reminder,
     ReminderKind,
@@ -77,7 +78,13 @@ def test_other_models_roundtrip() -> None:
         due_odometer=30000,
         alert_days=30,
         alert_distance=1000,
+        interval_days=365,
+        interval_distance=15000,
+        last_done_date=date(2026, 1, 1),
+        last_done_odometer=15000,
+        notified=[NotificationStage.ALERT],
     )
+    assert reminder.is_recurring
     assert Expense.from_dict(expense.to_dict()) == expense
     assert OdometerReading.from_dict(reading.to_dict()) == reading
     assert Category.from_dict(category.to_dict()) == category

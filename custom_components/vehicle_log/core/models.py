@@ -347,9 +347,21 @@ DEFAULT_CATEGORIES: tuple[Category, ...] = (
 )
 
 
+class NotificationStage(StrEnum):
+    """Notification déjà envoyée pour l'échéance en cours."""
+
+    ALERT = "alert"
+    DUE = "due"
+
+
 @dataclass(slots=True, kw_only=True)
 class Reminder:
-    """Rappel (logique de déclenchement prévue en phase 2)."""
+    """Rappel d'entretien ou d'échéance administrative.
+
+    Déclenché au premier critère atteint (date ou kilométrage). Avec une
+    récurrence (``interval_days`` / ``interval_distance``), le marquer comme
+    fait calcule l'échéance suivante ; sans récurrence, il devient inactif.
+    """
 
     id: str = field(default_factory=new_id)
     label: str
@@ -358,6 +370,30 @@ class Reminder:
     due_odometer: float | None = None
     alert_days: int | None = None
     alert_distance: float | None = None
+    interval_days: int | None = None
+    interval_distance: float | None = None
+    active: bool = True
+    last_done_date: dt.date | None = None
+    last_done_odometer: float | None = None
+    notified: list[NotificationStage] = field(default_factory=list)
+
+    @property
+    def uses_date(self) -> bool:
+        """Indique si le rappel a un critère de date."""
+        return self.kind in (ReminderKind.DATE, ReminderKind.BOTH)
+
+    @property
+    def uses_distance(self) -> bool:
+        """Indique si le rappel a un critère de kilométrage."""
+        return self.kind in (ReminderKind.DISTANCE, ReminderKind.BOTH)
+
+    @property
+    def is_recurring(self) -> bool:
+        """Indique si le rappel se renouvelle après avoir été fait."""
+        return bool(
+            (self.uses_date and self.interval_days)
+            or (self.uses_distance and self.interval_distance)
+        )
 
     def to_dict(self) -> dict[str, Any]:
         """Sérialiser."""
@@ -369,18 +405,34 @@ class Reminder:
             "due_odometer": self.due_odometer,
             "alert_days": self.alert_days,
             "alert_distance": self.alert_distance,
+            "interval_days": self.interval_days,
+            "interval_distance": self.interval_distance,
+            "active": self.active,
+            "last_done_date": _iso(self.last_done_date),
+            "last_done_odometer": self.last_done_odometer,
+            "notified": [stage.value for stage in self.notified],
         }
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> Reminder:
         """Désérialiser."""
-        alert_days = data.get("alert_days")
+
+        def _opt_int(key: str) -> int | None:
+            value = data.get(key)
+            return int(value) if value is not None else None
+
         return cls(
             id=data["id"],
             label=data["label"],
             kind=ReminderKind(data["kind"]),
             due_date=_date(data.get("due_date")),
             due_odometer=_opt_float(data.get("due_odometer")),
-            alert_days=int(alert_days) if alert_days is not None else None,
+            alert_days=_opt_int("alert_days"),
             alert_distance=_opt_float(data.get("alert_distance")),
+            interval_days=_opt_int("interval_days"),
+            interval_distance=_opt_float(data.get("interval_distance")),
+            active=bool(data.get("active", True)),
+            last_done_date=_date(data.get("last_done_date")),
+            last_done_odometer=_opt_float(data.get("last_done_odometer")),
+            notified=[NotificationStage(v) for v in data.get("notified", [])],
         )

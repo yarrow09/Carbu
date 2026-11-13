@@ -90,3 +90,32 @@ async def test_load_existing_file(
     await storage.async_load()
     assert storage.data.records("v1").expenses.get("e1").amount == 50
     assert set(storage.data.categories) == {"other"}
+
+
+async def test_migration_from_1_1(
+    hass: HomeAssistant, hass_storage: dict[str, Any]
+) -> None:
+    hass_storage[STORAGE_KEY] = {
+        "version": 1,
+        "minor_version": 1,
+        "key": STORAGE_KEY,
+        "data": {
+            "vehicles": {
+                "v1": {
+                    "reminders": [
+                        {
+                            "id": "r1",
+                            "label": "CT",
+                            "kind": "date",
+                            "due_date": "2027-03-01",
+                        }
+                    ]
+                }
+            }
+        },
+    }
+    storage = VehicleLogStorage(hass)
+    await storage.async_load()
+    reminder = storage.data.records("v1").reminders.get("r1")
+    assert reminder.active
+    assert reminder.notified == []

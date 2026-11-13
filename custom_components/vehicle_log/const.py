@@ -7,7 +7,7 @@ DOMAIN: Final = "vehicle_log"
 # Stockage (.storage/vehicle_log.data)
 STORAGE_KEY: Final = f"{DOMAIN}.data"
 STORAGE_VERSION: Final = 1
-STORAGE_MINOR_VERSION: Final = 1
+STORAGE_MINOR_VERSION: Final = 2
 STORAGE_SAVE_DELAY: Final = 5  # secondes
 
 # Type de subentry représentant un véhicule

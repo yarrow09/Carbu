@@ -148,6 +148,29 @@ def test_full_roundtrip_and_remove_vehicle() -> None:
 
 def test_migrate_current_version_is_identity() -> None:
     payload = {"categories": [], "vehicles": {}}
-    assert migrate(1, 1, payload) == payload
+    assert migrate(1, 2, payload) == payload
     with pytest.raises(UnsupportedStorageVersionError):
         migrate(99, 1, payload)
+
+
+def test_migrate_1_1_adds_reminder_fields() -> None:
+    old = {
+        "categories": [],
+        "vehicles": {
+            "v1": {
+                "reminders": [
+                    {
+                        "id": "r1",
+                        "label": "Vidange",
+                        "kind": "distance",
+                        "due_odometer": 30000,
+                    }
+                ]
+            }
+        },
+    }
+    (reminder,) = migrate(1, 1, old)["vehicles"]["v1"]["reminders"]
+    assert reminder["active"] is True
+    assert reminder["notified"] == []
+    assert reminder["interval_distance"] is None
+    assert reminder["due_odometer"] == 30000

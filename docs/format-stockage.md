@@ -4,7 +4,7 @@ Fichier : `<config>/.storage/vehicle_log.data` (helper `Store` de Home Assistant
 écriture atomique, différée de 5 s pour regrouper les modifications ; les
 écritures en attente sont vidées à l'arrêt de Home Assistant).
 
-Version courante : **1.1** (`version` majeure / `minor_version`).
+Version courante : **1.2** (`version` majeure / `minor_version`).
 
 ## Unités de référence
 
@@ -50,7 +50,10 @@ saisie et à l'affichage.
       ],
       "reminders": [
         {"id": "…", "label": "Vidange", "kind": "both", "due_date": "2027-01-01",
-         "due_odometer": 30000, "alert_days": 30, "alert_distance": 1000}
+         "due_odometer": 30000, "alert_days": 30, "alert_distance": 1000,
+         "interval_days": 365, "interval_distance": 15000, "active": true,
+         "last_done_date": "2026-01-01", "last_done_odometer": 15000,
+         "notified": ["alert"]}
       ]
     }
   }
@@ -63,10 +66,17 @@ saisie et à l'affichage.
   `other` est indélébile et reçoit les dépenses des catégories supprimées.
 * `odometer` ne contient que les relevés manuels ; les kilométrages des pleins
   et des dépenses sont fusionnés au calcul.
-* `reminders` : présent dès la v1, exploité en phase 2.
-* Le cache des prix de carburant (phase 2) sera un fichier distinct, jetable.
+* `reminders` : `kind` vaut `date`, `distance` ou `both` (déclenché au premier
+  critère atteint). `interval_*` : récurrence facultative. `notified` : étapes
+  déjà notifiées pour l'échéance en cours (`alert`, `due`), remis à zéro quand
+  l'échéance change. `active: false` : rappel non récurrent déjà fait.
 
 ## Migrations
 
 `core/migrations.py` : une étape par version. Ajout d'un champ facultatif →
 version mineure ; changement incompatible → version majeure.
+
+| Version | Changement |
+|---|---|
+| 1.1 | Version initiale |
+| 1.2 | Rappels : récurrence, état actif, dernière réalisation, notifications envoyées |
