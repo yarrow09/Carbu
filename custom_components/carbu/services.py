@@ -1,4 +1,4 @@
-"""Services publics de Vehicle Log.
+"""Services publics de Carbu.
 
 ``add_fuel``, ``add_expense``, ``update_odometer`` et ``export_data``.
 
@@ -238,7 +238,7 @@ async def _export_data(call: ServiceCall) -> ServiceResponse:
         return written
 
     written = await hass.async_add_executor_job(_write)
-    _LOGGER.info("Export Vehicle Log écrit dans %s", folder)
+    _LOGGER.info("Export Carbu écrit dans %s", folder)
     return cast(ServiceResponse, {"folder": str(folder), "files": written})
 
 
@@ -250,7 +250,7 @@ async def _backup(call: ServiceCall) -> ServiceResponse:
     _coordinator(hass)  # contrôle : intégration chargée
     entry = hass.config_entries.async_loaded_entries(DOMAIN)[0]
     path = await async_create_backup(hass, entry)
-    _LOGGER.info("Sauvegarde Vehicle Log créée : %s", path)
+    _LOGGER.info("Sauvegarde Carbu créée : %s", path)
     return cast(ServiceResponse, {"path": str(path)})
 
 

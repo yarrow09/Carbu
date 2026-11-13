@@ -4,10 +4,10 @@ import datetime as dt
 
 import pytest
 
-from custom_components.vehicle_log.core import aggregation, costs, distance
-from custom_components.vehicle_log.core.distance import Reading
-from custom_components.vehicle_log.core.models import Expense, OdometerReading
-from custom_components.vehicle_log.core.periods import (
+from custom_components.carbu.core import aggregation, costs, distance
+from custom_components.carbu.core.distance import Reading
+from custom_components.carbu.core.models import Expense, OdometerReading
+from custom_components.carbu.core.periods import (
     Period,
     add_months,
     month_keys,

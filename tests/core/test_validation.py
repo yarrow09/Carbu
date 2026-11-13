@@ -4,9 +4,9 @@ import datetime as dt
 
 import pytest
 
-from custom_components.vehicle_log.core.distance import Reading
-from custom_components.vehicle_log.core.models import FuelEntry, FuelType, Vehicle
-from custom_components.vehicle_log.core.validation import (
+from custom_components.carbu.core.distance import Reading
+from custom_components.carbu.core.models import FuelEntry, FuelType, Vehicle
+from custom_components.carbu.core.validation import (
     WarningCode,
     check_fuel_entry,
     complete_fill_amounts,

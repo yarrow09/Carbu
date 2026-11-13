@@ -15,11 +15,11 @@ from homeassistant.core import HomeAssistant
 import pytest
 from pytest_homeassistant_custom_component.typing import WebSocketGenerator
 
-from custom_components.vehicle_log.const import DOMAIN
-from custom_components.vehicle_log.core.models import Expense, FuelEntry, FuelType
-from custom_components.vehicle_log.core.repository import LogData
-from custom_components.vehicle_log.core.summary import compute_summary
-from custom_components.vehicle_log.storage import VehicleLogStorage
+from custom_components.carbu.const import DOMAIN
+from custom_components.carbu.core.models import Expense, FuelEntry, FuelType
+from custom_components.carbu.core.repository import LogData
+from custom_components.carbu.core.summary import compute_summary
+from custom_components.carbu.storage import VehicleLogStorage
 
 from ..common import REFERENCE, setup_integration, store_data
 from ..core import reference_dataset as ref

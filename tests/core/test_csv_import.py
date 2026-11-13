@@ -5,7 +5,7 @@ import datetime as dt
 
 import pytest
 
-from custom_components.vehicle_log.core.csv_import import (
+from custom_components.carbu.core.csv_import import (
     ImportFileError,
     ImportKind,
     LineStatus,
@@ -13,15 +13,15 @@ from custom_components.vehicle_log.core.csv_import import (
     decode,
     preview_import,
 )
-from custom_components.vehicle_log.core.export import build_export
-from custom_components.vehicle_log.core.models import (
+from custom_components.carbu.core.export import build_export
+from custom_components.carbu.core.models import (
     Category,
     FuelType,
     OdometerReading,
     Reminder,
     ReminderKind,
 )
-from custom_components.vehicle_log.core.repository import LogData
+from custom_components.carbu.core.repository import LogData
 
 from . import reference_dataset as ref
 

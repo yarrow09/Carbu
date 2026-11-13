@@ -1,4 +1,4 @@
-"""Configuration graphique de Vehicle Log.
+"""Configuration graphique de Carbu.
 
 * ``VehicleLogConfigFlow`` : crée l'entrée unique « Carnet de bord ».
 * ``VehicleSubentryFlow`` : assistant multi-étapes d'ajout / modification d'un
@@ -74,7 +74,7 @@ from .core.units import (
 if TYPE_CHECKING:
     from . import VehicleLogConfigEntry
 
-DEFAULT_TITLE = "Carnet de bord"
+DEFAULT_TITLE = "Carbu"
 
 # Clés de formulaire hors modèle
 CONF_BIFUEL = "bifuel"

@@ -2,12 +2,12 @@
   "config": {
     "step": {
       "user": {
-        "title": "Vehicle Log",
-        "description": "Install the vehicle log. You will then add your vehicles with the \"Add vehicle\" button on the integration page."
+        "title": "Carbu",
+        "description": "Install Carbu, the log book for your vehicles. You will then add your vehicles with the \"Add vehicle\" button on the integration page."
       }
     },
     "abort": {
-      "single_instance_allowed": "Vehicle Log is already configured."
+      "single_instance_allowed": "Carbu is already configured."
     }
   },
   "config_subentries": {
@@ -79,7 +79,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "Vehicle Log settings",
+        "title": "Carbu settings",
         "menu_options": {
           "add_category": "Add an expense category",
           "edit_category": "Edit a category",
@@ -146,7 +146,7 @@
       },
       "restore": {
         "title": "Restore a backup",
-        "description": "Choose a backup from the vehicle_log/backups folder, or upload a backup archive (.zip). Nothing is changed before the next confirmation screen.",
+        "description": "Choose a backup from the carbu/backups folder, or upload a backup archive (.zip). Nothing is changed before the next confirmation screen.",
         "data": {
           "backup": "Existing backup",
           "upload": "Upload an archive"
@@ -161,7 +161,7 @@
       "name_required": "A name is required.",
       "category_exists": "A category with this name already exists.",
       "no_backup_selected": "Choose a backup or upload an archive.",
-      "backup_not_a_backup": "This file is not a Vehicle Log backup.",
+      "backup_not_a_backup": "This file is not a Carbu backup.",
       "backup_unsupported_version": "This backup was made by an incompatible version.",
       "backup_corrupted": "The backup is damaged or unreadable.",
       "backup_too_large": "The backup is too large."
@@ -326,7 +326,7 @@
       "message": "The odometer value {value} {unit} is lower than the last reading ({current} {unit})."
     },
     "not_loaded": {
-      "message": "Vehicle Log is not loaded."
+      "message": "Carbu is not loaded."
     },
     "vehicle_not_found": {
       "message": "Unknown vehicle: {vehicle}."
@@ -446,11 +446,11 @@
     },
     "export_data": {
       "name": "Export data",
-      "description": "Writes all fill-ups, expenses, odometer readings, reminders and categories as CSV files in the vehicle_log/exports folder of the configuration directory."
+      "description": "Writes all fill-ups, expenses, odometer readings, reminders and categories as CSV files in the carbu/exports folder of the configuration directory."
     },
     "backup": {
       "name": "Create a full backup",
-      "description": "Writes a ZIP archive with every vehicle, all data and attachments to the vehicle_log/backups folder of the configuration directory. It can be restored from the integration settings."
+      "description": "Writes a ZIP archive with every vehicle, all data and attachments to the carbu/backups folder of the configuration directory. It can be restored from the integration settings."
     }
   }
 }

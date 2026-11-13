@@ -12,15 +12,15 @@ from pytest_homeassistant_custom_component.typing import (
     WebSocketGenerator,
 )
 
-from custom_components.vehicle_log.attachments import MAX_SIZE, detect_type
-from custom_components.vehicle_log.core.models import Expense
-from custom_components.vehicle_log.core.repository import LogData
+from custom_components.carbu.attachments import MAX_SIZE, detect_type
+from custom_components.carbu.core.models import Expense
+from custom_components.carbu.core.repository import LogData
 
 from .common import CLIO, setup_integration, store_data
 
 PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 64
 PDF = b"%PDF-1.7\n" + b"x" * 64
-URL = "/api/vehicle_log/attachment/v1/e1"
+URL = "/api/carbu/attachment/v1/e1"
 
 
 @pytest.fixture(autouse=True)
@@ -46,7 +46,7 @@ def _form(content: bytes, name: str = "ticket.png") -> FormData:
 
 
 def _file(hass: HomeAssistant, name: str) -> Path:
-    return Path(hass.config.path("vehicle_log", "attachments", "v1", name))
+    return Path(hass.config.path("carbu", "attachments", "v1", name))
 
 
 def test_detect_type() -> None:
@@ -96,12 +96,10 @@ async def test_upload_rejections(hass_client: ClientSessionGenerator) -> None:
     response = await client.post(URL, data=_form(PNG + b"\x00" * MAX_SIZE))
     assert response.status == 413
 
-    response = await client.post(
-        "/api/vehicle_log/attachment/v1/unknown", data=_form(PNG)
-    )
+    response = await client.post("/api/carbu/attachment/v1/unknown", data=_form(PNG))
     assert response.status == 404
     response = await client.post(
-        "/api/vehicle_log/attachment/..%2F..%2Fetc/e1", data=_form(PNG)
+        "/api/carbu/attachment/..%2F..%2Fetc/e1", data=_form(PNG)
     )
     assert response.status in (400, 404)  # filtre de sécurité HA ou identifiant
 
@@ -129,7 +127,7 @@ async def test_deleting_expense_removes_file(
     await client.post(URL, data=_form(PNG))
     ws = await hass_ws_client(hass)
     await ws.send_json_auto_id(
-        {"type": "vehicle_log/expense/delete", "vehicle_id": "v1", "expense_id": "e1"}
+        {"type": "carbu/expense/delete", "vehicle_id": "v1", "expense_id": "e1"}
     )
     assert (await ws.receive_json())["success"]
     await hass.async_block_till_done()

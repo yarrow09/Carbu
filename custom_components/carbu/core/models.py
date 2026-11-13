@@ -1,4 +1,4 @@
-"""Modèle de données de Vehicle Log (Python pur).
+"""Modèle de données de Carbu (Python pur).
 
 Toutes les grandeurs sont stockées en unités de référence :
 

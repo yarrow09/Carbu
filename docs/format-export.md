@@ -1,7 +1,7 @@
 # Format d'export CSV
 
-Le service `vehicle_log.export_data` écrit un dossier
-`<config>/vehicle_log/exports/<AAAAMMJJ-HHMMSS>/` contenant cinq fichiers. Version
+Le service `carbu.export_data` écrit un dossier
+`<config>/carbu/exports/<AAAAMMJJ-HHMMSS>/` contenant cinq fichiers. Version
 du format : **1**. Il servira à l'import et à la restauration en phase 3.
 
 ## Conventions
@@ -31,7 +31,7 @@ du format : **1**. Il servira à l'import et à la restauration en phase 3.
 
 `vehicle_id;vehicle_name;id;date;odometer_km;amount;category_id;category_name;description;attachment`
 
-* `attachment` : nom du fichier dans `<config>/vehicle_log/attachments/<vehicle_id>/`.
+* `attachment` : nom du fichier dans `<config>/carbu/attachments/<vehicle_id>/`.
   Les fichiers eux-mêmes ne sont pas copiés.
 
 ### `releves.csv`

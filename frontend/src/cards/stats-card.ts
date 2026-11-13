@@ -124,11 +124,11 @@ export class VehicleLogStatsCard extends VehicleCardBase {
   }
 
   static getStubConfig(): CardConfig {
-    return { type: "custom:vehicle-log-stats-card" };
+    return { type: "custom:carbu-stats-card" };
   }
 
   static async getConfigElement(): Promise<HTMLElement> {
-    const editor = document.createElement("vehicle-log-card-editor");
+    const editor = document.createElement("carbu-card-editor");
     editor.setAttribute("kind", "stats");
     return editor;
   }

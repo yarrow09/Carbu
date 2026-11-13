@@ -4,12 +4,12 @@ import datetime as dt
 
 import pytest
 
-from custom_components.vehicle_log.core.models import (
+from custom_components.carbu.core.models import (
     NotificationStage,
     Reminder,
     ReminderKind,
 )
-from custom_components.vehicle_log.core.reminders import (
+from custom_components.carbu.core.reminders import (
     Criterion,
     ReminderState,
     mark_done,

@@ -2,13 +2,13 @@
 import type { HomeAssistant } from "./types";
 
 const fr = {
-  "card.name": "Carnet de bord véhicule",
+  "card.name": "Carbu · carnet de bord",
   "card.description": "Vue d'ensemble, saisie rapide d'un plein, dépenses mensuelles.",
-  "journal.name": "Journal du véhicule",
+  "journal.name": "Carbu · journal du véhicule",
   "journal.description": "Pleins et dépenses : liste filtrable, modification, suppression.",
   "common.loading": "Chargement…",
-  "common.no_vehicle": "Aucun véhicule. Ajoutez-en un depuis la page de l'intégration Vehicle Log.",
-  "common.not_loaded": "L'intégration Vehicle Log n'est pas chargée.",
+  "common.no_vehicle": "Aucun véhicule. Ajoutez-en un depuis la page de l'intégration Carbu.",
+  "common.not_loaded": "L'intégration Carbu n'est pas chargée.",
   "common.cancel": "Annuler",
   "common.save": "Enregistrer",
   "common.delete": "Supprimer",
@@ -131,7 +131,7 @@ const fr = {
   "reminder.interval_days": "Répéter tous les … jours",
   "reminder.interval_distance": "Répéter tous les … {unit}",
   "reminder.recurrence_hint": "Laissez vide pour un rappel unique.",
-  "stats.name": "Statistiques du véhicule",
+  "stats.name": "Carbu · statistiques",
   "stats.description": "Statistiques par période et courbe de consommation par plein.",
   "stats.period": "Période",
   "stats.period_30d": "30 jours",
@@ -183,13 +183,13 @@ const fr = {
 export type Key = keyof typeof fr;
 
 const en: Record<Key, string> = {
-  "card.name": "Vehicle log",
+  "card.name": "Carbu · vehicle log",
   "card.description": "Overview, quick fill-up entry, monthly expenses.",
-  "journal.name": "Vehicle journal",
+  "journal.name": "Carbu · vehicle journal",
   "journal.description": "Fill-ups and expenses: filterable list, edit, delete.",
   "common.loading": "Loading…",
-  "common.no_vehicle": "No vehicle. Add one from the Vehicle Log integration page.",
-  "common.not_loaded": "The Vehicle Log integration is not loaded.",
+  "common.no_vehicle": "No vehicle. Add one from the Carbu integration page.",
+  "common.not_loaded": "The Carbu integration is not loaded.",
   "common.cancel": "Cancel",
   "common.save": "Save",
   "common.delete": "Delete",
@@ -309,7 +309,7 @@ const en: Record<Key, string> = {
   "reminder.interval_days": "Repeat every … days",
   "reminder.interval_distance": "Repeat every … {unit}",
   "reminder.recurrence_hint": "Leave empty for a one-off reminder.",
-  "stats.name": "Vehicle statistics",
+  "stats.name": "Carbu · statistics",
   "stats.description": "Statistics by period and consumption per fill-up.",
   "stats.period": "Period",
   "stats.period_30d": "30 days",

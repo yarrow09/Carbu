@@ -4,17 +4,17 @@ import datetime as dt
 
 import pytest
 
-from custom_components.vehicle_log.core.models import (
+from custom_components.carbu.core.models import (
     ConsumptionUnit,
     DistanceUnit,
     FuelType,
     Vehicle,
     VolumeUnit,
 )
-from custom_components.vehicle_log.core.presenter import VehicleUnits
-from custom_components.vehicle_log.core.repository import LogData
-from custom_components.vehicle_log.core.summary import compute_summary
-from custom_components.vehicle_log.core.validation import (
+from custom_components.carbu.core.presenter import VehicleUnits
+from custom_components.carbu.core.repository import LogData
+from custom_components.carbu.core.summary import compute_summary
+from custom_components.carbu.core.validation import (
     CoherenceWarning,
     WarningCode,
 )

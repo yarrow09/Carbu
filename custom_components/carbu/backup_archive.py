@@ -1,6 +1,6 @@
 """Sauvegarde et restauration complètes (archive ZIP).
 
-Les archives sont rangées dans ``<config>/vehicle_log/backups/`` : elles sont
+Les archives sont rangées dans ``<config>/carbu/backups/`` : elles sont
 donc aussi incluses dans les sauvegardes de Home Assistant. Toutes les
 lectures et écritures de fichiers ont lieu hors de la boucle d'événements.
 """
@@ -33,7 +33,7 @@ from .core.backup import (
 if TYPE_CHECKING:
     from . import VehicleLogConfigEntry
 
-BACKUP_PREFIX = "vehicle_log_backup_"
+BACKUP_PREFIX = "carbu_backup_"
 # Limite de sécurité à la lecture (archive malveillante très compressée).
 MAX_UNCOMPRESSED = 1024 * 1024 * 1024
 _ATTACHMENT_PATH = re.compile(

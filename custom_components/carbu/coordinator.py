@@ -193,7 +193,7 @@ class VehicleLogCoordinator(DataUpdateCoordinator[dict[str, VehicleSummary]]):
         if expense.attachment:
             self.hass.async_create_task(
                 self.attachments.async_delete(vehicle_id, expense.attachment),
-                "vehicle_log_delete_attachment",
+                "carbu_delete_attachment",
             )
         self.async_commit()
 

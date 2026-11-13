@@ -2,12 +2,12 @@
   "config": {
     "step": {
       "user": {
-        "title": "Carnet de bord véhicule",
-        "description": "Installer le carnet de bord. Vous ajouterez ensuite vos véhicules avec le bouton « Ajouter un véhicule » de la page de l'intégration."
+        "title": "Carbu",
+        "description": "Installer Carbu, le carnet de bord de vos véhicules. Vous ajouterez ensuite vos véhicules avec le bouton « Ajouter un véhicule » de la page de l'intégration."
       }
     },
     "abort": {
-      "single_instance_allowed": "Le carnet de bord est déjà configuré."
+      "single_instance_allowed": "Carbu est déjà configuré."
     }
   },
   "config_subentries": {
@@ -79,7 +79,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "Paramètres du carnet de bord",
+        "title": "Paramètres de Carbu",
         "menu_options": {
           "add_category": "Ajouter une catégorie de dépense",
           "edit_category": "Modifier une catégorie",
@@ -146,7 +146,7 @@
       },
       "restore": {
         "title": "Restaurer une sauvegarde",
-        "description": "Choisissez une sauvegarde du dossier vehicle_log/backups, ou envoyez une archive de sauvegarde (.zip). Rien n'est modifié avant l'écran de confirmation suivant.",
+        "description": "Choisissez une sauvegarde du dossier carbu/backups, ou envoyez une archive de sauvegarde (.zip). Rien n'est modifié avant l'écran de confirmation suivant.",
         "data": {
           "backup": "Sauvegarde existante",
           "upload": "Envoyer une archive"
@@ -161,7 +161,7 @@
       "name_required": "Le nom est obligatoire.",
       "category_exists": "Une catégorie porte déjà ce nom.",
       "no_backup_selected": "Choisissez une sauvegarde ou envoyez une archive.",
-      "backup_not_a_backup": "Ce fichier n'est pas une sauvegarde Vehicle Log.",
+      "backup_not_a_backup": "Ce fichier n'est pas une sauvegarde Carbu.",
       "backup_unsupported_version": "Cette sauvegarde provient d'une version incompatible.",
       "backup_corrupted": "La sauvegarde est endommagée ou illisible.",
       "backup_too_large": "La sauvegarde est trop volumineuse."
@@ -326,7 +326,7 @@
       "message": "Le kilométrage {value} {unit} est inférieur au dernier relevé ({current} {unit})."
     },
     "not_loaded": {
-      "message": "Vehicle Log n'est pas chargé."
+      "message": "Carbu n'est pas chargé."
     },
     "vehicle_not_found": {
       "message": "Véhicule inconnu : {vehicle}."
@@ -446,11 +446,11 @@
     },
     "export_data": {
       "name": "Exporter les données",
-      "description": "Écrit tous les pleins, dépenses, relevés, rappels et catégories en fichiers CSV dans le dossier vehicle_log/exports de la configuration."
+      "description": "Écrit tous les pleins, dépenses, relevés, rappels et catégories en fichiers CSV dans le dossier carbu/exports de la configuration."
     },
     "backup": {
       "name": "Créer une sauvegarde complète",
-      "description": "Écrit une archive ZIP contenant tous les véhicules, toutes les données et les pièces jointes dans le dossier vehicle_log/backups de la configuration. Elle se restaure depuis les paramètres de l'intégration."
+      "description": "Écrit une archive ZIP contenant tous les véhicules, toutes les données et les pièces jointes dans le dossier carbu/backups de la configuration. Elle se restaure depuis les paramètres de l'intégration."
     }
   }
 }

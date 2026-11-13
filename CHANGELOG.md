@@ -5,6 +5,19 @@ suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ## [0.3.0] — non publiée (phase 3)
 
+### Modifié
+
+- **L'intégration s'appelle désormais Carbu** (dépôt `yarrow09/Carbu`). Comme rien
+  n'avait été publié, l'identifiant technique change sans migration :
+  - domaine `carbu` (anciennement `vehicle_log`) ;
+  - services `carbu.*` ;
+  - cartes `custom:carbu-card`, `custom:carbu-journal-card` et `custom:carbu-stats-card` ;
+  - stockage `.storage/carbu.data` ;
+  - fichiers dans `<config>/carbu/`.
+
+  Les sections ci-dessous gardent les anciens noms.
+- Licence : GNU GPL version 3 ou ultérieure.
+
 ### Ajouté
 
 - **Sauvegarde complète** au format ZIP (`backup.json` versionné et pièces jointes),

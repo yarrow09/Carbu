@@ -1,9 +1,9 @@
 # Format de sauvegarde complète
 
-Une sauvegarde est une archive ZIP nommée `vehicle_log_backup_<AAAAMMJJ-HHMMSS>.zip`,
-rangée dans `<config>/vehicle_log/backups/`. Elle est donc aussi incluse dans les
+Une sauvegarde est une archive ZIP nommée `carbu_backup_<AAAAMMJJ-HHMMSS>.zip`,
+rangée dans `<config>/carbu/backups/`. Elle est donc aussi incluse dans les
 sauvegardes de Home Assistant. On la crée depuis la page globale de l'intégration
-(**Créer une sauvegarde complète**) ou avec le service `vehicle_log.backup`.
+(**Créer une sauvegarde complète**) ou avec le service `carbu.backup`.
 
 Version du format : **1**.
 
@@ -18,7 +18,7 @@ attachments/<vehicle_id>/<expense_id>.<jpg|png|webp|pdf>
 
 ```json
 {
-  "format": "vehicle_log_backup",
+  "format": "carbu_backup",
   "format_version": 1,
   "created_at": "2026-03-25T13:00:00",
   "integration_version": "0.3.0",

@@ -1,10 +1,10 @@
-"""Constantes de l'intégration Vehicle Log."""
+"""Constantes de l'intégration Carbu."""
 
 from typing import Final
 
-DOMAIN: Final = "vehicle_log"
+DOMAIN: Final = "carbu"
 
-# Stockage (.storage/vehicle_log.data)
+# Stockage (.storage/carbu.data)
 STORAGE_KEY: Final = f"{DOMAIN}.data"
 STORAGE_VERSION: Final = 1
 STORAGE_MINOR_VERSION: Final = 2

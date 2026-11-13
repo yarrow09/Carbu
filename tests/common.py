@@ -6,14 +6,14 @@ from homeassistant.config_entries import ConfigSubentryDataWithId
 from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.vehicle_log.const import (
+from custom_components.carbu.const import (
     DOMAIN,
     STORAGE_KEY,
     STORAGE_MINOR_VERSION,
     STORAGE_VERSION,
     SUBENTRY_TYPE_VEHICLE,
 )
-from custom_components.vehicle_log.core.repository import LogData
+from custom_components.carbu.core.repository import LogData
 
 CLIO: dict[str, Any] = {
     "name": "Clio",
@@ -68,7 +68,7 @@ async def setup_integration(
         for subentry_id, data in (vehicles or {}).items()
     ]
     entry = MockConfigEntry(
-        domain=DOMAIN, title="Carnet de bord", data={}, subentries_data=subentries
+        domain=DOMAIN, title="Carbu", data={}, subentries_data=subentries
     )
     entry.add_to_hass(hass)
     assert await hass.config_entries.async_setup(entry.entry_id)

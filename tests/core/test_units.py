@@ -2,8 +2,8 @@
 
 import pytest
 
-from custom_components.vehicle_log.core import units
-from custom_components.vehicle_log.core.models import (
+from custom_components.carbu.core import units
+from custom_components.carbu.core.models import (
     ConsumptionUnit,
     DistanceUnit,
     VolumeUnit,

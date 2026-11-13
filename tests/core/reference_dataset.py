@@ -2,7 +2,7 @@
 
 import datetime as dt
 
-from custom_components.vehicle_log.core.models import (
+from custom_components.carbu.core.models import (
     Expense,
     FuelEntry,
     FuelType,

@@ -42,4 +42,4 @@ jobs:
       - run: npm ci
       - run: npm run check
       # Le bundle commité doit correspondre aux sources.
-      - run: git diff --exit-code -- ../custom_components/vehicle_log/www/
+      - run: git diff --exit-code -- ../custom_components/carbu/www/

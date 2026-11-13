@@ -15,10 +15,10 @@ import { t } from "./i18n";
 import type { HomeAssistant } from "./types";
 
 const elements: Record<string, CustomElementConstructor> = {
-  "vehicle-log-card": VehicleLogCard,
-  "vehicle-log-journal-card": VehicleLogJournalCard,
-  "vehicle-log-stats-card": VehicleLogStatsCard,
-  "vehicle-log-card-editor": VehicleLogCardEditor,
+  "carbu-card": VehicleLogCard,
+  "carbu-journal-card": VehicleLogJournalCard,
+  "carbu-stats-card": VehicleLogStatsCard,
+  "carbu-card-editor": VehicleLogCardEditor,
   "vl-fuel-dialog": VlFuelDialog,
   "vl-expense-dialog": VlExpenseDialog,
   "vl-confirm-dialog": VlConfirmDialog,
@@ -52,17 +52,17 @@ const hass = { language: navigator.language } as HomeAssistant;
 window.customCards = window.customCards ?? [];
 for (const card of [
   {
-    type: "vehicle-log-card",
+    type: "carbu-card",
     name: t(hass, "card.name"),
     description: t(hass, "card.description"),
   },
   {
-    type: "vehicle-log-journal-card",
+    type: "carbu-journal-card",
     name: t(hass, "journal.name"),
     description: t(hass, "journal.description"),
   },
   {
-    type: "vehicle-log-stats-card",
+    type: "carbu-stats-card",
     name: t(hass, "stats.name"),
     description: t(hass, "stats.description"),
   },

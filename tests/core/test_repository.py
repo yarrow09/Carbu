@@ -4,11 +4,11 @@ from datetime import date, time
 
 import pytest
 
-from custom_components.vehicle_log.core.migrations import (
+from custom_components.carbu.core.migrations import (
     UnsupportedStorageVersionError,
     migrate,
 )
-from custom_components.vehicle_log.core.models import (
+from custom_components.carbu.core.models import (
     CATEGORY_OTHER,
     DEFAULT_CATEGORIES,
     Category,
@@ -16,7 +16,7 @@ from custom_components.vehicle_log.core.models import (
     FuelEntry,
     FuelType,
 )
-from custom_components.vehicle_log.core.repository import (
+from custom_components.carbu.core.repository import (
     CategoryError,
     LogData,
     RecordNotFoundError,

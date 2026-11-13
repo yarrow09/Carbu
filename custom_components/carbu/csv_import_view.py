@@ -1,6 +1,6 @@
 """API d'import CSV utilisée par la carte journal.
 
-``POST /api/vehicle_log/import/{vehicle_id}`` (multipart, champ ``file``) :
+``POST /api/carbu/import/{vehicle_id}`` (multipart, champ ``file``) :
 
 * sans paramètre : aperçu, rien n'est modifié ;
 * ``?apply=1`` : le même fichier est analysé à nouveau puis importé.
@@ -94,8 +94,8 @@ def preview_view(preview: ImportPreview, units: VehicleUnits) -> dict[str, Any]:
 class CsvImportView(HomeAssistantView):
     """Aperçu et import d'un fichier CSV dans un véhicule."""
 
-    url = "/api/vehicle_log/import/{vehicle_id}"
-    name = "api:vehicle_log:import"
+    url = "/api/carbu/import/{vehicle_id}"
+    name = "api:carbu:import"
 
     async def post(self, request: web.Request, vehicle_id: str) -> web.Response:
         """Analyser (et éventuellement importer) le fichier envoyé."""

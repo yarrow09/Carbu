@@ -4,13 +4,13 @@ import datetime as dt
 
 import pytest
 
-from custom_components.vehicle_log.core import aggregation, costs, distance, units
-from custom_components.vehicle_log.core.consumption import (
+from custom_components.carbu.core import aggregation, costs, distance, units
+from custom_components.carbu.core.consumption import (
     average_consumption,
     consumption_segments,
 )
-from custom_components.vehicle_log.core.models import ConsumptionUnit
-from custom_components.vehicle_log.core.periods import Period, period_bounds
+from custom_components.carbu.core.models import ConsumptionUnit
+from custom_components.carbu.core.periods import Period, period_bounds
 
 from . import reference_dataset as ref
 

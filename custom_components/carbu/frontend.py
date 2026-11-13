@@ -15,8 +15,8 @@ from homeassistant.loader import async_get_integration
 
 from .const import DOMAIN
 
-CARDS_URL = f"/{DOMAIN}/vehicle-log-cards.js"
-CARDS_FILE = Path(__file__).parent / "www" / "vehicle-log-cards.js"
+CARDS_URL = f"/{DOMAIN}/carbu-cards.js"
+CARDS_FILE = Path(__file__).parent / "www" / "carbu-cards.js"
 
 
 async def async_register_frontend(hass: HomeAssistant) -> None:

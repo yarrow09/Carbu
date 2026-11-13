@@ -1,9 +1,9 @@
 """Pièces jointes des dépenses (fichiers locaux).
 
-Fichiers : ``<config>/vehicle_log/attachments/<vehicle_id>/<expense_id>.<ext>``.
+Fichiers : ``<config>/carbu/attachments/<vehicle_id>/<expense_id>.<ext>``.
 Vue HTTP authentifiée :
 
-* ``POST   /api/vehicle_log/attachment/{vehicle_id}/{expense_id}`` (multipart,
+* ``POST   /api/carbu/attachment/{vehicle_id}/{expense_id}`` (multipart,
   champ ``file``) : ajoute ou remplace la pièce jointe ;
 * ``GET``  : télécharge (utiliser un chemin signé ``auth/sign_path`` côté carte) ;
 * ``DELETE`` : supprime.
@@ -124,8 +124,8 @@ def _error(code: str, status: HTTPStatus) -> web.Response:
 class AttachmentView(HomeAssistantView):
     """Envoi, téléchargement et suppression d'une pièce jointe."""
 
-    url = "/api/vehicle_log/attachment/{vehicle_id}/{expense_id}"
-    name = "api:vehicle_log:attachment"
+    url = "/api/carbu/attachment/{vehicle_id}/{expense_id}"
+    name = "api:carbu:attachment"
 
     def _resolve(
         self, request: web.Request, vehicle_id: str, expense_id: str

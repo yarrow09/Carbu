@@ -64,7 +64,7 @@ def _guarded(func: _Handler) -> WebSocketCommandHandler:
         hass: HomeAssistant, connection: ActiveConnection, msg: dict[str, Any]
     ) -> None:
         if (coordinator := _coordinator(hass)) is None:
-            connection.send_error(msg["id"], ERR_NOT_LOADED, "Vehicle Log not loaded")
+            connection.send_error(msg["id"], ERR_NOT_LOADED, "Carbu not loaded")
             return
         try:
             func(hass, connection, msg, coordinator)
@@ -250,7 +250,7 @@ async def ws_categories(
     from .config_flow import async_category_labels  # noqa: PLC0415
 
     if (coordinator := _coordinator(hass)) is None:
-        connection.send_error(msg["id"], ERR_NOT_LOADED, "Vehicle Log not loaded")
+        connection.send_error(msg["id"], ERR_NOT_LOADED, "Carbu not loaded")
         return
     labels = await async_category_labels(hass)
     connection.send_result(msg["id"], _category_views(coordinator, labels))

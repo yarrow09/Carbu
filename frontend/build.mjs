@@ -3,7 +3,7 @@ import * as esbuild from "esbuild";
 
 const options = {
   entryPoints: ["src/index.ts"],
-  outfile: "../custom_components/vehicle_log/www/vehicle-log-cards.js",
+  outfile: "../custom_components/carbu/www/carbu-cards.js",
   bundle: true,
   format: "esm",
   target: "es2022",

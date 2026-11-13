@@ -97,26 +97,26 @@ const delay = (v) => new Promise((r) => setTimeout(() => r(v), 80));
 async function callWS(msg) {
   console.debug("callWS", msg);
   switch (msg.type) {
-    case "vehicle_log/vehicles":
+    case "carbu/vehicles":
       return delay({ currency: "EUR", vehicles: [vehicle()] });
-    case "vehicle_log/dashboard":
+    case "carbu/dashboard":
       return delay({
         ...vehicle(), currency: "EUR", categories, monthly: monthly(),
         recent_fuel: [...fuel].sort(byDateDesc).slice(0, 5),
         recent_expenses: [...expenses].sort(byDateDesc).slice(0, 5),
       });
-    case "vehicle_log/categories":
+    case "carbu/categories":
       return delay(categories);
-    case "vehicle_log/fuel/defaults":
+    case "carbu/fuel/defaults":
       return delay({
         date: "2026-03-25", time: "13:00", fuel_type: "gasoline",
         odometer: Math.max(...fuel.map((f) => f.odometer)), unit_price: { gasoline: 1.8 },
       });
-    case "vehicle_log/fuel/list": {
+    case "carbu/fuel/list": {
       const items = [...fuel].sort(byDateDesc);
       return delay({ total: items.length, items: items.slice(msg.offset ?? 0, (msg.offset ?? 0) + (msg.limit ?? 50)) });
     }
-    case "vehicle_log/fuel/save": {
+    case "carbu/fuel/save": {
       const last = Math.max(...fuel.filter((f) => f.id !== msg.entry_id).map((f) => f.odometer));
       const volume = msg.volume ?? msg.total_cost / msg.unit_price;
       const warnings = [];
@@ -134,11 +134,11 @@ async function callWS(msg) {
       notify();
       return delay({ saved: true, warnings, entry });
     }
-    case "vehicle_log/fuel/delete":
+    case "carbu/fuel/delete":
       fuel.splice(fuel.findIndex((f) => f.id === msg.entry_id), 1);
       notify();
       return delay(null);
-    case "vehicle_log/expense/list": {
+    case "carbu/expense/list": {
       let items = [...expenses].sort(byDateDesc);
       if (msg.start) items = items.filter((e) => e.date >= msg.start);
       if (msg.end) items = items.filter((e) => e.date <= msg.end);
@@ -150,7 +150,7 @@ async function callWS(msg) {
         items: items.slice(msg.offset ?? 0, (msg.offset ?? 0) + (msg.limit ?? 50)),
       });
     }
-    case "vehicle_log/expense/save": {
+    case "carbu/expense/save": {
       const entry = {
         id: msg.expense_id ?? `e${seq++}`, date: msg.date, odometer: msg.odometer,
         amount: msg.amount, category_id: msg.category_id, description: msg.description, attachment: null,
@@ -160,13 +160,13 @@ async function callWS(msg) {
       notify();
       return delay(entry);
     }
-    case "vehicle_log/expense/delete":
+    case "carbu/expense/delete":
       expenses.splice(expenses.findIndex((e) => e.id === msg.expense_id), 1);
       notify();
       return delay(null);
-    case "vehicle_log/reminders":
+    case "carbu/reminders":
       return delay(reminders);
-    case "vehicle_log/reminder/save": {
+    case "carbu/reminder/save": {
       const r = { ...(reminders.find((x) => x.id === msg.reminder_id) ?? {}), ...msg,
         id: msg.reminder_id ?? `r${seq++}`, active: true, state: "ok", days_left: 100,
         distance_left: null, criterion: null,
@@ -175,18 +175,18 @@ async function callWS(msg) {
       notify();
       return delay(r);
     }
-    case "vehicle_log/reminder/delete":
+    case "carbu/reminder/delete":
       reminders = reminders.filter((x) => x.id !== msg.reminder_id);
       notify();
       return delay(null);
-    case "vehicle_log/reminder/done": {
+    case "carbu/reminder/done": {
       const r = reminders.find((x) => x.id === msg.reminder_id);
       Object.assign(r, r.recurring ? { state: "ok", days_left: 365, distance_left: 15000 }
         : { state: "inactive", active: false });
       notify();
       return delay(r);
     }
-    case "vehicle_log/stats": {
+    case "carbu/stats": {
       const short = msg.period === "30d";
       return delay({
         start: short ? "2026-02-24" : "2025-03-26", end: "2026-03-25", days: short ? 30 : 365,
@@ -241,10 +241,10 @@ const makeHass = () => ({
   },
 });
 
-await import("../../custom_components/vehicle_log/www/vehicle-log-cards.js");
+await import("../../custom_components/carbu/www/carbu-cards.js");
 
 const container = document.getElementById("cards");
-const cards = ["vehicle-log-card", "vehicle-log-stats-card", "vehicle-log-journal-card"].map((type) => {
+const cards = ["carbu-card", "carbu-stats-card", "carbu-journal-card"].map((type) => {
   const card = document.createElement(type);
   card.setConfig({ type: `custom:${type}` });
   card.hass = makeHass();

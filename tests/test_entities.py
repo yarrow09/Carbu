@@ -13,8 +13,8 @@ from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import device_registry as dr, entity_registry as er
 import pytest
 
-from custom_components.vehicle_log.const import DOMAIN
-from custom_components.vehicle_log.core.repository import LogData
+from custom_components.carbu.const import DOMAIN
+from custom_components.carbu.core.repository import LogData
 
 from .common import CLIO, REFERENCE, setup_integration, store_data
 from .core import reference_dataset as ref
@@ -133,6 +133,6 @@ async def test_number_sets_odometer(hass: HomeAssistant) -> None:
 async def test_cards_bundle_is_served(hass: HomeAssistant, hass_client: Any) -> None:
     await setup_integration(hass, {})
     client = await hass_client()
-    response = await client.get("/vehicle_log/vehicle-log-cards.js")
+    response = await client.get("/carbu/carbu-cards.js")
     assert response.status == 200
-    assert "vehicle-log-card" in await response.text()
+    assert "carbu-card" in await response.text()

@@ -16,7 +16,7 @@ import type {
   VehicleView,
 } from "./types";
 
-const P = "vehicle_log";
+const P = "carbu";
 
 export const fetchVehicles = (hass: HomeAssistant) =>
   hass.callWS<{ currency: string; vehicles: VehicleView[] }>({ type: `${P}/vehicles` });

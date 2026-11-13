@@ -4,11 +4,11 @@ import datetime as dt
 
 import pytest
 
-from custom_components.vehicle_log.core.consumption import (
+from custom_components.carbu.core.consumption import (
     average_consumption,
     consumption_segments,
 )
-from custom_components.vehicle_log.core.models import FuelEntry, FuelType
+from custom_components.carbu.core.models import FuelEntry, FuelType
 
 G = FuelType.GASOLINE
 LPG = FuelType.LPG

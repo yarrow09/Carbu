@@ -11,8 +11,8 @@ from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.setup import async_setup_component
 import pytest
 
-from custom_components.vehicle_log.const import DOMAIN
-from custom_components.vehicle_log.core.repository import LogData
+from custom_components.carbu.const import DOMAIN
+from custom_components.carbu.core.repository import LogData
 
 from .common import CLIO, REFERENCE, setup_integration, store_data
 from .core import reference_dataset as ref
@@ -63,11 +63,11 @@ async def test_all_services_from_an_automation(hass: HomeAssistant, entry: Any) 
         "automation",
         {
             "automation": {
-                "alias": "Test Vehicle Log",
-                "triggers": {"trigger": "event", "event_type": "vehicle_log_test"},
+                "alias": "Test Carbu",
+                "triggers": {"trigger": "event", "event_type": "carbu_test"},
                 "actions": [
                     {
-                        "action": "vehicle_log.add_fuel",
+                        "action": "carbu.add_fuel",
                         "data": {
                             "vehicle": device,
                             "odometer": 12900,
@@ -76,7 +76,7 @@ async def test_all_services_from_an_automation(hass: HomeAssistant, entry: Any) 
                         },
                     },
                     {
-                        "action": "vehicle_log.add_expense",
+                        "action": "carbu.add_expense",
                         "data": {
                             "vehicle": device,
                             "amount": 25,
@@ -84,15 +84,15 @@ async def test_all_services_from_an_automation(hass: HomeAssistant, entry: Any) 
                         },
                     },
                     {
-                        "action": "vehicle_log.update_odometer",
+                        "action": "carbu.update_odometer",
                         "data": {"vehicle": device, "odometer": 13000},
                     },
                     {
-                        "action": "vehicle_log.export_data",
+                        "action": "carbu.export_data",
                         "response_variable": "export",
                     },
                     {
-                        "event": "vehicle_log_exported",
+                        "event": "carbu_exported",
                         "event_data": {"folder": "{{ export.folder }}"},
                     },
                 ],
@@ -101,10 +101,10 @@ async def test_all_services_from_an_automation(hass: HomeAssistant, entry: Any) 
     )
     exported: list[str] = []
     hass.bus.async_listen(
-        "vehicle_log_exported", lambda event: exported.append(event.data["folder"])
+        "carbu_exported", lambda event: exported.append(event.data["folder"])
     )
 
-    hass.bus.async_fire("vehicle_log_test")
+    hass.bus.async_fire("carbu_test")
     await hass.async_block_till_done()
 
     records = entry.runtime_data.storage.data.records("ref")

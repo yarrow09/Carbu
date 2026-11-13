@@ -6,19 +6,19 @@ import json
 
 import pytest
 
-from custom_components.vehicle_log.core.backup import (
+from custom_components.carbu.core.backup import (
     InvalidBackupError,
     build_backup,
     parse_backup,
     summarize,
 )
-from custom_components.vehicle_log.core.models import (
+from custom_components.carbu.core.models import (
     Category,
     OdometerReading,
     Reminder,
     ReminderKind,
 )
-from custom_components.vehicle_log.core.repository import LogData
+from custom_components.carbu.core.repository import LogData
 
 from . import reference_dataset as ref
 

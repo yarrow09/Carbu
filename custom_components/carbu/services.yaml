@@ -4,7 +4,7 @@ add_fuel:
       required: true
       selector:
         device:
-          integration: vehicle_log
+          integration: carbu
     odometer:
       required: true
       selector:
@@ -67,7 +67,7 @@ add_expense:
       required: true
       selector:
         device:
-          integration: vehicle_log
+          integration: carbu
     amount:
       required: true
       selector:
@@ -99,7 +99,7 @@ update_odometer:
       required: true
       selector:
         device:
-          integration: vehicle_log
+          integration: carbu
     odometer:
       required: true
       selector:

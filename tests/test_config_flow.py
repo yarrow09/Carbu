@@ -13,8 +13,8 @@ from homeassistant.util.unit_system import US_CUSTOMARY_SYSTEM
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.vehicle_log.const import DOMAIN, SUBENTRY_TYPE_VEHICLE
-from custom_components.vehicle_log.core.models import Expense, FuelType
+from custom_components.carbu.const import DOMAIN, SUBENTRY_TYPE_VEHICLE
+from custom_components.carbu.core.models import Expense, FuelType
 
 from .common import CLIO, setup_integration
 
@@ -54,7 +54,7 @@ async def test_user_flow_creates_single_entry(hass: HomeAssistant) -> None:
     assert result["type"] is FlowResultType.FORM
     result = await hass.config_entries.flow.async_configure(result["flow_id"], {})
     assert result["type"] is FlowResultType.CREATE_ENTRY
-    assert result["title"] == "Carnet de bord"
+    assert result["title"] == "Carbu"
     await hass.async_block_till_done()
 
     again = await hass.config_entries.flow.async_init(

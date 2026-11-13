@@ -7,13 +7,13 @@ from freezegun.api import FrozenDateTimeFactory
 from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import async_fire_time_changed
 
-from custom_components.vehicle_log.const import (
+from custom_components.carbu.const import (
     STORAGE_KEY,
     STORAGE_SAVE_DELAY,
     STORAGE_VERSION,
 )
-from custom_components.vehicle_log.core.models import Expense, FuelEntry, FuelType
-from custom_components.vehicle_log.storage import VehicleLogStorage
+from custom_components.carbu.core.models import Expense, FuelEntry, FuelType
+from custom_components.carbu.storage import VehicleLogStorage
 
 
 async def test_empty_load_creates_defaults(

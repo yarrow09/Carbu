@@ -1,6 +1,6 @@
 {
-  "domain": "vehicle_log",
-  "name": "Vehicle Log",
+  "domain": "carbu",
+  "name": "Carbu",
   "after_dependencies": [
     "frontend"
   ],
@@ -13,10 +13,10 @@
     "http",
     "websocket_api"
   ],
-  "documentation": "https://github.com/yarrow09/yarrow",
+  "documentation": "https://github.com/yarrow09/Carbu",
   "integration_type": "hub",
   "iot_class": "calculated",
-  "issue_tracker": "https://github.com/yarrow09/yarrow/issues",
+  "issue_tracker": "https://github.com/yarrow09/Carbu/issues",
   "requirements": [],
   "single_config_entry": true,
   "version": "0.3.0"

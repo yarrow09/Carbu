@@ -1,1 +1,1 @@
-"""Tests de l'intégration Vehicle Log."""
+"""Tests de l'intégration Carbu."""

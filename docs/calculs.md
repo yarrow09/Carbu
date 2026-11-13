@@ -1,6 +1,6 @@
 # Calculs de référence
 
-Les calculs sont dans `custom_components/vehicle_log/core/`, en Python pur.
+Les calculs sont dans `custom_components/carbu/core/`, en Python pur.
 Ils sont vérifiés par `tests/core/test_reference.py` sur le jeu ci-dessous, dont
 les résultats ont été calculés à la main.
 

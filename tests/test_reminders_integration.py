@@ -13,8 +13,8 @@ from pytest_homeassistant_custom_component.common import (
 )
 from pytest_homeassistant_custom_component.typing import WebSocketGenerator
 
-from custom_components.vehicle_log.const import DOMAIN
-from custom_components.vehicle_log.core.repository import LogData
+from custom_components.carbu.const import DOMAIN
+from custom_components.carbu.core.repository import LogData
 
 from .common import REFERENCE, setup_integration, store_data
 from .core import reference_dataset as ref

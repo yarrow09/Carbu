@@ -4,9 +4,9 @@ import datetime as dt
 
 import pytest
 
-from custom_components.vehicle_log.core.models import FuelType
-from custom_components.vehicle_log.core.repository import LogData
-from custom_components.vehicle_log.core.statistics import (
+from custom_components.carbu.core.models import FuelType
+from custom_components.carbu.core.repository import LogData
+from custom_components.carbu.core.statistics import (
     StatsPeriod,
     consumption_series,
     period_start,

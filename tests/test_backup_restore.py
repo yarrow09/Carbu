@@ -13,9 +13,9 @@ from homeassistant.helpers import entity_registry as er
 import pytest
 from pytest_homeassistant_custom_component.typing import ClientSessionGenerator
 
-from custom_components.vehicle_log.const import DOMAIN
-from custom_components.vehicle_log.core.models import Category, Expense
-from custom_components.vehicle_log.core.repository import LogData
+from custom_components.carbu.const import DOMAIN
+from custom_components.carbu.core.models import Category, Expense
+from custom_components.carbu.core.repository import LogData
 
 from .common import CLIO, REFERENCE, setup_integration, store_data
 from .core import reference_dataset as ref
@@ -48,9 +48,7 @@ async def entry(
     form = FormData()
     form.add_field("file", PNG, filename="t.png", content_type="image/png")
     client = await hass_client()
-    assert (
-        await client.post("/api/vehicle_log/attachment/ref/e1", data=form)
-    ).status == 200
+    assert (await client.post("/api/carbu/attachment/ref/e1", data=form)).status == 200
     return entry
 
 
@@ -111,7 +109,7 @@ async def test_backup_then_restore_is_lossless(hass: HomeAssistant, entry: Any) 
     await hass.async_block_till_done()
 
     assert _snapshot(entry) == before
-    attachment = Path(hass.config.path("vehicle_log", "attachments", "ref", "e1.png"))
+    attachment = Path(hass.config.path("carbu", "attachments", "ref", "e1.png"))
     assert await hass.async_add_executor_job(attachment.read_bytes) == PNG
     # Les entités du véhicule restauré existent de nouveau.
     registry = er.async_get(hass)

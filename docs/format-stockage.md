@@ -1,6 +1,6 @@
 # Format de stockage
 
-Fichier : `<config>/.storage/vehicle_log.data` (helper `Store` de Home Assistant,
+Fichier : `<config>/.storage/carbu.data` (helper `Store` de Home Assistant,
 écriture atomique, différée de 5 s pour regrouper les modifications ; les
 écritures en attente sont vidées à l'arrêt de Home Assistant).
 

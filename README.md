@@ -1,4 +1,4 @@
-# Vehicle Log — carnet de bord véhicule pour Home Assistant
+# Carbu — carnet de bord véhicule pour Home Assistant
 
 Intégration personnalisée qui tient le carnet de bord de vos véhicules thermiques :
 pleins, consommation réelle, dépenses par catégorie, coût par kilomètre, rappels
@@ -29,15 +29,15 @@ Prérequis : Home Assistant **2026.10** ou plus récent.
 ### Avec HACS (recommandé)
 
 1. Dans HACS, ouvrez le menu **⋮ → Dépôts personnalisés**.
-2. Ajoutez l'URL du dépôt `https://github.com/yarrow09/yarrow` avec la catégorie
+2. Ajoutez l'URL du dépôt `https://github.com/yarrow09/Carbu` avec la catégorie
    **Intégration**.
-3. Recherchez **Vehicle Log**, puis cliquez sur **Télécharger**.
+3. Recherchez **Carbu**, puis cliquez sur **Télécharger**.
 4. Redémarrez Home Assistant une fois. Ce redémarrage est demandé par HACS pour toute
    nouvelle intégration. L'intégration elle-même ne demande ensuite aucun redémarrage.
 
 ### Manuellement
 
-Copiez le dossier `custom_components/vehicle_log` dans le dossier `custom_components`
+Copiez le dossier `custom_components/carbu` dans le dossier `custom_components`
 de votre configuration, puis redémarrez Home Assistant.
 
 ## Configuration
@@ -45,7 +45,7 @@ de votre configuration, puis redémarrez Home Assistant.
 Tout se fait dans **Paramètres → Appareils et services**, sans YAML.
 
 1. **Ajouter l'intégration** : bouton **Ajouter une intégration**, puis
-   **Vehicle Log**. Une seule installation est possible ; elle regroupe tous vos
+   **Carbu**. Une seule installation est possible ; elle regroupe tous vos
    véhicules.
 2. **Ajouter un véhicule** : sur la page de l'intégration, bouton **Ajouter un
    véhicule**. L'assistant comporte quatre étapes :
@@ -81,11 +81,10 @@ réparation, autre.
 
 Les cartes sont fournies par l'intégration et chargées automatiquement. Il n'y a
 aucune ressource Lovelace à déclarer. Pour les ajouter, mettez le tableau de bord en
-édition, cliquez sur **Ajouter une carte** et cherchez **Vehicle Log** ou **Journal du
-véhicule**. L'éditeur graphique permet de choisir le véhicule, le titre et les sections
+édition, cliquez sur **Ajouter une carte** et cherchez **Carbu**. L'éditeur graphique permet de choisir le véhicule, le titre et les sections
 affichées.
 
-### Carnet de bord véhicule (`custom:vehicle-log-card`)
+### Carnet de bord véhicule (`custom:carbu-card`)
 
 - Indicateurs : consommation moyenne, coût du mois, coût par km (ou par mile),
   kilométrage, distance du mois.
@@ -110,7 +109,7 @@ affichées.
 - Histogramme des dépenses des 12 derniers mois, empilé par catégorie, carburant
   compris.
 
-### Journal du véhicule (`custom:vehicle-log-journal-card`)
+### Journal du véhicule (`custom:carbu-journal-card`)
 
 - Onglets **Pleins** et **Dépenses**, avec pagination.
 - Filtres des dépenses : période (ce mois-ci, 3 mois, cette année, tout, ou dates
@@ -121,7 +120,7 @@ affichées.
 - **Importer** : import d'un fichier CSV dans le véhicule, avec un aperçu avant
   écriture (voir plus bas).
 
-### Statistiques du véhicule (`custom:vehicle-log-stats-card`)
+### Statistiques du véhicule (`custom:carbu-stats-card`)
 
 - Périodes : 30 jours, 3 mois, 12 mois, depuis l'acquisition. La période par défaut
   se règle dans l'éditeur.
@@ -174,11 +173,11 @@ service peut renvoyer une réponse (`response_variable`).
 
 | Service | Champs | Réponse |
 |---|---|---|
-| `vehicle_log.add_fuel` | `vehicle`, `odometer`, deux parmi `volume` / `total_cost` / `unit_price`, puis facultatifs : `date`, `time`, `fuel_type`, `full_tank` (vrai par défaut), `station`, `notes`, `strict` | `saved`, `warnings`, `entry` |
-| `vehicle_log.add_expense` | `vehicle`, `amount`, `category` (identifiant ou nom), puis facultatifs : `date`, `odometer`, `description` | `expense` |
-| `vehicle_log.update_odometer` | `vehicle`, `odometer`, `strict` | `saved`, `warnings` |
-| `vehicle_log.export_data` | aucun | `folder`, `files` |
-| `vehicle_log.backup` | aucun | `path` |
+| `carbu.add_fuel` | `vehicle`, `odometer`, deux parmi `volume` / `total_cost` / `unit_price`, puis facultatifs : `date`, `time`, `fuel_type`, `full_tank` (vrai par défaut), `station`, `notes`, `strict` | `saved`, `warnings`, `entry` |
+| `carbu.add_expense` | `vehicle`, `amount`, `category` (identifiant ou nom), puis facultatifs : `date`, `odometer`, `description` | `expense` |
+| `carbu.update_odometer` | `vehicle`, `odometer`, `strict` | `saved`, `warnings` |
+| `carbu.export_data` | aucun | `folder`, `files` |
+| `carbu.backup` | aucun | `path` |
 
 Une automatisation ne peut pas répondre à une demande de confirmation. Les
 avertissements de cohérence (kilométrage en baisse, plein supérieur au réservoir…)
@@ -189,7 +188,7 @@ Exemple : enregistrer un plein depuis un bouton NFC.
 
 ```yaml
 actions:
-  - action: vehicle_log.add_fuel
+  - action: carbu.add_fuel
     data:
       vehicle: 1a2b3c4d5e6f…   # identifiant de l'appareil du véhicule
       odometer: "{{ states('input_number.compteur') }}"
@@ -202,14 +201,14 @@ actions:
 ```
 
 `export_data` écrit `pleins.csv`, `depenses.csv`, `releves.csv`, `rappels.csv` et
-`categories.csv` dans `<config>/vehicle_log/exports/<date-heure>/`. Le format est
+`categories.csv` dans `<config>/carbu/exports/<date-heure>/`. Le format est
 décrit dans [docs/format-export.md](docs/format-export.md).
 
 ## Sauvegarde, restauration et import
 
-- **Sauvegarde complète** : page globale, ou service `vehicle_log.backup` à planifier
+- **Sauvegarde complète** : page globale, ou service `carbu.backup` à planifier
   dans une automatisation.
-  - Elle produit une archive ZIP dans `<config>/vehicle_log/backups/` avec les
+  - Elle produit une archive ZIP dans `<config>/carbu/backups/` avec les
     véhicules, les réglages, toutes les données et les pièces jointes.
   - Format : [docs/format-sauvegarde.md](docs/format-sauvegarde.md).
 - **Restauration** : page globale, **Restaurer une sauvegarde**.
@@ -246,11 +245,11 @@ Les formules, les règles des pleins partiels et le jeu de données de référen
 
 - Tout est stocké localement :
   - les pleins, dépenses, relevés, rappels et catégories dans
-    `<config>/.storage/vehicle_log.data`, au format versionné décrit dans
+    `<config>/.storage/carbu.data`, au format versionné décrit dans
     [docs/format-stockage.md](docs/format-stockage.md) ;
-  - les pièces jointes dans `<config>/vehicle_log/attachments/` ;
-  - les exports dans `<config>/vehicle_log/exports/` ;
-  - les sauvegardes dans `<config>/vehicle_log/backups/`.
+  - les pièces jointes dans `<config>/carbu/attachments/` ;
+  - les exports dans `<config>/carbu/exports/` ;
+  - les sauvegardes dans `<config>/carbu/backups/`.
 - La configuration des véhicules est enregistrée dans l'entrée de configuration
   Home Assistant.
 - Aucune donnée n'est envoyée à un tiers et aucun compte en ligne n'est nécessaire.
@@ -266,7 +265,7 @@ uv pip install --python .venv -r requirements_test.txt
 .venv/bin/ruff check . && .venv/bin/ruff format --check .
 .venv/bin/mypy
 
-# Cartes (Lit + TypeScript, bundle committé dans custom_components/vehicle_log/www)
+# Cartes (Lit + TypeScript, bundle committé dans custom_components/carbu/www)
 cd frontend
 npm ci
 npm run check               # vérification des types + construction du bundle
@@ -279,7 +278,7 @@ l'ouvrir, lancez `python3 -m http.server` à la racine du dépôt, puis ouvrez
 Arborescence :
 
 ```
-custom_components/vehicle_log/
+custom_components/carbu/
   core/            calculs et modèle, Python pur, sans dépendance à Home Assistant
   storage.py       Store versionné et migrations
   coordinator.py   indicateurs et point d'entrée des modifications
@@ -293,7 +292,7 @@ tests/             tests (core/ : calculs purs ; perf/ : 5 ans de données)
 
 ## Licence
 
-Vehicle Log (dépôt `yarrow`) est un logiciel libre distribué sous la
+Carbu est un logiciel libre distribué sous la
 **GNU General Public License, version 3 ou toute version ultérieure**
 (`GPL-3.0-or-later`). Voir le fichier [LICENSE](LICENSE).
 

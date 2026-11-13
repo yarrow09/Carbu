@@ -21,7 +21,7 @@ from .migrations import UnsupportedStorageVersionError, migrate
 from .models import Vehicle
 from .repository import LogData
 
-BACKUP_FORMAT = "vehicle_log_backup"
+BACKUP_FORMAT = "carbu_backup"
 BACKUP_FORMAT_VERSION = 1
 BACKUP_JSON = "backup.json"
 ATTACHMENTS_DIR = "attachments"

@@ -1,4 +1,4 @@
-"""Intégration Vehicle Log : carnet de bord véhicule pour Home Assistant."""
+"""Intégration Carbu : carnet de bord véhicule pour Home Assistant."""
 
 from __future__ import annotations
 
