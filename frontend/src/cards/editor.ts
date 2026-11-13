@@ -2,7 +2,7 @@
 import { css, html, LitElement, nothing } from "lit";
 
 import { fetchVehicles } from "../api";
-import { t } from "../i18n";
+import { t, type Key } from "../i18n";
 import { sharedStyles } from "../styles";
 import type { CardConfig, HomeAssistant, VehicleView } from "../types";
 
@@ -103,12 +103,37 @@ export class VehicleLogCardEditor extends LitElement {
             <label class="check">
               <input
                 type="checkbox"
+                .checked=${this._config.show_reminders !== false}
+                @change=${(e: Event) =>
+                  this._change("show_reminders", (e.target as HTMLInputElement).checked)}
+              />
+              ${t(hass, "editor.show_reminders")}
+            </label>
+            <label class="check">
+              <input
+                type="checkbox"
                 .checked=${this._config.show_chart !== false}
                 @change=${(e: Event) =>
                   this._change("show_chart", (e.target as HTMLInputElement).checked)}
               />
               ${t(hass, "editor.show_chart")}
             </label>`
+        : nothing}
+      ${this.kind === "stats"
+        ? html`<div class="field">
+            <label for="period">${t(hass, "editor.period")}</label>
+            <select
+              id="period"
+              @change=${(e: Event) => this._change("period", (e.target as HTMLSelectElement).value)}
+            >
+              ${(["30d", "3m", "12m", "all"] as const).map(
+                (p) =>
+                  html`<option value=${p} ?selected=${(this._config.period ?? "12m") === p}>
+                    ${t(hass, `stats.period_${p}` as Key)}
+                  </option>`,
+              )}
+            </select>
+          </div>`
         : nothing}
     `;
   }

@@ -5,6 +5,7 @@ import { deleteExpense, deleteFuel, fetchDashboard } from "../api";
 import type { VlConfirmDialog } from "../components/confirm-dialog";
 import type { VlExpenseDialog } from "../components/expense-dialog";
 import type { VlFuelDialog } from "../components/fuel-dialog";
+import type { VlReminderList } from "../components/reminder-list";
 import { icon } from "../components/icon";
 import { money, num, shortDate } from "../format";
 import { t } from "../i18n";
@@ -169,6 +170,7 @@ export class VehicleLogCard extends VehicleCardBase {
   protected async loadVehicleData(): Promise<void> {
     const vehicle = this.vehicle;
     this._data = vehicle ? await fetchDashboard(this.hass, vehicle.id) : null;
+    await (this.renderRoot.querySelector("vl-reminder-list") as VlReminderList | null)?.reload();
   }
 
   private _dialog<T>(selector: string): T {
@@ -320,6 +322,21 @@ export class VehicleLogCard extends VehicleCardBase {
         </div>
       </div>
       ${this._tiles(data)}
+      ${config.show_reminders !== false
+        ? html`<section aria-labelledby="reminders">
+            <div class="head">
+              <h3 id="reminders">${t(hass, "reminders.title")}</h3>
+              <button
+                aria-label=${t(hass, "reminders.add_long")}
+                @click=${() =>
+                  (this.renderRoot.querySelector("vl-reminder-list") as VlReminderList).openEditor()}
+              >
+                ${icon(mdiPlus)} ${t(hass, "reminders.add")}
+              </button>
+            </div>
+            <vl-reminder-list .hass=${hass} .vehicle=${data}></vl-reminder-list>
+          </section>`
+        : nothing}
       ${config.show_recent
         ? html`<div class="recent">
             <section aria-labelledby="recent-fuel">

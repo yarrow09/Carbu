@@ -11,6 +11,18 @@ export const sharedStyles = css`
     /* Bordure des champs : contraste ≥ 3:1 (WCAG 1.4.11). */
     --vl-input-border: var(--secondary-text-color);
     --vl-focus: var(--primary-color);
+    /* Couleurs d'état utilisées pour du texte : mélangées à la couleur du texte
+       du thème pour garder un contraste AA en clair comme en sombre. */
+    --vl-error-text: color-mix(
+      in srgb,
+      var(--error-color, #db4437) 75%,
+      var(--primary-text-color)
+    );
+    --vl-warning-text: color-mix(
+      in srgb,
+      var(--warning-color, #ffa600) 55%,
+      var(--primary-text-color)
+    );
     color: var(--primary-text-color);
   }
   .visually-hidden {
@@ -44,8 +56,8 @@ export const sharedStyles = css`
     font-weight: 500;
   }
   button.danger {
-    color: var(--error-color, #db4437);
-    border-color: var(--error-color, #db4437);
+    color: var(--vl-error-text);
+    border-color: var(--vl-error-text);
   }
   button.icon {
     min-width: 40px;
@@ -55,6 +67,11 @@ export const sharedStyles = css`
     display: inline-grid;
     place-items: center;
     color: var(--vl-muted);
+  }
+  @media (max-width: 420px) {
+    button.icon {
+      min-width: 36px;
+    }
   }
   button:disabled {
     opacity: 0.5;
@@ -111,7 +128,7 @@ export const sharedStyles = css`
     border-style: dashed;
   }
   .error {
-    color: var(--error-color, #db4437);
+    color: var(--vl-error-text);
   }
   .muted {
     color: var(--vl-muted);
@@ -133,6 +150,7 @@ export const sharedStyles = css`
 
 // Icônes Material Design (@mdi/js, licence Apache 2.0), sans composant HA.
 export {
+  mdiCheck,
   mdiClose,
   mdiDelete,
   mdiPaperclip,

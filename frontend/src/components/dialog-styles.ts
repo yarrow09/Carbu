@@ -15,8 +15,12 @@ export const dialogStyles = css`
   dialog::backdrop {
     background: rgba(0, 0, 0, 0.5);
   }
+  dialog.compact {
+    height: fit-content;
+    width: min(420px, calc(100vw - 32px));
+  }
   @media (max-width: 600px) {
-    dialog {
+    dialog:not(.compact) {
       width: 100vw;
       max-width: 100vw;
       height: 100dvh;

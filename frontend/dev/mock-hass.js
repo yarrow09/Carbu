@@ -71,6 +71,25 @@ function monthly() {
   return out;
 }
 const byDateDesc = (a, b) => (a.date < b.date ? 1 : -1);
+let reminders = [
+  { id: "r1", label: "Vidange", kind: "both", due_date: "2026-09-01", due_odometer: 12500,
+    alert_days: 30, alert_distance: 1000, interval_days: 365, interval_distance: 15000,
+    active: true, recurring: true, last_done_date: null, last_done_odometer: null,
+    state: "alert", days_left: 160, distance_left: 200, criterion: "distance" },
+  { id: "r2", label: "Contrôle technique", kind: "date", due_date: "2026-03-01", due_odometer: null,
+    alert_days: 30, alert_distance: null, interval_days: 730, interval_distance: null,
+    active: true, recurring: true, last_done_date: null, last_done_odometer: null,
+    state: "due", days_left: -24, distance_left: null, criterion: "date" },
+  { id: "r3", label: "Pneus hiver", kind: "date", due_date: "2026-11-01", due_odometer: null,
+    alert_days: 15, alert_distance: null, interval_days: null, interval_distance: null,
+    active: true, recurring: false, last_done_date: null, last_done_odometer: null,
+    state: "ok", days_left: 221, distance_left: null, criterion: null },
+];
+const series = [
+  { entry_id: "f2", date: "2026-01-20", odometer: 10600, value: 6.0, moving_average: 6.0 },
+  { entry_id: "f4", date: "2026-02-15", odometer: 11400, value: 4.6875, moving_average: 5.25 },
+  { entry_id: "f5", date: "2026-03-01", odometer: 12000, value: 7.0, moving_average: 5.775 },
+];
 const listeners = new Set();
 const notify = () => listeners.forEach((cb) => cb({ updated: true }));
 const delay = (v) => new Promise((r) => setTimeout(() => r(v), 80));
@@ -145,6 +164,42 @@ async function callWS(msg) {
       expenses.splice(expenses.findIndex((e) => e.id === msg.expense_id), 1);
       notify();
       return delay(null);
+    case "vehicle_log/reminders":
+      return delay(reminders);
+    case "vehicle_log/reminder/save": {
+      const r = { ...(reminders.find((x) => x.id === msg.reminder_id) ?? {}), ...msg,
+        id: msg.reminder_id ?? `r${seq++}`, active: true, state: "ok", days_left: 100,
+        distance_left: null, criterion: null,
+        recurring: Boolean(msg.interval_days || msg.interval_distance) };
+      reminders = reminders.filter((x) => x.id !== r.id).concat(r);
+      notify();
+      return delay(r);
+    }
+    case "vehicle_log/reminder/delete":
+      reminders = reminders.filter((x) => x.id !== msg.reminder_id);
+      notify();
+      return delay(null);
+    case "vehicle_log/reminder/done": {
+      const r = reminders.find((x) => x.id === msg.reminder_id);
+      Object.assign(r, r.recurring ? { state: "ok", days_left: 365, distance_left: 15000 }
+        : { state: "inactive", active: false });
+      notify();
+      return delay(r);
+    }
+    case "vehicle_log/stats": {
+      const short = msg.period === "30d";
+      return delay({
+        start: short ? "2026-02-24" : "2025-03-26", end: "2026-03-25", days: short ? 30 : 365,
+        distance: short ? 514.29 : 2300, fuel_volume: { gasoline: short ? 62 : 175.5 },
+        consumption: { gasoline: short ? 7.0 : 5.775 }, fuel_cost: short ? 109.5 : 317.1,
+        expense_cost: short ? 312.6 : 448, total_cost: short ? 422.1 : 765.1,
+        cost_per_distance: short ? 0.8207 : 0.3327, fuel_cost_per_distance: 0.1379,
+        expenses_by_category: short ? { insurance: 300, toll: 8, parking: 4.6 }
+          : { insurance: 300, maintenance: 120, toll: 23.4, parking: 4.6 },
+        fill_count: short ? 2 : 6, expense_count: short ? 3 : 5, moving_average_window: 5,
+        series: { gasoline: short ? series.slice(2) : series },
+      });
+    }
     case "auth/sign_path":
       return delay({ path: msg.path });
     default:
@@ -169,7 +224,7 @@ const makeHass = () => ({
 await import("../../custom_components/vehicle_log/www/vehicle-log-cards.js");
 
 const container = document.getElementById("cards");
-const cards = ["vehicle-log-card", "vehicle-log-journal-card"].map((type) => {
+const cards = ["vehicle-log-card", "vehicle-log-stats-card", "vehicle-log-journal-card"].map((type) => {
   const card = document.createElement(type);
   card.setConfig({ type: `custom:${type}` });
   card.hass = makeHass();

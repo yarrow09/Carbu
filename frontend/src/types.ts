@@ -127,4 +127,58 @@ export interface CardConfig {
   title?: string;
   show_chart?: boolean;
   show_recent?: boolean;
+  show_reminders?: boolean;
+  period?: StatsPeriod;
+}
+
+export type ReminderKind = "date" | "distance" | "both";
+export type ReminderState = "ok" | "alert" | "due" | "inactive";
+
+export interface ReminderView {
+  id: string;
+  label: string;
+  kind: ReminderKind;
+  due_date: string | null;
+  due_odometer: number | null;
+  alert_days: number | null;
+  alert_distance: number | null;
+  interval_days: number | null;
+  interval_distance: number | null;
+  active: boolean;
+  recurring: boolean;
+  last_done_date: string | null;
+  last_done_odometer: number | null;
+  state: ReminderState;
+  days_left: number | null;
+  distance_left: number | null;
+  criterion: "date" | "distance" | null;
+}
+
+export type StatsPeriod = "30d" | "3m" | "12m" | "all";
+
+export interface ConsumptionPoint {
+  entry_id: string;
+  date: string;
+  odometer: number;
+  value: number;
+  moving_average: number;
+}
+
+export interface StatsView {
+  start: string;
+  end: string;
+  days: number;
+  distance: number;
+  fuel_volume: Record<string, number>;
+  consumption: Record<string, number | null>;
+  fuel_cost: number;
+  expense_cost: number;
+  total_cost: number;
+  cost_per_distance: number | null;
+  fuel_cost_per_distance: number | null;
+  expenses_by_category: Record<string, number>;
+  fill_count: number;
+  expense_count: number;
+  moving_average_window: number;
+  series: Record<string, ConsumptionPoint[]>;
 }

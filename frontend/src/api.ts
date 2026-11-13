@@ -8,6 +8,9 @@ import type {
   FuelSaveResult,
   HomeAssistant,
   Page,
+  ReminderView,
+  StatsPeriod,
+  StatsView,
   VehicleView,
 } from "./types";
 
@@ -139,3 +142,38 @@ export async function attachmentUrl(
 
 export const subscribeUpdates = (hass: HomeAssistant, callback: () => void) =>
   hass.connection.subscribeMessage<unknown>(() => callback(), { type: `${P}/subscribe` });
+
+export const fetchReminders = (hass: HomeAssistant, vehicleId: string) =>
+  hass.callWS<ReminderView[]>({ type: `${P}/reminders`, vehicle_id: vehicleId });
+
+export const saveReminder = (
+  hass: HomeAssistant,
+  vehicleId: string,
+  payload: Record<string, unknown>,
+) =>
+  hass.callWS<ReminderView>({
+    type: `${P}/reminder/save`,
+    vehicle_id: vehicleId,
+    ...payload,
+  });
+
+export const deleteReminder = (hass: HomeAssistant, vehicleId: string, reminderId: string) =>
+  hass.callWS<null>({
+    type: `${P}/reminder/delete`,
+    vehicle_id: vehicleId,
+    reminder_id: reminderId,
+  });
+
+export const markReminderDone = (
+  hass: HomeAssistant,
+  vehicleId: string,
+  reminderId: string,
+) =>
+  hass.callWS<ReminderView>({
+    type: `${P}/reminder/done`,
+    vehicle_id: vehicleId,
+    reminder_id: reminderId,
+  });
+
+export const fetchStats = (hass: HomeAssistant, vehicleId: string, period: StatsPeriod) =>
+  hass.callWS<StatsView>({ type: `${P}/stats`, vehicle_id: vehicleId, period });
