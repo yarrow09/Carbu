@@ -12,9 +12,11 @@ import { VlMonthlyChart } from "./components/monthly-chart";
 import { VlReminderDialog } from "./components/reminder-dialog";
 import { VlReminderList } from "./components/reminder-list";
 import { t } from "./i18n";
+import { CarbuPanel } from "./panel";
 import type { HomeAssistant } from "./types";
 
 const elements: Record<string, CustomElementConstructor> = {
+  "carbu-panel": CarbuPanel,
   "carbu-card": VehicleLogCard,
   "carbu-journal-card": VehicleLogJournalCard,
   "carbu-stats-card": VehicleLogStatsCard,

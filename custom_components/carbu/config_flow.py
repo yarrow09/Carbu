@@ -3,7 +3,8 @@
 * ``VehicleLogConfigFlow`` : crée l'entrée unique « Carnet de bord ».
 * ``VehicleSubentryFlow`` : assistant multi-étapes d'ajout / modification d'un
   véhicule (un subentry par véhicule).
-* ``VehicleLogOptionsFlow`` : page globale (gestion des catégories).
+* ``VehicleLogOptionsFlow`` : page globale (saisie d'un plein ou de frais,
+  catégories, notifications, sauvegardes).
 """
 
 from __future__ import annotations
@@ -43,6 +44,7 @@ from homeassistant.helpers.selector import (
     TextSelector,
 )
 from homeassistant.helpers.translation import async_get_translations
+from homeassistant.util import dt as dt_util
 from homeassistant.util.unit_system import US_CUSTOMARY_SYSTEM
 import probatio as vol
 
@@ -79,6 +81,8 @@ DEFAULT_TITLE = "Carbu"
 # Clés de formulaire hors modèle
 CONF_BIFUEL = "bifuel"
 CONF_CATEGORY = "category"
+CONF_VEHICLE = "vehicle"
+CONF_CONFIRM = "confirm"
 
 
 def _select(options: list[str], translation_key: str) -> SelectSelector:
@@ -462,6 +466,8 @@ class VehicleLogOptionsFlow(OptionsFlow):
         """Initialiser."""
         self._category_id: str | None = None
         self._restore: tuple[BackupContent, dict[str, bytes]] | None = None
+        self._vehicle_id: str | None = None
+        self._next_step: str | None = None
 
     @property
     def _entry(self) -> VehicleLogConfigEntry:
@@ -487,6 +493,8 @@ class VehicleLogOptionsFlow(OptionsFlow):
         return self.async_show_menu(
             step_id="init",
             menu_options=[
+                "add_fuel",
+                "add_expense",
                 "add_category",
                 "edit_category",
                 "delete_category",
@@ -495,6 +503,183 @@ class VehicleLogOptionsFlow(OptionsFlow):
                 "backup",
                 "restore",
             ],
+        )
+
+    # --- Saisie d'un plein ou de frais (sans carte de tableau de bord) ---
+
+    async def _async_choose_vehicle(self, next_step: str) -> ConfigFlowResult:
+        """Passer au formulaire, après le choix du véhicule s'il y en a plusieurs."""
+        vehicles = self._entry.runtime_data.coordinator.vehicles
+        if not vehicles:
+            return self.async_abort(reason="no_vehicle")
+        self._next_step = next_step
+        if len(vehicles) == 1:
+            self._vehicle_id = next(iter(vehicles))
+            return await self._async_open_form()
+        return await self.async_step_choose_vehicle()
+
+    async def _async_open_form(self) -> ConfigFlowResult:
+        if self._next_step == "add_fuel":
+            return await self.async_step_add_fuel_form()
+        return await self.async_step_add_expense_form()
+
+    async def async_step_choose_vehicle(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Choisir le véhicule concerné par la saisie."""
+        vehicles = self._entry.runtime_data.coordinator.vehicles
+        if user_input is not None and user_input[CONF_VEHICLE] in vehicles:
+            self._vehicle_id = user_input[CONF_VEHICLE]
+            return await self._async_open_form()
+        options = [
+            SelectOptionDict(value=vid, label=vehicle.name)
+            for vid, vehicle in sorted(
+                vehicles.items(), key=lambda kv: kv[1].name.casefold()
+            )
+        ]
+        return self.async_show_form(
+            step_id="choose_vehicle",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_VEHICLE): SelectSelector(
+                        SelectSelectorConfig(
+                            options=options, mode=SelectSelectorMode.DROPDOWN
+                        )
+                    )
+                }
+            ),
+        )
+
+    async def async_step_add_fuel(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Saisir un plein."""
+        return await self._async_choose_vehicle("add_fuel")
+
+    async def async_step_add_expense(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Saisir des frais."""
+        return await self._async_choose_vehicle("add_expense")
+
+    async def async_step_add_fuel_form(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Formulaire du plein, dans les unités du véhicule."""
+        assert self._vehicle_id is not None
+        coordinator = self._entry.runtime_data.coordinator
+        units = coordinator.units(self._vehicle_id)
+        vehicle = units.vehicle
+        currency = self.hass.config.currency
+        errors: dict[str, str] = {}
+        warnings_text = ""
+        if user_input is not None:
+            data = _fuel_input(user_input, local_today())
+            try:
+                outcome = coordinator.async_save_fuel(
+                    self._vehicle_id,
+                    data,
+                    save_with_warnings=bool(user_input.get(CONF_CONFIRM)),
+                )
+            except ValueError:
+                errors["base"] = "fuel_amounts"
+            else:
+                if outcome.saved:
+                    return self.async_abort(
+                        reason="fuel_saved",
+                        description_placeholders={"vehicle": vehicle.name},
+                    )
+                errors["base"] = "coherence"
+                labels = await _async_warning_labels(self.hass)
+                warnings_text = "\n\n" + "\n".join(
+                    f"- {labels.get(w.code.value, w.code.value)}"
+                    for w in outcome.warnings
+                )
+        volume_unit = units.volume_label(vehicle.fuel_type)
+        fields: dict[Any, Any] = {
+            vol.Required("date"): DateSelector(),
+            vol.Required("odometer"): _number(units.distance_label, step=1),
+            vol.Optional("volume"): _number(volume_unit, step=0.01),
+            vol.Optional("unit_price"): _number(
+                f"{currency}/{volume_unit}", step=0.001
+            ),
+            vol.Optional("total_cost"): _number(currency, step=0.01),
+        }
+        if vehicle.is_bifuel:
+            fields[vol.Required("fuel_type")] = _select(
+                [f.value for f in vehicle.fuel_types], "fuel_type"
+            )
+        fields[vol.Required("full_tank")] = BooleanSelector()
+        fields[vol.Optional("station")] = TextSelector()
+        fields[vol.Optional("notes")] = TextSelector()
+        if errors.get("base") == "coherence":
+            fields[vol.Optional(CONF_CONFIRM)] = BooleanSelector()
+        defaults: dict[str, Any] = {
+            "date": local_today().isoformat(),
+            "full_tank": True,
+            "fuel_type": vehicle.fuel_type.value,
+        }
+        last = coordinator.data.get(self._vehicle_id) if coordinator.data else None
+        if last is not None and last.current_odometer:
+            defaults["odometer"] = units.distance_out(last.current_odometer)
+        return self.async_show_form(
+            step_id="add_fuel_form",
+            data_schema=self.add_suggested_values_to_schema(
+                vol.Schema(fields), {**defaults, **(user_input or {})}
+            ),
+            errors=errors,
+            description_placeholders={
+                "vehicle": vehicle.name,
+                "warnings": warnings_text,
+            },
+        )
+
+    async def async_step_add_expense_form(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Formulaire des frais, dans les unités du véhicule."""
+        assert self._vehicle_id is not None
+        coordinator = self._entry.runtime_data.coordinator
+        units = coordinator.units(self._vehicle_id)
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            data: dict[str, Any] = {
+                "date": dt.date.fromisoformat(user_input["date"]),
+                "amount": user_input["amount"],
+                "category_id": user_input[CONF_CATEGORY],
+                "odometer": user_input.get("odometer"),
+                "description": (user_input.get("description") or "").strip(),
+            }
+            try:
+                coordinator.async_save_expense(self._vehicle_id, data)
+            except ValueError, CategoryError:
+                errors["base"] = "expense_invalid"
+            else:
+                return self.async_abort(
+                    reason="expense_saved",
+                    description_placeholders={"vehicle": units.vehicle.name},
+                )
+        schema = vol.Schema(
+            {
+                vol.Required("date"): DateSelector(),
+                vol.Required(CONF_CATEGORY): await self._category_selector(set()),
+                vol.Required("amount"): _number(self.hass.config.currency, step=0.01),
+                vol.Optional("odometer"): _number(units.distance_label, step=1),
+                vol.Optional("description"): TextSelector(),
+            }
+        )
+        return self.async_show_form(
+            step_id="add_expense_form",
+            data_schema=self.add_suggested_values_to_schema(
+                schema,
+                {
+                    "date": local_today().isoformat(),
+                    CONF_CATEGORY: CATEGORY_OTHER,
+                    **(user_input or {}),
+                },
+            ),
+            errors=errors,
+            description_placeholders={"vehicle": units.vehicle.name},
         )
 
     def _legacy_notify_services(self) -> list[str]:
@@ -828,6 +1013,44 @@ class VehicleLogOptionsFlow(OptionsFlow):
                 "other": labels[CATEGORY_OTHER],
             },
         )
+
+
+def local_today() -> dt.date:
+    """Date du jour dans le fuseau de Home Assistant."""
+    return dt_util.now().date()
+
+
+def _fuel_input(user_input: dict[str, Any], today: dt.date) -> dict[str, Any]:
+    """Saisie du formulaire convertie pour ``async_save_fuel``.
+
+    Un plein du jour n'est pas daté explicitement : l'heure de saisie est
+    alors enregistrée, comme depuis les cartes.
+    """
+    data = {
+        key: user_input[key]
+        for key in ("odometer", "volume", "unit_price", "total_cost", "fuel_type")
+        if user_input.get(key) is not None
+    }
+    day = dt.date.fromisoformat(user_input["date"])
+    if day != today:
+        data["date"] = day
+    data["full_tank"] = bool(user_input.get("full_tank", True))
+    data["station"] = user_input.get("station") or ""
+    data["notes"] = (user_input.get("notes") or "").strip()
+    return data
+
+
+async def _async_warning_labels(hass: HomeAssistant) -> dict[str, str]:
+    """Libellés traduits des avertissements de cohérence."""
+    translations = await async_get_translations(
+        hass, hass.config.language, "selector", [DOMAIN]
+    )
+    prefix = f"component.{DOMAIN}.selector.coherence_warning.options."
+    return {
+        key.removeprefix(prefix): value
+        for key, value in translations.items()
+        if key.startswith(prefix)
+    }
 
 
 def _backup_placeholders(content: BackupContent) -> dict[str, str]:

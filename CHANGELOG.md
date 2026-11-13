@@ -17,9 +17,18 @@ suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
   Les sections ci-dessous gardent les anciens noms.
 - Licence : GNU GPL version 3 ou ultérieure.
+- L'URL du bundle des cartes porte l'empreinte du fichier : une mise à jour n'est
+  plus masquée par le cache du navigateur.
+- Actions GitHub passées à Node 24.
 
 ### Ajouté
 
+- **Page « Carbu » dans la barre latérale** : les cartes du véhicule choisi, sans
+  tableau de bord à créer (la « Vue d'ensemble » de Home Assistant 2026 n'accepte
+  pas les cartes personnalisées).
+- **Saisie d'un plein ou de frais depuis « Configurer »**, en formulaires Home
+  Assistant standard, avec confirmation en cas d'avertissement de cohérence.
+- Icône de l'intégration (`brand/`) et catégorie du manifest pour HACS.
 - **Sauvegarde complète** au format ZIP (`backup.json` versionné et pièces jointes),
   depuis la page globale ou le service `vehicle_log.backup`.
 - **Restauration** depuis une sauvegarde existante ou une archive envoyée, avec aperçu

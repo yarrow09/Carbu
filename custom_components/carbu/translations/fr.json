@@ -81,6 +81,8 @@
       "init": {
         "title": "Paramètres de Carbu",
         "menu_options": {
+          "add_fuel": "Saisir un plein",
+          "add_expense": "Saisir des frais",
           "add_category": "Ajouter une catégorie de dépense",
           "edit_category": "Modifier une catégorie",
           "delete_category": "Supprimer une catégorie",
@@ -155,6 +157,42 @@
       "restore_confirm": {
         "title": "Restaurer cette sauvegarde ?",
         "description": "Sauvegarde du {created_at} (version {version}) :\n{vehicles}\n{categories} catégories.\n\n**Tous les véhicules et toutes les données actuels seront remplacés.** Créez d'abord une sauvegarde si besoin. Validez pour restaurer."
+      },
+      "choose_vehicle": {
+        "title": "Choisir le véhicule",
+        "data": {
+          "vehicle": "Véhicule"
+        }
+      },
+      "add_fuel_form": {
+        "title": "Plein – {vehicle}",
+        "description": "Valeurs dans les unités du véhicule. Deux valeurs parmi quantité, prix unitaire et montant total suffisent.{warnings}",
+        "data": {
+          "date": "Date",
+          "odometer": "Kilométrage",
+          "volume": "Quantité",
+          "unit_price": "Prix unitaire",
+          "total_cost": "Montant total",
+          "fuel_type": "Carburant",
+          "full_tank": "Plein complet",
+          "station": "Station",
+          "notes": "Notes",
+          "confirm": "Enregistrer quand même"
+        },
+        "data_description": {
+          "full_tank": "Décochez pour un plein partiel : la consommation sera calculée au prochain plein complet.",
+          "confirm": "Cochez pour enregistrer malgré les avertissements ci-dessus."
+        }
+      },
+      "add_expense_form": {
+        "title": "Frais – {vehicle}",
+        "data": {
+          "date": "Date",
+          "category": "Catégorie",
+          "amount": "Montant",
+          "odometer": "Kilométrage (facultatif)",
+          "description": "Description"
+        }
       }
     },
     "error": {
@@ -164,12 +202,18 @@
       "backup_not_a_backup": "Ce fichier n'est pas une sauvegarde Carbu.",
       "backup_unsupported_version": "Cette sauvegarde provient d'une version incompatible.",
       "backup_corrupted": "La sauvegarde est endommagée ou illisible.",
-      "backup_too_large": "La sauvegarde est trop volumineuse."
+      "backup_too_large": "La sauvegarde est trop volumineuse.",
+      "fuel_amounts": "Indiquez au moins deux valeurs parmi quantité, prix unitaire et montant total, avec un kilométrage valide.",
+      "coherence": "Vérifiez ce plein (voir les avertissements ci-dessus).",
+      "expense_invalid": "Ces frais sont invalides : vérifiez le montant et la catégorie."
     },
     "abort": {
       "not_loaded": "L'intégration doit être chargée pour modifier ces paramètres.",
       "backup_created": "Sauvegarde créée : {path}",
-      "restore_done": "Sauvegarde restaurée."
+      "restore_done": "Sauvegarde restaurée.",
+      "no_vehicle": "Ajoutez d'abord un véhicule (bouton « Ajouter un véhicule » sur la page de l'intégration).",
+      "fuel_saved": "Plein enregistré pour {vehicle}.",
+      "expense_saved": "Frais enregistrés pour {vehicle}."
     }
   },
   "selector": {
@@ -212,6 +256,16 @@
         "inspection": "Contrôle technique",
         "repair": "Réparation",
         "other": "Autre"
+      }
+    },
+    "coherence_warning": {
+      "options": {
+        "odometer_below_previous": "Le kilométrage est inférieur à celui de la saisie précédente.",
+        "odometer_above_next": "Le kilométrage est supérieur à celui de la saisie suivante.",
+        "consumption_out_of_range": "La consommation calculée sort de la plage définie pour le véhicule.",
+        "volume_exceeds_tank": "La quantité dépasse la capacité du réservoir.",
+        "fuel_not_supported": "Ce carburant ne fait pas partie de ceux du véhicule.",
+        "amount_mismatch": "Quantité × prix unitaire ne correspond pas au montant total."
       }
     }
   },

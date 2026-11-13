@@ -2,7 +2,11 @@
   "domain": "carbu",
   "name": "Carbu",
   "after_dependencies": [
-    "frontend"
+    "frontend",
+    "panel_custom"
+  ],
+  "categories": [
+    "vehicles_transport.cars_evs"
   ],
   "codeowners": [
     "@yarrow09"

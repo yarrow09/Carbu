@@ -17,6 +17,7 @@ Tout se configure depuis l'interface, les données restent sur votre Home Assist
 
 - [Installation](#installation)
 - [Configuration](#configuration)
+- [Saisir un plein ou des frais](#saisir-un-plein-ou-des-frais)
 - [Cartes du tableau de bord](#cartes-du-tableau-de-bord)
 - [Entités](#entités)
 - [Rappels et notifications](#rappels-et-notifications)
@@ -81,11 +82,31 @@ Tout se fait dans **Paramètres → Appareils et services**, sans YAML.
 Catégories par défaut : entretien, assurance, stationnement, péage, contrôle technique,
 réparation, autre.
 
+## Saisir un plein ou des frais
+
+Trois accès, sans rien configurer de plus :
+
+- **Page Carbu** dans la barre latérale : les trois cartes du véhicule choisi
+  (sélecteur en haut à droite s'il y en a plusieurs), avec les boutons **Plein** et
+  **Dépense**. C'est l'accès le plus complet : modification, suppression, rappels,
+  import CSV.
+- **Paramètres → Appareils et services → Carbu → Configurer** (roue dentée) :
+  **Saisir un plein** et **Saisir des frais** ouvrent des formulaires Home Assistant
+  standard. Un plein incohérent (réservoir dépassé, kilométrage inférieur au
+  précédent…) affiche les avertissements et demande une confirmation.
+- **Services** `carbu.add_fuel` et `carbu.add_expense`, pour les automatisations
+  (voir [Services](#services)).
+
 ## Cartes du tableau de bord
 
 Les cartes sont fournies par l'intégration et chargées automatiquement. Il n'y a
-aucune ressource Lovelace à déclarer. Pour les ajouter, mettez le tableau de bord en
-édition, cliquez sur **Ajouter une carte** et cherchez **Carbu**. L'éditeur graphique permet de choisir le véhicule, le titre et les sections
+aucune ressource Lovelace à déclarer.
+
+Le tableau de bord **Vue d'ensemble** par défaut de Home Assistant (2026) ne permet
+pas d'ajouter de cartes : créez d'abord un tableau de bord (**Paramètres → Tableaux
+de bord → Ajouter un tableau de bord → Nouveau tableau de bord à partir de zéro**),
+ou utilisez simplement la page **Carbu** de la barre latérale. Dans votre tableau de
+bord, passez en édition, cliquez sur **Ajouter une carte** et cherchez **Carbu**. L'éditeur graphique permet de choisir le véhicule, le titre et les sections
 affichées.
 
 ### Carnet de bord véhicule (`custom:carbu-card`)

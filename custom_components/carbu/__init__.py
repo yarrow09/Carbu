@@ -16,7 +16,7 @@ from .const import DOMAIN, SIGNAL_UPDATED, SUBENTRY_TYPE_VEHICLE
 from .coordinator import VehicleLogCoordinator
 from .core.models import Vehicle
 from .csv_import_view import CsvImportView
-from .frontend import async_register_frontend
+from .frontend import async_register_frontend, async_register_panel, async_remove_panel
 from .services import async_register_services
 from .storage import VehicleLogStorage
 from .websocket_api import async_register_websocket_commands
@@ -79,6 +79,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: VehicleLogConfigEntry) -
         storage=storage, vehicles=vehicles, coordinator=coordinator
     )
     entry.async_on_unload(entry.add_update_listener(_async_reload_entry))
+    await async_register_panel(hass)
+    entry.async_on_unload(lambda: async_remove_panel(hass))
     entry.async_on_unload(
         coordinator.async_add_listener(
             lambda: async_dispatcher_send(hass, SIGNAL_UPDATED)
