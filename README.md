@@ -9,7 +9,8 @@ pleins, consommation réelle, dépenses par catégorie, coût par kilomètre, ra
 d'entretien.
 Tout se configure depuis l'interface, les données restent sur votre Home Assistant.
 
-> **Version 0.3.0.** L'intégration sert à suivre la consommation et les coûts. Elle
+> **Version 1.0.0-alpha.1** (préversion : des changements restent possibles avant la
+> 1.0.0). L'intégration sert à suivre la consommation et les coûts. Elle
 > ne recherche pas les prix des carburants en ligne. Les véhicules électriques ne sont
 > pas pris en charge.
 
@@ -86,10 +87,11 @@ réparation, autre.
 
 Trois accès, sans rien configurer de plus :
 
-- **Page Carbu** dans la barre latérale : les trois cartes du véhicule choisi
-  (sélecteur en haut à droite s'il y en a plusieurs), avec les boutons **Plein** et
-  **Dépense**. C'est l'accès le plus complet : modification, suppression, rappels,
-  import CSV.
+- **Page Carbu** dans la barre latérale : les cartes du véhicule choisi (sélecteur
+  en haut à droite s'il y en a plusieurs), avec les boutons **Plein** et **Dépense**.
+  Le carnet de bord et le journal (5 entrées à la fois, **Afficher plus** pour la
+  suite) sont côte à côte, les statistiques en pleine largeur dessous. C'est l'accès
+  le plus complet : modification, suppression, rappels, import CSV.
 - **Paramètres → Appareils et services → Carbu → Configurer** (roue dentée) :
   **Saisir un plein** et **Saisir des frais** ouvrent des formulaires Home Assistant
   standard. Un plein incohérent (réservoir dépassé, kilométrage inférieur au
@@ -111,10 +113,14 @@ affichées.
 
 ### Carnet de bord véhicule (`custom:carbu-card`)
 
+- **Dernier plein** : distance parcourue depuis le plein précédent et consommation
+  mesurée, avec l'écart à la moyenne. Pour un plein partiel, la consommation attend le
+  prochain plein complet.
 - Indicateurs : consommation moyenne, coût du mois, coût par km (ou par mile),
   kilométrage, distance du mois.
 - **Saisie rapide d'un plein** : bouton **+ Plein**, puis kilométrage, quantité et
-  montant, puis **Entrée**.
+  montant, puis **Entrée**. Pour l'essence, **Carburant à la pompe** précise la
+  qualité (SP95-E10, SP95, SP98), pré-remplie avec la dernière utilisée.
   - Le kilométrage est pré-rempli avec le dernier relevé.
   - Le prix unitaire et le montant se calculent l'un à partir de l'autre, dans les deux
     sens.
@@ -130,13 +136,16 @@ affichées.
 - **Rappels** : état (dû, bientôt, à jour, fait), échéance et temps ou distance
   restant. Le bouton **Fait** calcule l'échéance suivante d'un rappel récurrent. On
   peut aussi ajouter, modifier et supprimer des rappels.
-- Les 5 derniers pleins et les 5 dernières dépenses, modifiables et supprimables.
+- Les 5 derniers pleins et les 5 dernières dépenses, modifiables et supprimables
+  (masqués sur la page Carbu, où le journal les affiche déjà).
 - Histogramme des dépenses des 12 derniers mois, empilé par catégorie, carburant
   compris.
 
 ### Journal du véhicule (`custom:carbu-journal-card`)
 
-- Onglets **Pleins** et **Dépenses**, avec pagination.
+- Onglets **Pleins** et **Dépenses**, avec pagination. Chaque plein indique la
+  distance depuis le plein précédent et, pour un plein complet, la consommation
+  mesurée.
 - Filtres des dépenses : période (ce mois-ci, 3 mois, cette année, tout, ou dates
   libres), catégories, montant minimum et maximum. Le nombre d'entrées et le total
   sont affichés.
@@ -149,10 +158,19 @@ affichées.
 
 - Périodes : 30 jours, 3 mois, 12 mois, depuis l'acquisition. La période par défaut
   se règle dans l'éditeur.
-- Indicateurs : distance, consommation moyenne (par carburant), carburant, autres
-  dépenses, coût total, coût par km, nombre de pleins, quantité.
+- Indicateurs groupés :
+  - **Consommation** : moyenne (par carburant), meilleur et moins bon plein ;
+  - **Distance** : distance, nombre de pleins, distance moyenne entre deux pleins,
+    quantité ;
+  - **Coûts** : total, moyenne par mois, coût par km, prix moyen au litre,
+    évolution du prix entre le premier et le dernier plein ;
+  - **Bilan carbone** : émissions de la période (kg ou t CO2e), par km et par mois,
+    calculées sur les quantités réellement achetées avec les facteurs de l'ADEME
+    (voir [calculs](docs/calculs.md#bilan-carbone)).
 - Courbe de consommation par plein complet, avec la moyenne mobile.
-- Dépenses de la période par catégorie, carburant compris.
+- Courbe du prix du carburant payé à chaque plein, colorée par qualité d'essence.
+- Dépenses de la période par catégorie, carburant compris : barre de répartition,
+  pourcentages et montants.
 
 Les cartes suivent le thème clair ou sombre de Home Assistant et s'adaptent au mobile.
 Elles visent le niveau AA des WCAG : contrastes, libellés sur tous les champs, et un

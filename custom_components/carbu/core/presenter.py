@@ -11,6 +11,7 @@ from __future__ import annotations
 from typing import Any
 
 from . import units
+from .consumption import FillMetrics
 from .models import (
     ConsumptionUnit,
     Expense,
@@ -21,7 +22,7 @@ from .models import (
     VolumeUnit,
 )
 from .reminders import ReminderStatus
-from .statistics import ConsumptionPoint, PeriodStats
+from .statistics import ConsumptionPoint, PeriodStats, PricePoint
 from .summary import VehicleSummary
 from .validation import CoherenceWarning, WarningCode
 
@@ -119,9 +120,24 @@ class VehicleUnits:
 
     # --- Vues ---------------------------------------------------------------
 
-    def fuel_entry_view(self, entry: FuelEntry) -> dict[str, Any]:
-        """Plein exprimé dans les unités du véhicule."""
+    def fuel_entry_view(
+        self, entry: FuelEntry, metrics: FillMetrics | None = None
+    ) -> dict[str, Any]:
+        """Plein exprimé dans les unités du véhicule.
+
+        Avec ``metrics``, ajoute la distance depuis le plein précédent et la
+        consommation mesurée à ce plein.
+        """
+        extra: dict[str, Any] = {}
+        if metrics is not None:
+            extra = {
+                "distance": self.distance_out(metrics.distance),
+                "consumption": units.l100_to_consumption(
+                    metrics.consumption, self.consumption_unit(entry.fuel_type)
+                ),
+            }
         return {
+            **extra,
             "id": entry.id,
             "date": entry.date.isoformat(),
             "time": entry.time.isoformat(timespec="minutes") if entry.time else None,
@@ -132,6 +148,7 @@ class VehicleUnits:
             "fuel_type": entry.fuel_type.value,
             "full_tank": entry.full_tank,
             "station": entry.station,
+            "grade": entry.grade.value if entry.grade else None,
             "notes": entry.notes,
         }
 
@@ -257,6 +274,18 @@ class VehicleUnits:
             "expenses_by_category": stats.expenses_by_category,
             "fill_count": stats.fill_count,
             "expense_count": stats.expense_count,
+            "co2_kg": stats.co2_kg,
+            # g CO2e par unité de distance du véhicule (km ou mile)
+            "co2_per_distance": _per_distance(stats.co2_g_per_km),
+        }
+
+    def price_point_view(self, point: PricePoint, fuel: FuelType) -> dict[str, Any]:
+        """Point de la courbe des prix."""
+        return {
+            "entry_id": point.entry_id,
+            "date": point.date.isoformat(),
+            "value": self.unit_price_out(point.unit_price, fuel),
+            "grade": point.grade.value if point.grade else None,
         }
 
     def consumption_point_view(

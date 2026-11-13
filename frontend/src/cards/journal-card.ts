@@ -14,12 +14,12 @@ import type { VlExpenseDialog } from "../components/expense-dialog";
 import type { VlFuelDialog } from "../components/fuel-dialog";
 import type { VlImportDialog } from "../components/import-dialog";
 import { icon } from "../components/icon";
-import { isoDate, money, num, parseNumber, shortDate } from "../format";
+import { gradeLabel, isoDate, money, num, parseNumber, shortDate } from "../format";
 import { t } from "../i18n";
 import { mdiDelete, mdiPaperclip, mdiPencil, mdiPlus, mdiUpload, sharedStyles } from "../styles";
 import type { CardConfig, Category, ExpenseView, FuelEntryView } from "../types";
 import { VehicleCardBase } from "./base";
-import { listStyles } from "./dashboard-card";
+import { fuelDetails, listStyles } from "./dashboard-card";
 
 const PAGE = 25;
 type Tab = "fuel" | "expenses";
@@ -184,7 +184,7 @@ export class VehicleLogJournalCard extends VehicleCardBase {
     const vehicle = this.vehicle;
     if (!vehicle) return;
     const page = await listFuel(this.hass, vehicle.id, {
-      limit: PAGE,
+      limit: this._config.page_size ?? PAGE,
       offset: append ? this._fuel.length : 0,
     });
     this._fuel = append ? [...this._fuel, ...page.items] : page.items;
@@ -201,7 +201,7 @@ export class VehicleLogJournalCard extends VehicleCardBase {
     if (!vehicle) return;
     const page = await listExpenses(this.hass, vehicle.id, {
       ...this._apiFilters(),
-      limit: PAGE,
+      limit: this._config.page_size ?? PAGE,
       offset: append ? this._expenses.length : 0,
     });
     this._expenses = append ? [...this._expenses, ...page.items] : page.items;
@@ -286,7 +286,8 @@ export class VehicleLogJournalCard extends VehicleCardBase {
         ? html`<ul class="entries">
             ${this._fuel.map((e) => {
               const unit = vehicle.units.volume[e.fuel_type] ?? "L";
-              const label = `${shortDate(hass, e.date)} · ${num(hass, e.volume, 2)} ${unit}`;
+              const grade = e.grade ? ` ${gradeLabel(e.grade)}` : "";
+              const label = `${shortDate(hass, e.date)} · ${num(hass, e.volume, 2)} ${unit}${grade}`;
               return html`<li>
                 <div class="entry-main">
                   <span class="entry-title">
@@ -294,8 +295,7 @@ export class VehicleLogJournalCard extends VehicleCardBase {
                     <span class="amount">${money(hass, e.total_cost, this._currency)}</span>
                   </span>
                   <span class="entry-sub">
-                    ${num(hass, e.odometer, 0)} ${vehicle.units.distance} ·
-                    ${money(hass, e.unit_price, this._currency, 3)}/${unit}${e.station ? ` · ${e.station}` : ""}${e.notes ? ` · ${e.notes}` : ""}
+                    ${fuelDetails(hass, vehicle, e, this._currency)}${e.notes ? ` · ${e.notes}` : ""}
                   </span>
                 </div>
                 <span class="row-actions">

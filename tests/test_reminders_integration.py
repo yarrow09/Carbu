@@ -220,6 +220,13 @@ async def test_stats_command(hass: HomeAssistant, call: Call) -> None:
     assert stats["fuel_cost"] == pytest.approx(109.50)
     assert stats["moving_average_window"] == 5
     assert [p["entry_id"] for p in stats["series"]["gasoline"]] == ["f5"]
+    # f5 (42 L) et f6 (20 L) dans les 30 jours : (42 + 20) × 2,69 kg CO2e
+    assert stats["co2_kg"] == pytest.approx(62 * 2.69)
+    prices = stats["prices"]["gasoline"]
+    assert [(p["entry_id"], p["value"], p["grade"]) for p in prices] == [
+        ("f5", 1.75, None),
+        ("f6", 1.8, None),
+    ]
 
     stats = await call("stats", period="12m")
     points = stats["series"]["gasoline"]

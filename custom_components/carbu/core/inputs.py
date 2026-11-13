@@ -11,7 +11,15 @@ from collections.abc import Mapping
 import datetime as dt
 from typing import Any
 
-from .models import Expense, FuelEntry, FuelType, Reminder, ReminderKind, new_id
+from .models import (
+    Expense,
+    FuelEntry,
+    FuelGrade,
+    FuelType,
+    Reminder,
+    ReminderKind,
+    new_id,
+)
 from .presenter import VehicleUnits
 from .validation import complete_fill_amounts
 
@@ -50,6 +58,13 @@ def fuel_entry_from_input(
             else None
         )
     station = (data.get("station") or "").strip() or None
+    grade: FuelGrade | None
+    if "grade" in data:
+        grade = FuelGrade(data["grade"]) if data["grade"] else None
+    else:
+        grade = existing.grade if existing else None
+    if fuel is not FuelType.GASOLINE:
+        grade = None  # la qualité ne concerne que l'essence
     return FuelEntry(
         id=existing.id if existing else new_id(),
         date=day,
@@ -62,6 +77,7 @@ def fuel_entry_from_input(
         full_tank=bool(data.get("full_tank", existing.full_tank if existing else True)),
         station=station,
         notes=data.get("notes", existing.notes if existing else "") or "",
+        grade=grade,
     )
 
 

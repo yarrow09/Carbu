@@ -29,7 +29,7 @@ import probatio as vol
 from .const import DOMAIN
 from .coordinator import SaveResult, VehicleLogCoordinator, local_now
 from .core.export import build_export
-from .core.models import FuelType
+from .core.models import FuelGrade, FuelType
 from .core.repository import CategoryError
 from .core.validation import CoherenceWarning
 
@@ -56,6 +56,7 @@ ADD_FUEL_SCHEMA = vol.Schema(
         vol.Optional("date"): cv.date,
         vol.Optional("time"): cv.time,
         vol.Optional("fuel_type"): vol.In([f.value for f in FuelType]),
+        vol.Optional("grade"): vol.In([g.value for g in FuelGrade]),
         vol.Optional("full_tank", default=True): cv.boolean,
         vol.Optional("station"): cv.string,
         vol.Optional("notes", default=""): cv.string,

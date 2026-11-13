@@ -2,7 +2,7 @@
 import { html, LitElement, nothing, type PropertyValues } from "lit";
 
 import { fetchFuelDefaults, saveFuel } from "../api";
-import { inputNumber, parseNumber, round } from "../format";
+import { GRADES, gradeLabel, inputNumber, parseNumber, round } from "../format";
 import { t, type Key } from "../i18n";
 import { mdiClose, sharedStyles } from "../styles";
 import type {
@@ -74,6 +74,7 @@ export class VlFuelDialog extends LitElement {
         date: entry.date,
         time: entry.time ?? "",
         fuel_type: entry.fuel_type,
+        grade: entry.grade ?? "",
         full_tank: entry.full_tank ? "1" : "",
         station: entry.station ?? "",
         notes: entry.notes,
@@ -89,6 +90,7 @@ export class VlFuelDialog extends LitElement {
           ...this._values,
           odometer: defaults.odometer !== null ? String(round(defaults.odometer, 0)) : "",
           fuel_type: defaults.fuel_type,
+          grade: defaults.grade ?? "",
           date: defaults.date,
           time: defaults.time,
           unit_price: price !== null ? inputNumber(this.hass, price, 3) : "",
@@ -160,6 +162,7 @@ export class VlFuelDialog extends LitElement {
       odometer,
       full_tank: Boolean(this._values.full_tank),
       fuel_type: this._values.fuel_type,
+      grade: this._values.fuel_type === "gasoline" ? this._values.grade || null : null,
       station: this._values.station || null,
       notes: this._values.notes ?? "",
       confirm,
@@ -264,6 +267,27 @@ export class VlFuelDialog extends LitElement {
               "unit_price",
               t(hass, "fuel.unit_price", { currency: this.currency, unit: volumeUnit }),
             )}
+            ${fuel === "gasoline"
+              ? html`<div class="field">
+                  <label for="grade">${t(hass, "fuel.grade")}</label>
+                  <select
+                    id="grade"
+                    .value=${this._values.grade ?? ""}
+                    @change=${(e: Event) =>
+                      this._set("grade", (e.target as HTMLSelectElement).value)}
+                  >
+                    <option value="" ?selected=${!this._values.grade}>
+                      ${t(hass, "fuel.grade_unknown")}
+                    </option>
+                    ${GRADES.map(
+                      (g) =>
+                        html`<option value=${g} ?selected=${this._values.grade === g}>
+                          ${gradeLabel(g)}
+                        </option>`,
+                    )}
+                  </select>
+                </div>`
+              : nothing}
           </div>
           <label class="check">
             <input

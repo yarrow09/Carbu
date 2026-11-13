@@ -12,10 +12,13 @@ import type { CardConfig, HomeAssistant, VehicleView } from "./types";
 
 const STORAGE_KEY = "carbu-panel-vehicle";
 // Titres courts : la page porte déjà le nom de l'application.
+// Les dernières entrées sont dans le journal (5 à la fois) : la carte principale
+// ne les répète pas.
+// Carnet et journal côte à côte, statistiques en pleine largeur dessous.
 const CARDS = [
-  { type: "carbu-card", title: undefined },
-  { type: "carbu-stats-card", title: "panel.stats" },
-  { type: "carbu-journal-card", title: "panel.journal" },
+  { type: "carbu-card", extra: { show_recent: false } },
+  { type: "carbu-journal-card", extra: { title: "panel.journal", page_size: 5 } },
+  { type: "carbu-stats-card", extra: { title: "panel.stats" } },
 ] as const;
 
 type CardElement = HTMLElement & {
@@ -181,15 +184,15 @@ export class CarbuPanel extends LitElement {
   /** Cartes du véhicule, recréées seulement quand il change. */
   private _cardsFor(vehicleId: string): CardElement[] {
     if (this._cardsVehicle !== vehicleId) {
-      this._cards = CARDS.map(({ type, title }) => {
+      this._cards = CARDS.map(({ type, extra }) => {
         const card = document.createElement(type) as CardElement;
-        card.setConfig({
-          type: `custom:${type}`,
-          vehicle_id: vehicleId,
-          ...(title ? { title: t(this.hass, title) } : {}),
-        });
+        const config: CardConfig = { type: `custom:${type}`, vehicle_id: vehicleId };
+        if ("show_recent" in extra) config.show_recent = extra.show_recent;
+        if ("title" in extra) config.title = t(this.hass, extra.title);
+        if ("page_size" in extra) config.page_size = extra.page_size;
+        card.setConfig(config);
         card.hass = this.hass;
-        if (type === "carbu-journal-card") card.classList.add("wide");
+        if (type === "carbu-stats-card") card.classList.add("wide");
         return card;
       });
       this._cardsVehicle = vehicleId;

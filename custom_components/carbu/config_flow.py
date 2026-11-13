@@ -62,6 +62,7 @@ from .core.models import (
     Category,
     ConsumptionUnit,
     DistanceUnit,
+    FuelGrade,
     FuelType,
     VolumeUnit,
 )
@@ -609,12 +610,25 @@ class VehicleLogOptionsFlow(OptionsFlow):
             fields[vol.Required("fuel_type")] = _select(
                 [f.value for f in vehicle.fuel_types], "fuel_type"
             )
+        if FuelType.GASOLINE in vehicle.fuel_types:
+            fields[vol.Optional("grade")] = _select(
+                [g.value for g in FuelGrade], "fuel_grade"
+            )
         fields[vol.Required("full_tank")] = BooleanSelector()
         fields[vol.Optional("station")] = TextSelector()
         fields[vol.Optional("notes")] = TextSelector()
         if errors.get("base") == "coherence":
             fields[vol.Optional(CONF_CONFIRM)] = BooleanSelector()
+        last_grade = next(
+            (
+                e.grade.value
+                for e in reversed(coordinator.records(self._vehicle_id).fuel.items)
+                if e.grade is not None
+            ),
+            None,
+        )
         defaults: dict[str, Any] = {
+            "grade": last_grade,
             "date": local_today().isoformat(),
             "full_tank": True,
             "fuel_type": vehicle.fuel_type.value,
@@ -1028,7 +1042,14 @@ def _fuel_input(user_input: dict[str, Any], today: dt.date) -> dict[str, Any]:
     """
     data = {
         key: user_input[key]
-        for key in ("odometer", "volume", "unit_price", "total_cost", "fuel_type")
+        for key in (
+            "odometer",
+            "volume",
+            "unit_price",
+            "total_cost",
+            "fuel_type",
+            "grade",
+        )
         if user_input.get(key) is not None
     }
     day = dt.date.fromisoformat(user_input["date"])

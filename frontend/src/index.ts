@@ -9,6 +9,7 @@ import { VlExpenseDialog } from "./components/expense-dialog";
 import { VlFuelDialog } from "./components/fuel-dialog";
 import { VlImportDialog } from "./components/import-dialog";
 import { VlMonthlyChart } from "./components/monthly-chart";
+import { VlPriceChart } from "./components/price-chart";
 import { VlReminderDialog } from "./components/reminder-dialog";
 import { VlReminderList } from "./components/reminder-list";
 import { t } from "./i18n";
@@ -26,6 +27,7 @@ const elements: Record<string, CustomElementConstructor> = {
   "vl-confirm-dialog": VlConfirmDialog,
   "vl-monthly-chart": VlMonthlyChart,
   "vl-consumption-chart": VlConsumptionChart,
+  "vl-price-chart": VlPriceChart,
   "vl-reminder-dialog": VlReminderDialog,
   "vl-reminder-list": VlReminderList,
   "vl-import-dialog": VlImportDialog,

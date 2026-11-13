@@ -165,6 +165,31 @@ class Vehicle:
         )
 
 
+class FuelGrade(StrEnum):
+    """Qualité d'essence (carburant ``gasoline`` uniquement)."""
+
+    E10 = "e10"
+    SP95 = "sp95"
+    SP98 = "sp98"
+
+
+def parse_grade(value: str | None) -> FuelGrade | None:
+    """Qualité d'essence à partir d'un libellé usuel (``None`` si inconnu).
+
+    Accepte ``e10``, ``SP95-E10``, ``sp95``, ``95``, ``SP98``, ``98``…
+    """
+    text = (value or "").strip().casefold().replace(" ", "").replace("_", "-")
+    if not text:
+        return None
+    if "e10" in text:
+        return FuelGrade.E10
+    if text in {"sp95", "95", "sp95-e5", "e5"}:
+        return FuelGrade.SP95
+    if text in {"sp98", "98", "sp98-e5"}:
+        return FuelGrade.SP98
+    return None
+
+
 @dataclass(slots=True, kw_only=True)
 class FuelEntry:
     """Plein de carburant."""
@@ -180,6 +205,7 @@ class FuelEntry:
     full_tank: bool = True
     station: str | None = None
     notes: str = ""
+    grade: FuelGrade | None = None
 
     def sort_key(self) -> tuple[dt.date, dt.time, float]:
         """Clé de tri chronologique."""
@@ -199,6 +225,7 @@ class FuelEntry:
             "full_tank": self.full_tank,
             "station": self.station,
             "notes": self.notes,
+            "grade": self.grade.value if self.grade else None,
         }
 
     @classmethod
@@ -216,6 +243,7 @@ class FuelEntry:
             full_tank=bool(data.get("full_tank", True)),
             station=data.get("station"),
             notes=data.get("notes", ""),
+            grade=FuelGrade(data["grade"]) if data.get("grade") else None,
         )
 
 

@@ -22,9 +22,11 @@ du format : **1**. Il servira à l'import et à la restauration en phase 3.
 
 ### `pleins.csv`
 
-`vehicle_id;vehicle_name;id;date;time;odometer_km;volume;volume_unit;unit_price;total_cost;fuel_type;full_tank;station;notes`
+`vehicle_id;vehicle_name;id;date;time;odometer_km;volume;volume_unit;unit_price;total_cost;fuel_type;grade;full_tank;station;notes`
 
 * `fuel_type` : `gasoline`, `diesel`, `lpg`, `cng`.
+* `grade` : qualité d'essence, `e10`, `sp95` ou `sp98` (vide sinon). À l'import,
+  `SP95-E10`, `95`, `98`… sont aussi reconnus ; la colonne est facultative.
 * `unit_price` : prix par litre (ou par kg).
 
 ### `depenses.csv`

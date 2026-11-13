@@ -46,6 +46,14 @@ add_fuel:
             - diesel
             - lpg
             - cng
+    grade:
+      selector:
+        select:
+          translation_key: fuel_grade
+          options:
+            - e10
+            - sp95
+            - sp98
     full_tank:
       default: true
       selector:

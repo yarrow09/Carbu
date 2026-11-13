@@ -9,7 +9,7 @@ from homeassistant.util import dt as dt_util
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.carbu.core.models import CATEGORY_OTHER, FuelType
+from custom_components.carbu.core.models import CATEGORY_OTHER, FuelGrade, FuelType
 
 from .common import CLIO, setup_integration
 
@@ -148,3 +148,13 @@ async def test_entry_without_vehicle(hass: HomeAssistant) -> None:
     result = await _menu(hass, entry, "add_expense")
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "no_vehicle"
+
+
+async def test_add_fuel_with_grade(hass: HomeAssistant) -> None:
+    entry = await setup_integration(hass, {"v1": CLIO})
+    result = await _menu(hass, entry, "add_fuel")
+    assert "grade" in {str(key) for key in result["data_schema"].schema}
+    result = await _submit(hass, result, _fuel(grade="e10"))
+    assert result["reason"] == "fuel_saved"
+    (fill,) = entry.runtime_data.coordinator.records("v1").fuel
+    assert fill.grade is FuelGrade.E10

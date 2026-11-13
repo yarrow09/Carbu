@@ -39,7 +39,8 @@ saisie et à l'affichage.
       "fuel": [
         {"id": "…", "date": "2026-01-02", "time": "08:30:00", "odometer": 12345.6,
          "volume": 40.5, "unit_price": 1.799, "total_cost": 72.86,
-         "fuel_type": "diesel", "full_tank": true, "station": null, "notes": ""}
+         "fuel_type": "gasoline", "grade": "e10", "full_tank": true,
+         "station": null, "notes": ""}
       ],
       "expenses": [
         {"id": "…", "date": "2026-03-01", "odometer": null, "amount": 89.9,
@@ -61,6 +62,9 @@ saisie et à l'affichage.
 ```
 
 * `fuel_type` : `gasoline`, `diesel`, `lpg`, `cng`.
+* `grade` : qualité d'essence (`e10`, `sp95`, `sp98`), `null` si non précisée ou
+  pour un autre carburant. Champ facultatif ajouté en 1.0.0-alpha.1, sans
+  changement de version du stockage : son absence vaut `null`.
 * Catégorie par défaut : `name: null` → libellé traduit ; un nom renseigné la
   renomme. Une catégorie par défaut supprimée ne réapparaît pas. La catégorie
   `other` est indélébile et reçoit les dépenses des catégories supprimées.

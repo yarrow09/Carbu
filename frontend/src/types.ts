@@ -14,6 +14,7 @@ export interface HomeAssistant {
 }
 
 export type FuelType = "gasoline" | "diesel" | "lpg" | "cng";
+export type FuelGrade = "e10" | "sp95" | "sp98";
 
 export interface Units {
   distance: string;
@@ -62,6 +63,11 @@ export interface FuelEntryView {
   full_tank: boolean;
   station: string | null;
   notes: string;
+  grade: FuelGrade | null;
+  /** Distance depuis le plein précédent (listes uniquement). */
+  distance?: number | null;
+  /** Consommation mesurée à ce plein complet (listes uniquement). */
+  consumption?: number | null;
 }
 
 export interface ExpenseView {
@@ -91,6 +97,7 @@ export interface MonthlyBucket {
 export interface Dashboard extends VehicleView {
   currency: string;
   recent_fuel: FuelEntryView[];
+  last_fuel: FuelEntryView | null;
   recent_expenses: ExpenseView[];
   monthly: MonthlyBucket[];
   categories: Category[];
@@ -112,6 +119,7 @@ export interface FuelDefaults {
   time: string;
   odometer: number | null;
   fuel_type: FuelType;
+  grade: FuelGrade | null;
   unit_price: Record<string, number | null>;
 }
 
@@ -127,8 +135,11 @@ export interface CardConfig {
   title?: string;
   show_chart?: boolean;
   show_recent?: boolean;
+  show_last_fill?: boolean;
   show_reminders?: boolean;
   period?: StatsPeriod;
+  /** Journal : nombre d'entrées chargées à la fois. */
+  page_size?: number;
 }
 
 export type ReminderKind = "date" | "distance" | "both";
@@ -181,6 +192,16 @@ export interface StatsView {
   expense_count: number;
   moving_average_window: number;
   series: Record<string, ConsumptionPoint[]>;
+  prices: Record<string, PricePoint[]>;
+  co2_kg: number;
+  co2_per_distance: number | null;
+}
+
+export interface PricePoint {
+  entry_id: string;
+  date: string;
+  value: number;
+  grade: FuelGrade | null;
 }
 
 export type ImportKind = "fuel" | "expenses" | "odometer" | "reminders";

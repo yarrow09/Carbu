@@ -12,9 +12,9 @@ from dataclasses import dataclass
 import datetime as dt
 from enum import StrEnum
 
-from . import costs, distance
+from . import carbon, costs, distance
 from .consumption import ConsumptionSegment, average_consumption, consumption_segments
-from .models import FuelEntry, FuelType, Vehicle
+from .models import FuelEntry, FuelGrade, FuelType, Vehicle
 from .periods import add_months
 from .repository import VehicleRecords
 
@@ -69,6 +69,7 @@ class PeriodStats:
     expenses_by_category: dict[str, float]
     fill_count: int
     expense_count: int
+    co2_kg: float = 0.0
 
     @property
     def total_cost(self) -> float:
@@ -84,6 +85,13 @@ class PeriodStats:
     def fuel_cost_per_km(self) -> float | None:
         """Coût carburant par km."""
         return costs.cost_per_distance(self.fuel_cost, self.distance)
+
+    @property
+    def co2_g_per_km(self) -> float | None:
+        """Émissions en g CO2e par km parcouru."""
+        if self.distance <= 0:
+            return None
+        return self.co2_kg * 1000 / self.distance
 
     @property
     def days(self) -> int:
@@ -153,7 +161,31 @@ def period_stats(
         expenses_by_category=by_category,
         fill_count=sum(1 for e in fuel if in_period(e.date)),
         expense_count=len(period_expenses),
+        co2_kg=carbon.total_emissions(e for e in fuel if in_period(e.date)),
     )
+
+
+@dataclass(frozen=True, slots=True)
+class PricePoint:
+    """Prix unitaire payé à un plein (par litre, ou par kg pour le GNV)."""
+
+    entry_id: str
+    date: dt.date
+    unit_price: float
+    grade: FuelGrade | None
+
+
+def price_series(
+    entries: Iterable[FuelEntry], fuel_type: FuelType, start: dt.date | None = None
+) -> list[PricePoint]:
+    """Évolution du prix du carburant, plein par plein, à partir de ``start``."""
+    return [
+        PricePoint(e.id, e.date, e.unit_price, e.grade)
+        for e in entries
+        if e.fuel_type is fuel_type
+        and e.unit_price > 0
+        and (start is None or e.date >= start)
+    ]
 
 
 @dataclass(frozen=True, slots=True)

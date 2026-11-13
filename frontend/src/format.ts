@@ -1,6 +1,6 @@
 // Mise en forme localisée (nombres, montants, dates).
 import { language } from "./i18n";
-import type { HomeAssistant } from "./types";
+import type { FuelGrade, HomeAssistant } from "./types";
 
 export function num(
   hass: HomeAssistant | undefined,
@@ -85,4 +85,23 @@ export function inputNumber(hass: HomeAssistant | undefined, value: number, digi
   const text = String(round(value, digits));
   const decimal = new Intl.NumberFormat(language(hass)).format(1.5).charAt(1);
   return decimal === "," ? text.replace(".", ",") : text;
+}
+
+/** Qualités d'essence, dans l'ordre d'affichage. */
+export const GRADES: FuelGrade[] = ["e10", "sp95", "sp98"];
+
+/** Libellé à la pompe d'une qualité d'essence. */
+export function gradeLabel(grade: FuelGrade | null | undefined): string {
+  if (!grade) return "";
+  return { e10: "SP95-E10", sp95: "SP95", sp98: "SP98" }[grade];
+}
+
+/** Masse de CO2e lisible : kg sous une tonne, t au-delà. */
+export function co2Mass(hass: HomeAssistant | undefined, kg: number | null | undefined): {
+  value: string;
+  unit: string;
+} {
+  if (kg === null || kg === undefined) return { value: "—", unit: "kg CO₂e" };
+  if (Math.abs(kg) >= 1000) return { value: num(hass, kg / 1000, 2), unit: "t CO₂e" };
+  return { value: num(hass, kg, 0), unit: "kg CO₂e" };
 }

@@ -34,6 +34,7 @@ from .models import (
     Reminder,
     ReminderKind,
     new_id,
+    parse_grade,
 )
 from .repository import LogData, VehicleRecords
 from .validation import complete_fill_amounts
@@ -205,6 +206,11 @@ def _fuel(row: Mapping[str, str], default_fuel: FuelType) -> FuelEntry:
         fuel_type=FuelType(fuel) if fuel else default_fuel,
         full_tank=_bool(row.get("full_tank", ""), True),
         station=row.get("station", "").strip() or None,
+        grade=(
+            parse_grade(row.get("grade"))
+            if (FuelType(fuel) if fuel else default_fuel) is FuelType.GASOLINE
+            else None
+        ),
         notes=row.get("notes", ""),
     )
 

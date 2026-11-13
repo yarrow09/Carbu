@@ -73,6 +73,13 @@ async def test_vehicles_and_dashboard(call: Call) -> None:
     assert result["summary"]["consumption"]["gasoline"] == pytest.approx(5.775)
     assert result["summary"]["month_cost"] == pytest.approx(417.50)
     assert [e["id"] for e in result["recent_fuel"]] == ["f6", "f5", "f4", "f3", "f2"]
+    # f6 est partiel : distance connue, pas de consommation.
+    assert result["last_fuel"]["id"] == "f6"
+    assert result["last_fuel"]["distance"] == pytest.approx(300)
+    assert result["last_fuel"]["consumption"] is None
+    f5 = result["recent_fuel"][1]
+    assert f5["distance"] == pytest.approx(600)
+    assert f5["consumption"] == pytest.approx(7.0)
     assert [e["id"] for e in result["recent_expenses"]] == [
         "e5",
         "e4",
@@ -95,6 +102,19 @@ async def test_fuel_defaults_prefill(call: Call) -> None:
     assert result["fuel_type"] == "gasoline"
     assert result["unit_price"] == {"gasoline": 1.8}
     assert result["date"] == "2026-03-25"
+    assert result["grade"] is None
+
+    saved = await call(
+        "fuel/save",
+        vehicle_id="ref",
+        odometer=12900,
+        volume=40,
+        total_cost=74,
+        grade="sp98",
+    )
+    assert saved["result"]["entry"]["grade"] == "sp98"
+    result = (await call("fuel/defaults", vehicle_id="ref"))["result"]
+    assert result["grade"] == "sp98"
 
 
 async def test_quick_fill_minimal_form(hass: HomeAssistant, call: Call) -> None:
@@ -168,6 +188,7 @@ async def test_fuel_list_and_units_conversion(call: Call) -> None:
     assert result["items"][0]["id"] == "f6"
     page = (await call("fuel/list", vehicle_id="ref", limit=2, offset=1))["result"]
     assert [e["id"] for e in page["items"]] == ["f5", "f4"]
+    assert page["items"][0]["consumption"] == pytest.approx(7.0)
 
     # Véhicule en miles et gallons US : saisie et restitution dans ces unités.
     result = (

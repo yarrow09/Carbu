@@ -26,10 +26,16 @@ import probatio as vol
 from .const import DOMAIN, SIGNAL_UPDATED
 from .coordinator import VehicleLogCoordinator, VehicleNotFoundError, local_now
 from .core.aggregation import filter_expenses, latest, monthly_costs_by_category
-from .core.models import FuelType, ReminderKind
+from .core.consumption import fill_metrics
+from .core.models import FuelGrade, FuelType, ReminderKind
 from .core.presenter import VehicleUnits
 from .core.repository import CategoryError, RecordNotFoundError
-from .core.statistics import StatsPeriod, consumption_series, period_stats
+from .core.statistics import (
+    StatsPeriod,
+    consumption_series,
+    period_stats,
+    price_series,
+)
 
 ERR_NOT_LOADED = "not_loaded"
 ERR_NOT_FOUND = "not_found"
@@ -214,6 +220,8 @@ def _dashboard(
         view = _vehicle_view(coordinator, vehicle_id)
         units = VehicleUnits(coordinator.vehicle(vehicle_id))
         rec = coordinator.records(vehicle_id)
+        metrics = fill_metrics(rec.fuel.items)
+        recent_fuel = latest(rec.fuel.items, max(msg["recent"], 1))
         monthly = monthly_costs_by_category(
             rec.fuel, rec.expenses, local_now().date(), msg["months"]
         )
@@ -223,9 +231,16 @@ def _dashboard(
                 **view,
                 "currency": hass.config.currency,
                 "recent_fuel": [
-                    units.fuel_entry_view(e)
-                    for e in latest(rec.fuel.items, msg["recent"])
+                    units.fuel_entry_view(e, metrics.get(e.id))
+                    for e in recent_fuel[: msg["recent"]]
                 ],
+                "last_fuel": (
+                    units.fuel_entry_view(
+                        recent_fuel[0], metrics.get(recent_fuel[0].id)
+                    )
+                    if recent_fuel
+                    else None
+                ),
                 "recent_expenses": [
                     units.expense_view(e)
                     for e in latest(rec.expenses.items, msg["recent"])
@@ -280,6 +295,10 @@ def ws_fuel_defaults(
             "time": now.time().isoformat(timespec="minutes"),
             "odometer": units.distance_out(readings[-1].odometer) if readings else None,
             "fuel_type": fuel_type.value,
+            # Dernière qualité d'essence utilisée, proposée par défaut.
+            "grade": next(
+                (e.grade.value for e in reversed(fuel) if e.grade is not None), None
+            ),
             "unit_price": {
                 f.value: next(
                     (
@@ -316,15 +335,20 @@ def ws_fuel_list(
     units = VehicleUnits(coordinator.vehicle(vehicle_id))
     start: dt.date | None = msg.get("start")
     end: dt.date | None = msg.get("end")
+    all_fuel = coordinator.records(vehicle_id).fuel.items
+    metrics = fill_metrics(all_fuel)
     items = [
         e
-        for e in reversed(coordinator.records(vehicle_id).fuel.items)
+        for e in reversed(all_fuel)
         if (start is None or e.date >= start) and (end is None or e.date <= end)
     ]
     page = items[msg["offset"] : msg["offset"] + msg["limit"]]
     connection.send_result(
         msg["id"],
-        {"total": len(items), "items": [units.fuel_entry_view(e) for e in page]},
+        {
+            "total": len(items),
+            "items": [units.fuel_entry_view(e, metrics.get(e.id)) for e in page],
+        },
     )
 
 
@@ -386,6 +410,7 @@ def ws_expense_list(
         vol.Optional("unit_price"): vol.Any(None, _POSITIVE),
         vol.Optional("total_cost"): vol.Any(None, _POSITIVE),
         vol.Optional("fuel_type"): vol.In([f.value for f in FuelType]),
+        vol.Optional("grade"): vol.Any(None, vol.In([g.value for g in FuelGrade])),
         vol.Optional("full_tank", default=True): bool,
         vol.Optional("station"): vol.Any(None, str),
         vol.Optional("notes", default=""): str,
@@ -639,6 +664,13 @@ def ws_stats(
                     for point in consumption_series(
                         records.fuel.items, fuel, window, stats.start
                     )
+                ]
+                for fuel in vehicle.fuel_types
+            },
+            "prices": {
+                fuel.value: [
+                    units.price_point_view(point, fuel)
+                    for point in price_series(records.fuel.items, fuel, stats.start)
                 ]
                 for fuel in vehicle.fuel_types
             },

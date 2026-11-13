@@ -96,3 +96,31 @@ def average_consumption(segments: Iterable[ConsumptionSegment]) -> float | None:
     if total_distance <= 0:
         return None
     return total_volume / total_distance * 100
+
+
+@dataclass(frozen=True, slots=True)
+class FillMetrics:
+    """Indicateurs propres à un plein.
+
+    ``distance`` : distance depuis le plein précédent (tous carburants) ;
+    ``consumption`` : consommation en l/100 km du segment qui se termine à ce
+    plein complet (``None`` pour un plein partiel ou sans plein complet avant).
+    """
+
+    distance: float | None
+    consumption: float | None
+
+
+def fill_metrics(entries: Iterable[FuelEntry]) -> dict[str, FillMetrics]:
+    """Distance et consommation de chaque plein (``entries`` triés)."""
+    entries = list(entries)
+    by_end = {seg.end_id: seg.l_per_100km for seg in consumption_segments(entries)}
+    result: dict[str, FillMetrics] = {}
+    previous: FuelEntry | None = None
+    for entry in entries:
+        distance = None
+        if previous is not None and entry.odometer > previous.odometer:
+            distance = entry.odometer - previous.odometer
+        result[entry.id] = FillMetrics(distance, by_end.get(entry.id))
+        previous = entry
+    return result

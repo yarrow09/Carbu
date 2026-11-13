@@ -69,7 +69,8 @@ def test_export_contains_all_data() -> None:
         "vehicle_id": "ref", "vehicle_name": "Référence", "id": "f1",
         "date": "2026-01-05", "time": "", "odometer_km": "10000", "volume": "40",
         "volume_unit": "L", "unit_price": "1.8", "total_cost": "72",
-        "fuel_type": "gasoline", "full_tank": "true", "station": "", "notes": "",
+        "fuel_type": "gasoline", "grade": "", "full_tank": "true", "station": "",
+        "notes": "",
     }  # fmt: skip
     assert fuel[2]["full_tank"] == "false"
 

@@ -193,3 +193,45 @@ inclus :
   | A | segment seul | 6,00 |
   | B | (36 + 37,5) ÷ 1 400 × 100 | 5,25 |
   | C | (37,5 + 42) ÷ 1 400 × 100 | 5,679 |
+
+### Indicateurs par plein
+
+* **Distance parcourue** : kilométrage du plein − kilométrage du plein précédent
+  (tous carburants). Rien si le compteur recule (rupture de série).
+* **Consommation au plein** : celle du segment qui se termine à ce plein complet
+  (voir les règles du segment). Un plein partiel n'en a pas : ses litres sont
+  ajoutés au segment fermé par le plein complet suivant.
+
+### Évolution du prix
+
+* Courbe : prix unitaire payé à chaque plein de la période, par carburant, coloré
+  selon la qualité d'essence (SP95-E10, SP95, SP98).
+* **Évolution du prix** : prix du dernier plein de la période ÷ prix du premier − 1.
+* **Prix moyen** : coût du carburant de la période ÷ quantité achetée (moyenne
+  pondérée par les volumes).
+
+### Bilan carbone
+
+Module `core/carbon.py`. Les émissions se calculent à partir des **quantités
+réellement achetées**, pas d'une consommation théorique :
+
+> émissions (kg CO2e) = Σ quantité × facteur d'émission du carburant
+
+Facteurs de la [Base Empreinte de l'ADEME](https://base-empreinte.ademe.fr/)
+(France continentale, éléments « valide générique »). Ils couvrent la combustion
+et l'amont (extraction, raffinage, transport), soit le périmètre « du puits à la
+roue » :
+
+| Carburant | Élément ADEME | Identifiant | Facteur |
+|---|---|---|---|
+| Essence (SP95, SP95-E10, SP98) | Supercarburant sans plomb (95, 95-E10, 98) | 25763 | 2,69 kg CO2e/L |
+| Gazole | Gazole routier B7 | 25775 | 3,10 kg CO2e/L |
+| GPL | GPL pour véhicule routier | 14031 | 1,86 kg CO2e/L |
+| GNV | GNC pour véhicule routier | 27095 | 2,96 kg CO2e/kg |
+
+* L'ADEME applique le même facteur aux trois qualités d'essence : choisir E10, SP95
+  ou SP98 ne change pas le bilan.
+* **Par km** : émissions de la période × 1 000 ÷ distance de la période (g CO2e/km).
+* **Par mois** : émissions de la période ÷ durée de la période en mois (30,44 jours).
+* Exemple : 40 L d'essence = 40 × 2,69 = **107,6 kg CO2e** ; 50 L de gazole =
+  **155 kg CO2e**.

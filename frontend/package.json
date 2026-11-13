@@ -1,6 +1,6 @@
 {
   "name": "carbu-cards",
-  "version": "0.3.0",
+  "version": "1.0.0-alpha.1",
   "private": true,
   "description": "Cartes Lovelace de l'intégration Carbu",
   "license": "GPL-3.0-or-later",

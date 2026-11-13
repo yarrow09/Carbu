@@ -22,7 +22,7 @@ DELIMITER = ";"
 FUEL_COLUMNS = (
     "vehicle_id", "vehicle_name", "id", "date", "time", "odometer_km",
     "volume", "volume_unit", "unit_price", "total_cost", "fuel_type",
-    "full_tank", "station", "notes",
+    "grade", "full_tank", "station", "notes",
 )  # fmt: skip
 EXPENSE_COLUMNS = (
     "vehicle_id", "vehicle_name", "id", "date", "odometer_km", "amount",
@@ -81,7 +81,9 @@ def build_export(
                 "odometer_km": e.odometer, "volume": e.volume,
                 "volume_unit": "kg" if e.fuel_type.value == "cng" else "L",
                 "unit_price": e.unit_price, "total_cost": e.total_cost,
-                "fuel_type": e.fuel_type.value, "full_tank": e.full_tank,
+                "fuel_type": e.fuel_type.value,
+                "grade": e.grade.value if e.grade else None,
+                "full_tank": e.full_tank,
                 "station": e.station, "notes": e.notes,
             })  # fmt: skip
         for x in rec.expenses:

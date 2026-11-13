@@ -7,10 +7,17 @@ import type { VlExpenseDialog } from "../components/expense-dialog";
 import type { VlFuelDialog } from "../components/fuel-dialog";
 import type { VlReminderList } from "../components/reminder-list";
 import { icon } from "../components/icon";
-import { money, num, shortDate } from "../format";
+import { gradeLabel, money, num, shortDate } from "../format";
 import { t } from "../i18n";
 import { mdiDelete, mdiPencil, mdiPlus, sharedStyles } from "../styles";
-import type { CardConfig, Dashboard, ExpenseView, FuelEntryView } from "../types";
+import type {
+  CardConfig,
+  Dashboard,
+  ExpenseView,
+  FuelEntryView,
+  HomeAssistant,
+  VehicleView,
+} from "../types";
 import { VehicleCardBase } from "./base";
 
 export const listStyles = css`
@@ -63,6 +70,24 @@ export const listStyles = css`
     flex: none;
   }
 `;
+
+/** Détails d'un plein : compteur, distance, consommation, prix, station. */
+export function fuelDetails(
+  hass: HomeAssistant,
+  vehicle: VehicleView,
+  e: FuelEntryView,
+  currency: string,
+): string {
+  const volumeUnit = vehicle.units.volume[e.fuel_type] ?? "L";
+  const parts = [`${num(hass, e.odometer, 0)} ${vehicle.units.distance}`];
+  if (e.distance != null) parts.push(`+${num(hass, e.distance, 0)} ${vehicle.units.distance}`);
+  if (e.consumption != null) {
+    parts.push(`${num(hass, e.consumption, 2)} ${vehicle.units.consumption[e.fuel_type] ?? ""}`);
+  }
+  parts.push(`${money(hass, e.unit_price, currency, 3)}/${volumeUnit}`);
+  if (e.station) parts.push(e.station);
+  return parts.join(" · ");
+}
 
 export class VehicleLogCard extends VehicleCardBase {
   static override properties = {
@@ -133,6 +158,68 @@ export class VehicleLogCard extends VehicleCardBase {
         font-size: 0.8125rem;
         font-weight: 400;
         color: var(--vl-muted);
+      }
+      .last {
+        border-radius: 12px;
+        padding: 12px 16px;
+        background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .last-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 4px 12px;
+      }
+      .last-head h3 {
+        margin: 0;
+      }
+      .last-head span,
+      .hint {
+        color: var(--vl-muted);
+        font-size: 0.875rem;
+      }
+      .hint {
+        margin: 0;
+      }
+      .figures {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 32px;
+        margin: 0;
+      }
+      .figure {
+        display: flex;
+        flex-direction: column-reverse;
+        margin: 0;
+      }
+      .figure dt {
+        font-size: 0.8125rem;
+        color: var(--vl-muted);
+      }
+      .figure dd {
+        margin: 0;
+        font-size: 1.75rem;
+        font-weight: 500;
+        line-height: 1.2;
+        font-variant-numeric: tabular-nums;
+      }
+      .figure dd small {
+        font-size: 0.875rem;
+        font-weight: 400;
+        color: var(--vl-muted);
+      }
+      .delta {
+        font-size: 0.8125rem;
+      }
+      .delta.up {
+        color: var(--warning-color, #ffa600);
+      }
+      .delta.down {
+        color: var(--success-color, #43a047);
       }
       .recent {
         display: grid;
@@ -226,20 +313,66 @@ export class VehicleLogCard extends VehicleCardBase {
     </dl>`;
   }
 
+  /** Encart du dernier plein : distance parcourue et consommation mesurée. */
+  private _lastFill(data: Dashboard) {
+    const hass = this.hass;
+    const e = data.last_fuel;
+    if (!e) return nothing;
+    const volumeUnit = data.units.volume[e.fuel_type] ?? "L";
+    const consumptionUnit = data.units.consumption[e.fuel_type] ?? "";
+    const average = data.summary?.consumption[e.fuel_type] ?? null;
+    // Écart à la moyenne, dans le sens « consomme plus » (L/100 km) ou « parcourt
+    // moins » (km/L, mpg) : seules les unités en volume par distance montent.
+    const perDistance = /\/100/.test(consumptionUnit);
+    let delta = nothing as unknown;
+    if (e.consumption != null && average != null && average > 0) {
+      const diff = e.consumption - average;
+      const worse = perDistance ? diff > 0 : diff < 0;
+      if (Math.abs(diff) >= 0.005) {
+        delta = html`<span class="delta ${worse ? "up" : "down"}">
+          ${t(hass, worse ? "last_fill.worse" : "last_fill.better", {
+            value: num(hass, Math.abs(diff), 2),
+          })}
+        </span>`;
+      }
+    }
+    return html`<section class="last" aria-labelledby="last-fill">
+      <div class="last-head">
+        <h3 id="last-fill">${t(hass, "last_fill.title")}</h3>
+        <span>
+          ${shortDate(hass, e.date)} · ${num(hass, e.volume, 2)} ${volumeUnit}${e.grade
+            ? ` ${gradeLabel(e.grade)}`
+            : ""} · ${money(hass, e.total_cost, data.currency)}
+        </span>
+      </div>
+      <dl class="figures">
+        <div class="figure">
+          <dt>${t(hass, "last_fill.distance")}</dt>
+          <dd>${num(hass, e.distance, 0)} <small>${data.units.distance}</small></dd>
+        </div>
+        <div class="figure">
+          <dt>${t(hass, "last_fill.consumption")} ${delta}</dt>
+          <dd>${num(hass, e.consumption, 2)} <small>${consumptionUnit}</small></dd>
+        </div>
+      </dl>
+      ${e.full_tank
+        ? nothing
+        : html`<p class="hint">${t(hass, "last_fill.partial")}</p>`}
+    </section>`;
+  }
+
   private _fuelRow(data: Dashboard, e: FuelEntryView) {
     const hass = this.hass;
     const volumeUnit = data.units.volume[e.fuel_type] ?? "L";
-    const label = `${shortDate(hass, e.date)} · ${num(hass, e.volume, 2)} ${volumeUnit}`;
+    const grade = e.grade ? ` ${gradeLabel(e.grade)}` : "";
+    const label = `${shortDate(hass, e.date)} · ${num(hass, e.volume, 2)} ${volumeUnit}${grade}`;
     return html`<li>
       <div class="entry-main">
         <span class="entry-title">
           <span>${label}${e.full_tank ? nothing : html` <span class="badge">${t(hass, "fuel.partial")}</span>`}</span>
           <span class="amount">${money(hass, e.total_cost, data.currency)}</span>
         </span>
-        <span class="entry-sub">
-          ${num(hass, e.odometer, 0)} ${data.units.distance} ·
-          ${money(hass, e.unit_price, data.currency, 3)}/${volumeUnit}${e.station ? ` · ${e.station}` : ""}
-        </span>
+        <span class="entry-sub">${fuelDetails(hass, data, e, data.currency)}</span>
       </div>
       <span class="row-actions">
         <button
@@ -321,6 +454,7 @@ export class VehicleLogCard extends VehicleCardBase {
           </button>
         </div>
       </div>
+      ${config.show_last_fill !== false ? this._lastFill(data) : nothing}
       ${this._tiles(data)}
       ${config.show_reminders !== false
         ? html`<section aria-labelledby="reminders">

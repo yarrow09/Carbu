@@ -1,5 +1,5 @@
 // Courbe de consommation par plein et moyenne mobile (SVG, sans bibliothèque).
-import { css, html, LitElement, nothing, svg } from "lit";
+import { css, html, LitElement, svg } from "lit";
 
 import { longMonthLabel, num, shortDate } from "../format";
 import { t } from "../i18n";
@@ -10,6 +10,50 @@ const H = 220;
 const PAD = { top: 12, right: 12, bottom: 28, left: 44 };
 const POINT_COLOR = "#1e88e5";
 const AVERAGE_COLOR = "#ef6c00";
+
+export interface DateLabel {
+  x: number;
+  text: string;
+  anchor: "start" | "middle" | "end";
+}
+
+/**
+ * Libellés de dates d'un axe horizontal, sans chevauchement : le premier et le
+ * dernier point sont toujours datés, les intermédiaires s'il reste de la place.
+ */
+export function dateLabels(
+  hass: HomeAssistant,
+  dates: string[],
+  x: (i: number) => number,
+  plotW: number,
+): DateLabel[] {
+  const charWidth = 6.5; // police des axes : 11 px
+  const gap = 12;
+  const n = dates.length;
+  const make = (i: number) => {
+    const text = longMonthLabel(hass, dates[i].slice(0, 7));
+    const anchor: DateLabel["anchor"] =
+      n === 1 ? "middle" : i === 0 ? "start" : i === n - 1 ? "end" : "middle";
+    const w = text.length * charWidth;
+    const left = anchor === "start" ? x(i) : anchor === "end" ? x(i) - w : x(i) - w / 2;
+    return { x: x(i), text, anchor, left, right: left + w };
+  };
+  if (n === 0) return [];
+  if (n === 1) return [make(0)];
+  const last = make(n - 1);
+  const kept = [make(0)];
+  const maxLabels = Math.max(2, Math.floor(plotW / 90));
+  const step = Math.max(1, Math.ceil(n / maxLabels));
+  for (let i = step; i < n - 1; i += step) {
+    const label = make(i);
+    if (label.left >= kept[kept.length - 1].right + gap && label.right + gap <= last.left) {
+      kept.push(label);
+    }
+  }
+  if (last.left >= kept[kept.length - 1].right + gap || kept.length === 1) kept.push(last);
+  else kept[kept.length - 1] = last;
+  return kept;
+}
 
 export class VlConsumptionChart extends LitElement {
   static override properties = {
@@ -105,9 +149,7 @@ export class VlConsumptionChart extends LitElement {
     const y = (v: number) => PAD.top + plotH - ((v - lo) / (hi - lo)) * plotH;
     const ticks = [0, 0.5, 1].map((f) => lo + f * (hi - lo));
     const line = pts.map((p, i) => `${i ? "L" : "M"}${x(i)},${y(p.moving_average)}`).join(" ");
-    // Quelques libellés de dates, sans chevauchement.
-    const maxLabels = Math.max(2, Math.floor(plotW / 90));
-    const step = Math.max(1, Math.ceil(pts.length / maxLabels));
+    const labels = dateLabels(hass, pts.map((p) => p.date), x, plotW);
     const averageLabel = t(hass, "stats.moving_average", { count: this.window });
     const summary = t(hass, "stats.curve_summary", {
       count: pts.length,
@@ -127,12 +169,8 @@ export class VlConsumptionChart extends LitElement {
               <title>${shortDate(hass, p.date)} : ${num(hass, p.value, 2)} ${this.unit} (${averageLabel} : ${num(hass, p.moving_average, 2)})</title>
             </circle>`,
         )}
-        ${pts.map((p, i) =>
-          (i % step === 0 && pts.length - 1 - i >= step / 2) || i === pts.length - 1
-            ? svg`<text class="axis" x=${x(i)} y=${H - 8}
-                text-anchor=${pts.length > 1 && i === 0 ? "start" : pts.length > 1 && i === pts.length - 1 ? "end" : "middle"}
-              >${longMonthLabel(hass, p.date.slice(0, 7))}</text>`
-            : nothing,
+        ${labels.map(
+          (l) => svg`<text class="axis" x=${l.x} y=${H - 8} text-anchor=${l.anchor}>${l.text}</text>`,
         )}
       </svg>
       <ul class="legend">

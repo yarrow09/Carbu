@@ -5,8 +5,10 @@ import datetime as dt
 import pytest
 
 from custom_components.carbu.core.consumption import (
+    FillMetrics,
     average_consumption,
     consumption_segments,
+    fill_metrics,
 )
 from custom_components.carbu.core.models import FuelEntry, FuelType
 
@@ -105,3 +107,26 @@ def test_average_is_weighted() -> None:
     assert average_consumption(consumption_segments(entries)) == pytest.approx(
         60 / 1100 * 100
     )
+
+
+def test_fill_metrics() -> None:
+    entries = [
+        _f(1, 1000, 40),
+        _f(2, 1500, 20, full=False),
+        _f(3, 1800, 10, fuel=LPG),
+        _f(4, 2000, 30),
+        _f(5, 1900, 30),  # compteur en recul : rupture
+        _f(6, 2400, 25),
+    ]
+    metrics = fill_metrics(entries)
+    assert metrics["gasoline-1"] == FillMetrics(None, None)
+    # Plein partiel : distance connue, pas de consommation.
+    assert metrics["gasoline-2"] == FillMetrics(500, None)
+    # Distance depuis le plein précédent, quel que soit le carburant.
+    assert metrics["lpg-3"] == FillMetrics(300, None)
+    m4 = metrics["gasoline-4"]
+    assert m4.distance == 200
+    assert m4.consumption == pytest.approx((20 + 30) / 1000 * 100)
+    assert metrics["gasoline-5"] == FillMetrics(None, None)
+    assert metrics["gasoline-6"].distance == 500
+    assert metrics["gasoline-6"].consumption == pytest.approx(5.0)

@@ -3,6 +3,27 @@
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Le projet
 suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
+## [1.0.0-alpha.1] — non publiée
+
+Première préversion de la 1.0. La numérotation passe en 1.0 Alpha ; les versions
+0.x ci-dessous retracent les phases de développement et n'ont pas été publiées.
+
+### Ajouté
+
+- Distance parcourue depuis le plein précédent et consommation mesurée à chaque plein
+  complet, dans les listes de pleins et pour le dernier plein.
+- **Qualité d'essence** (SP95-E10, SP95, SP98) pour chaque plein : saisie (cartes,
+  formulaire natif, service `add_fuel`), export et import CSV (colonne `grade`).
+  Champ facultatif : les données existantes restent valides.
+- **Évolution du prix du carburant** : courbe plein par plein colorée par qualité,
+  et variation sur la période.
+- **Bilan carbone** : émissions de CO2e de la période, par km et par mois, à partir
+  des quantités réellement achetées et des facteurs de la Base Empreinte de l'ADEME.
+
+### Modifié
+
+- Page Carbu : présentation des statistiques revue, listes d'entrées allégées.
+
 ## [0.3.0] — non publiée (phase 3)
 
 ### Modifié
