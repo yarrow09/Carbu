@@ -143,3 +143,63 @@ Conversions de la moyenne :
 * Par km : 2 765,10 ÷ 2 300 = **1,202217 €/km**
 * Nombre de mois : 90 ÷ 30,4375 = 2,956879
 * Par mois : 2 765,10 ÷ 2,956879 = **935,141458 €/mois**
+
+## Rappels
+
+Module `core/reminders.py`.
+
+* **Dû** dès que le **premier** critère est atteint : date du jour ≥ date d'échéance,
+  ou kilométrage actuel ≥ kilométrage d'échéance. Un rappel « les deux » est donc dû
+  à la date **ou** au kilométrage, selon ce qui arrive en premier.
+* **Alerte** : pas encore dû, mais il reste au plus `alert_days` jours ou
+  `alert_distance` km avant un critère.
+* **Fait** : avec une récurrence, la prochaine échéance devient la date de réalisation
+  + `interval_days` et/ou le kilométrage de réalisation + `interval_distance`. Sans
+  récurrence, le rappel devient inactif.
+* **Notifications** : une à l'alerte, une à l'échéance, jamais répétées pour la même
+  échéance. Si l'échéance est atteinte sans alerte préalable, seule l'échéance est
+  notifiée.
+
+## Statistiques
+
+Module `core/statistics.py`. Les périodes sont glissantes et se terminent aujourd'hui
+inclus :
+
+| Période | Premier jour |
+|---|---|
+| 30 jours | aujourd'hui − 29 jours |
+| 3 mois / 12 mois | même quantième 3 / 12 mois plus tôt (borné à la fin du mois) + 1 jour |
+| Depuis l'acquisition | date d'acquisition, sinon première donnée enregistrée |
+
+* La **distance** suit la même règle que la distance par période ci-dessus
+  (interpolation aux bornes).
+* La **consommation** de la période ne retient que les segments qui **se terminent**
+  dans la période, avec une moyenne pondérée.
+* Les **coûts** additionnent les pleins et les dépenses datés dans la période.
+
+### Exemple vérifié : 30 derniers jours au 25/03/2026 (jeu de référence)
+
+* Période du 24/02 au 25/03/2026 (30 jours).
+* Pleins : #5 (73,50 €) et #6 (36,00 €), soit **109,50 €** et 62 L.
+* Dépenses : 4,60 + 300,00 + 8,00 = **312,60 €**.
+* Consommation : seul le segment C (#4 → #5, terminé le 01/03) compte, soit **7,00 L/100 km**.
+* Distance :
+  * #4 → #5 : 600 km sur 14 jours, dont 5 jours dans la période, soit 214,29 km.
+  * #5 → #6 : 300 km.
+  * Total : **514,29 km**.
+* Coût par km : 422,10 ÷ 514,29 = **0,8207 €/km**.
+
+### Courbe de consommation et moyenne mobile
+
+* Un point par plein complet fermant un segment.
+* La moyenne mobile porte sur les *n* derniers segments (5 par défaut, réglable).
+  Elle est **pondérée** (Σ litres ÷ Σ km), comme la moyenne générale. Elle utilise
+  l'historique antérieur au début du graphique, pour que les premiers points soient
+  significatifs.
+* Exemple avec *n* = 2 sur le jeu de référence :
+
+  | Point | Calcul | Moyenne mobile |
+  |---|---|---|
+  | A | segment seul | 6,00 |
+  | B | (36 + 37,5) ÷ 1 400 × 100 | 5,25 |
+  | C | (37,5 + 42) ÷ 1 400 × 100 | 5,679 |
