@@ -78,16 +78,3 @@ def test_monthly_grouping_by_category() -> None:
     for month, categories in ref.EXPECTED_MONTHLY.items():
         assert monthly[month] == pytest.approx(categories)
     assert all(not monthly[m] for m in list(monthly)[:9])
-
-
-def test_tco_with_depreciation() -> None:
-    assert ref.VEHICLE.acquisition_date is not None
-    per_km, per_month = costs.tco(
-        ref.EXPECTED_FUEL_COST,
-        ref.EXPECTED_EXPENSE_COST,
-        ref.EXPECTED_TOTAL_DISTANCE,
-        costs.months_between(ref.VEHICLE.acquisition_date, ref.TCO_END),
-        costs.depreciation(ref.PURCHASE_VALUE, ref.ESTIMATED_VALUE),
-    )
-    assert per_km == pytest.approx(ref.EXPECTED_TCO_PER_KM, **APPROX)
-    assert per_month == pytest.approx(ref.EXPECTED_TCO_PER_MONTH, **APPROX)

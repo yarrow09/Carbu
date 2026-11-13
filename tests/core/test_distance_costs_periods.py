@@ -74,12 +74,6 @@ def test_costs_filtered_by_period() -> None:
     assert costs.expense_cost(expenses, dt.date(2026, 2, 1), dt.date(2026, 3, 1)) == 20
 
 
-def test_tco_edge_cases() -> None:
-    assert costs.depreciation(None, 1000) == 0
-    assert costs.tco(100, 0, 0, 0) == (None, None)
-    assert costs.months_between(dt.date(2026, 2, 1), dt.date(2026, 1, 1)) == 0
-
-
 def test_period_bounds() -> None:
     # Le 14/01/2026 est un mercredi.
     assert period_bounds(Period.WEEK, dt.date(2026, 1, 14)) == (

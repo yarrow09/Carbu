@@ -15,8 +15,6 @@ les résultats ont été calculés à la main.
 | Miles | km ÷ 1,609344 | `units.py` |
 | Gallon US / UK | 3,785411784 L / 4,54609 L | `units.py` |
 | Coût par distance | Σ montants de la période ÷ distance de la période | `costs.py` |
-| TCO | (pleins + dépenses + amortissement) ÷ distance ; ÷ mois pour le coût mensuel | `costs.py` |
-| Mois | jours ÷ (365,25 ÷ 12) | `costs.py` |
 
 ### Règles du segment de consommation
 
@@ -135,14 +133,6 @@ Conversions de la moyenne :
 | 2026-01 | 138,60 | 120,00 | | | |
 | 2026-02 | 69,00 | | 15,40 | 4,60 | |
 | 2026-03 | 109,50 | | 8,00 | | 300,00 |
-
-**TCO** (avec amortissement : achat 15 000 €, valeur estimée 13 000 €, du
-01/01/2026 au 01/04/2026, soit 90 jours)
-
-* Total : 317,10 + 448,00 + 2 000 = 2 765,10 €
-* Par km : 2 765,10 ÷ 2 300 = **1,202217 €/km**
-* Nombre de mois : 90 ÷ 30,4375 = 2,956879
-* Par mois : 2 765,10 ÷ 2,956879 = **935,141458 €/mois**
 
 ## Rappels
 

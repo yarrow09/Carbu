@@ -81,8 +81,3 @@ EXPECTED_MONTHLY = {
     "2026-02": {"fuel": 69.00, "toll": 15.40, "parking": 4.60},
     "2026-03": {"fuel": 109.50, "toll": 8.00, "insurance": 300.00},
 }
-PURCHASE_VALUE = 15000.0
-ESTIMATED_VALUE = 13000.0
-TCO_END = dt.date(2026, 4, 1)
-EXPECTED_TCO_PER_KM = 1.202217
-EXPECTED_TCO_PER_MONTH = 935.141458
