@@ -5,7 +5,7 @@
     "frontend"
   ],
   "codeowners": [
-    "@OWNER"
+    "@yarrow09"
   ],
   "config_flow": true,
   "dependencies": [
@@ -13,10 +13,10 @@
     "http",
     "websocket_api"
   ],
-  "documentation": "https://github.com/OWNER/yarrow",
+  "documentation": "https://github.com/yarrow09/yarrow",
   "integration_type": "hub",
   "iot_class": "calculated",
-  "issue_tracker": "https://github.com/OWNER/yarrow/issues",
+  "issue_tracker": "https://github.com/yarrow09/yarrow/issues",
   "requirements": [],
   "single_config_entry": true,
   "version": "0.3.0"

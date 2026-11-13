@@ -29,7 +29,7 @@ Prérequis : Home Assistant **2026.10** ou plus récent.
 ### Avec HACS (recommandé)
 
 1. Dans HACS, ouvrez le menu **⋮ → Dépôts personnalisés**.
-2. Ajoutez l'URL du dépôt `https://github.com/OWNER/yarrow` avec la catégorie
+2. Ajoutez l'URL du dépôt `https://github.com/yarrow09/yarrow` avec la catégorie
    **Intégration**.
 3. Recherchez **Vehicle Log**, puis cliquez sur **Télécharger**.
 4. Redémarrez Home Assistant une fois. Ce redémarrage est demandé par HACS pour toute
