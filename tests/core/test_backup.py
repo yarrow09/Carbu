@@ -1,5 +1,6 @@
 """Format de sauvegarde : aller-retour sans perte, validation, migration."""
 
+from dataclasses import replace
 import datetime as dt
 import json
 
@@ -26,10 +27,11 @@ VEHICLE_DATA = ref.VEHICLE.to_dict()
 
 def _data() -> LogData:
     data = LogData()
+    # Copies : la suppression de catégorie modifie les dépenses en place.
     for fill in ref.FUEL:
-        data.records("ref").fuel.add(fill)
+        data.records("ref").fuel.add(replace(fill))
     for expense in ref.EXPENSES:
-        data.add_expense("ref", expense)
+        data.add_expense("ref", replace(expense))
     data.add_category(Category(id="wash", name="Lavage", color="#00aaff"))
     data.delete_category("toll")  # catégorie par défaut supprimée : doit le rester
     data.records("ref").odometer.add(
@@ -40,7 +42,7 @@ def _data() -> LogData:
             id="r1", label="Vidange", kind=ReminderKind.DISTANCE, due_odometer=15000
         )
     )
-    data.records("ghost").fuel.add(ref.FUEL[0])  # véhicule supprimé : exclu
+    data.records("ghost").fuel.add(replace(ref.FUEL[0]))  # véhicule supprimé : exclu
     return data
 
 
