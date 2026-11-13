@@ -1,6 +1,6 @@
 [project]
 name = "vehicle_log"
-version = "0.2.0"
+version = "0.3.0"
 description = "Carnet de bord véhicule pour Home Assistant"
 requires-python = ">=3.14"
 

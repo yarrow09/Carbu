@@ -56,3 +56,40 @@ Relevés manuels du compteur (entité « Kilométrage actuel » ou service
 La configuration des véhicules (unités, réservoirs…) n'est pas incluse : elle fait
 partie de l'entrée de configuration Home Assistant. Seuls les véhicules existants
 sont exportés.
+
+## Réimport
+
+Ces fichiers se réimportent dans un véhicule depuis la carte **Journal du véhicule**,
+avec le bouton **Importer**. L'import accepte aussi un fichier modifié dans un tableur :
+
+| Élément | Formes acceptées |
+|---|---|
+| Encodage | UTF-8 avec ou sans BOM, Windows-1252 |
+| Séparateur | `;`, ou `,` si la première ligne ne contient pas de `;` |
+| Dates | `AAAA-MM-JJ` ou `JJ/MM/AAAA` |
+| Nombres | `1234.5`, `1234,5`, `1 234,5`, `1.234,5`, `1,234.5` |
+| Booléens | `true` / `false`, `1` / `0`, `oui` / `non`, `vrai` / `faux`, `yes` / `no` |
+
+* **Type de fichier** : reconnu d'après les colonnes. Seules les colonnes nécessaires
+  sont obligatoires :
+
+  | Fichier | Colonnes obligatoires |
+  |---|---|
+  | Pleins | `date`, `odometer_km`, et deux colonnes parmi `volume`, `unit_price`, `total_cost` |
+  | Dépenses | `date`, `amount` |
+  | Relevés | `date`, `odometer_km` |
+  | Rappels | `label`, `kind` |
+
+* **Colonne `vehicle_id`** : ignorée. Tout est importé dans le véhicule choisi.
+* **Catégorie d'une dépense** : `category_id` si elle existe, sinon `category_name`
+  (nom ou libellé traduit, sans tenir compte de la casse), sinon une nouvelle catégorie
+  est créée. Sans aucune des deux, la dépense va dans « Autre ».
+* **Doublons** : une ligne dont l'identifiant existe déjà, ou dont les valeurs clés
+  sont déjà présentes, n'est pas importée. Valeurs clés :
+  - plein : date, kilométrage, quantité ;
+  - dépense : date, montant, catégorie, description ;
+  - relevé : date, kilométrage ;
+  - rappel : libellé, type.
+* **Aperçu** : avant toute écriture, il indique pour chaque ligne si elle est
+  nouvelle, en doublon ou en erreur (avec son numéro et le motif).
+* **Limites** : 5 Mo et 20 000 lignes par fichier.

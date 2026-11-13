@@ -3,6 +3,27 @@
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Le projet
 suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
+## [0.3.0] — non publiée (phase 3)
+
+### Ajouté
+
+- **Sauvegarde complète** au format ZIP (`backup.json` versionné et pièces jointes),
+  depuis la page globale ou le service `vehicle_log.backup`.
+- **Restauration** depuis une sauvegarde existante ou une archive envoyée, avec aperçu
+  et confirmation. Les véhicules sont recréés avec leurs identifiants, ce qui rend
+  l'aller-retour sans perte (testé).
+- **Import CSV** dans un véhicule depuis la carte journal :
+  - aperçu des lignes nouvelles, des doublons et des erreurs avant écriture ;
+  - tolérance aux fichiers modifiés dans un tableur (encodage, dates, décimales) ;
+  - catégories résolues ou créées.
+- Documentation des formats de sauvegarde et d'import.
+
+### Retiré du périmètre
+
+- Rapport PDF et coût total de possession avec amortissement, abandonnés à la
+  demande du porteur du projet. Le calcul de TCO présent depuis la phase 1 a été
+  supprimé.
+
 ## [0.2.0] — non publiée (phase 2)
 
 ### Ajouté

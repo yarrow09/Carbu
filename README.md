@@ -5,7 +5,7 @@ pleins, consommation réelle, dépenses par catégorie, coût par kilomètre, ra
 d'entretien.
 Tout se configure depuis l'interface, les données restent sur votre Home Assistant.
 
-> **Version 0.2.0.** L'intégration sert à suivre la consommation et les coûts. Elle
+> **Version 0.3.0.** L'intégration sert à suivre la consommation et les coûts. Elle
 > ne recherche pas les prix des carburants en ligne. Les véhicules électriques ne sont
 > pas pris en charge.
 
@@ -17,6 +17,7 @@ Tout se configure depuis l'interface, les données restent sur votre Home Assist
 - [Entités](#entités)
 - [Rappels et notifications](#rappels-et-notifications)
 - [Services](#services)
+- [Sauvegarde, restauration et import](#sauvegarde-restauration-et-import)
 - [Calculs](#calculs)
 - [Données et vie privée](#données-et-vie-privée)
 - [Développement](#développement)
@@ -70,6 +71,7 @@ Tout se fait dans **Paramètres → Appareils et services**, sans YAML.
    - **Notifications des rappels** : entités `notify` et/ou anciens services
      `notify.xxx`, comme l'application mobile.
    - **Statistiques** : nombre de pleins de la moyenne mobile (5 par défaut).
+   - **Créer une sauvegarde complète** et **Restaurer une sauvegarde** (voir plus bas).
 
 Catégories par défaut : entretien, assurance, stationnement, péage, contrôle technique,
 réparation, autre.
@@ -115,6 +117,8 @@ affichées.
   sont affichés.
 - Modification et suppression avec confirmation. Tous les indicateurs sont
   recalculés.
+- **Importer** : import d'un fichier CSV dans le véhicule, avec un aperçu avant
+  écriture (voir plus bas).
 
 ### Statistiques du véhicule (`custom:vehicle-log-stats-card`)
 
@@ -163,7 +167,7 @@ Un rappel peut se déclencher à une date, à un kilométrage, ou aux deux. Il d
 
 ## Services
 
-Les quatre services s'utilisent dans les automatisations et les scripts. Le véhicule
+Les cinq services s'utilisent dans les automatisations et les scripts. Le véhicule
 se choisit par son appareil, et les valeurs sont dans les unités du véhicule. Chaque
 service peut renvoyer une réponse (`response_variable`).
 
@@ -173,6 +177,7 @@ service peut renvoyer une réponse (`response_variable`).
 | `vehicle_log.add_expense` | `vehicle`, `amount`, `category` (identifiant ou nom), puis facultatifs : `date`, `odometer`, `description` | `expense` |
 | `vehicle_log.update_odometer` | `vehicle`, `odometer`, `strict` | `saved`, `warnings` |
 | `vehicle_log.export_data` | aucun | `folder`, `files` |
+| `vehicle_log.backup` | aucun | `path` |
 
 Une automatisation ne peut pas répondre à une demande de confirmation. Les
 avertissements de cohérence (kilométrage en baisse, plein supérieur au réservoir…)
@@ -199,6 +204,25 @@ actions:
 `categories.csv` dans `<config>/vehicle_log/exports/<date-heure>/`. Le format est
 décrit dans [docs/format-export.md](docs/format-export.md).
 
+## Sauvegarde, restauration et import
+
+- **Sauvegarde complète** : page globale, ou service `vehicle_log.backup` à planifier
+  dans une automatisation.
+  - Elle produit une archive ZIP dans `<config>/vehicle_log/backups/` avec les
+    véhicules, les réglages, toutes les données et les pièces jointes.
+  - Format : [docs/format-sauvegarde.md](docs/format-sauvegarde.md).
+- **Restauration** : page globale, **Restaurer une sauvegarde**.
+  - Choisissez une sauvegarde du dossier ou envoyez une archive.
+  - Un aperçu indique son contenu ; la confirmation remplace **tous** les véhicules
+    et toutes les données.
+  - Une restauration suivie d'une nouvelle sauvegarde donne des données identiques.
+- **Import CSV** : carte **Journal du véhicule**, bouton **Importer**.
+  - Il accepte les fichiers de l'export, y compris modifiés dans un tableur.
+  - L'aperçu liste les lignes nouvelles, les doublons ignorés et les erreurs avec
+    leur numéro de ligne, avant toute écriture.
+  - L'import s'ajoute aux données existantes.
+  - Règles détaillées dans [docs/format-export.md](docs/format-export.md#réimport).
+
 ## Calculs
 
 Les formules, les règles des pleins partiels et le jeu de données de référence calculé
@@ -224,7 +248,8 @@ Les formules, les règles des pleins partiels et le jeu de données de référen
     `<config>/.storage/vehicle_log.data`, au format versionné décrit dans
     [docs/format-stockage.md](docs/format-stockage.md) ;
   - les pièces jointes dans `<config>/vehicle_log/attachments/` ;
-  - les exports dans `<config>/vehicle_log/exports/`.
+  - les exports dans `<config>/vehicle_log/exports/` ;
+  - les sauvegardes dans `<config>/vehicle_log/backups/`.
 - La configuration des véhicules est enregistrée dans l'entrée de configuration
   Home Assistant.
 - Aucune donnée n'est envoyée à un tiers et aucun compte en ligne n'est nécessaire.
@@ -260,6 +285,7 @@ custom_components/vehicle_log/
   config_flow.py   installation, assistant véhicule, page globale
   sensor.py, number.py, binary_sensor.py, services.py, notifications.py
   websocket_api.py, attachments.py, frontend.py
+  backup_archive.py, csv_import_view.py
 frontend/src/      sources des cartes
 tests/             tests (core/ : calculs purs ; perf/ : 5 ans de données)
 ```
