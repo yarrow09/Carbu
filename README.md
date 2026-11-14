@@ -358,7 +358,8 @@ custom_components/carbu/
   flows/           assistant véhicule, catégories, réglages, sauvegarde
   labels.py        libellés traduits lus côté serveur
   sensor.py, number.py, binary_sensor.py, services.py, notifications.py
-  websocket_api.py, attachments.py, frontend.py
+  websocket/       API des cartes, un module par domaine
+  attachments.py, frontend.py
   backup_archive.py, csv_import_view.py
 frontend/src/      sources des cartes
 tests/             tests (core/ : calculs purs ; perf/ : 5 ans de données)

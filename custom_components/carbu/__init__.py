@@ -19,7 +19,7 @@ from .csv_import_view import CsvImportView
 from .frontend import async_register_frontend, async_register_panel, async_remove_panel
 from .services import async_register_services
 from .storage import VehicleLogStorage
-from .websocket_api import async_register_websocket_commands
+from .websocket import async_register_websocket_commands
 
 PLATFORMS: list[Platform] = [Platform.BINARY_SENSOR, Platform.NUMBER, Platform.SENSOR]
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
