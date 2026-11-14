@@ -10,6 +10,7 @@ import type {
   ImportPreview,
   ImportResult,
   Page,
+  RecurringView,
   ReminderView,
   StatsPeriod,
   StatsView,
@@ -195,3 +196,31 @@ export async function importCsv(
   if (!response.ok) throw new Error(String(payload.code ?? response.status));
   return payload as unknown as ImportPreview | ImportResult;
 }
+
+export const fetchRecurring = (hass: HomeAssistant, vehicleId: string) =>
+  hass.callWS<RecurringView[]>({ type: `${P}/recurring`, vehicle_id: vehicleId });
+
+export const saveRecurring = (
+  hass: HomeAssistant,
+  vehicleId: string,
+  payload: Record<string, unknown>,
+) =>
+  hass.callWS<RecurringView>({
+    type: `${P}/recurring/save`,
+    vehicle_id: vehicleId,
+    ...payload,
+  });
+
+export const deleteRecurring = (hass: HomeAssistant, vehicleId: string, recurringId: string) =>
+  hass.callWS<null>({
+    type: `${P}/recurring/delete`,
+    vehicle_id: vehicleId,
+    recurring_id: recurringId,
+  });
+
+/** Contenu des fichiers CSV d'un véhicule ``{nom: texte}``. */
+export const fetchExport = (hass: HomeAssistant, vehicleId: string) =>
+  hass.callWS<{ files: Record<string, string>; rows: Record<string, number> }>({
+    type: `${P}/export`,
+    vehicle_id: vehicleId,
+  });

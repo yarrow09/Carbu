@@ -19,6 +19,7 @@ from .models import (
     Expense,
     FuelEntry,
     OdometerReading,
+    RecurringExpense,
     Reminder,
 )
 
@@ -118,6 +119,7 @@ class VehicleRecords:
         default_factory=lambda: _Collection(key=_odometer_key)
     )
     reminders: _Collection[Reminder] = field(default_factory=_Collection)
+    recurring: _Collection[RecurringExpense] = field(default_factory=_Collection)
 
     def to_dict(self) -> dict[str, Any]:
         """Sérialiser."""
@@ -126,6 +128,7 @@ class VehicleRecords:
             "expenses": self.expenses.to_list(),
             "odometer": self.odometer.to_list(),
             "reminders": self.reminders.to_list(),
+            "recurring": self.recurring.to_list(),
         }
 
     @classmethod
@@ -145,6 +148,10 @@ class VehicleRecords:
             ),
             reminders=_Collection(
                 [Reminder.from_dict(d) for d in data.get("reminders", [])]
+            ),
+            # Absente des données antérieures à la 1.0.0-alpha.2.
+            recurring=_Collection(
+                [RecurringExpense.from_dict(d) for d in data.get("recurring", [])]
             ),
         )
 
@@ -220,6 +227,17 @@ class LogData:
         self._check_category(expense.category_id)
         return self.records(vehicle_id).expenses.update(expense)
 
+    def save_recurring(self, vehicle_id: str, item: RecurringExpense) -> None:
+        """Ajouter ou modifier une dépense récurrente."""
+        self._check_category(item.category_id)
+        collection = self.records(vehicle_id).recurring
+        try:
+            collection.get(item.id)
+        except RecordNotFoundError:
+            collection.add(item)
+        else:
+            collection.update(item)
+
     # --- Catégories ----------------------------------------------------
 
     def add_category(self, category: Category) -> Category:
@@ -262,8 +280,8 @@ class LogData:
         return sum(
             1
             for rec in self.vehicles.values()
-            for expense in rec.expenses
-            if expense.category_id == category_id
+            for item in (*rec.expenses, *rec.recurring)
+            if item.category_id == category_id
         )
 
     def delete_category(self, category_id: str) -> int:
@@ -281,6 +299,10 @@ class LogData:
             for expense in rec.expenses:
                 if expense.category_id == category_id:
                     expense.category_id = CATEGORY_OTHER
+                    moved += 1
+            for recurring in rec.recurring:
+                if recurring.category_id == category_id:
+                    recurring.category_id = CATEGORY_OTHER
                     moved += 1
         del self.categories[category_id]
         return moved

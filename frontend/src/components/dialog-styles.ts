@@ -57,6 +57,11 @@ export const dialogStyles = css`
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: var(--vl-gap);
   }
+  .help {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--vl-muted);
+  }
   .check {
     display: flex;
     align-items: center;

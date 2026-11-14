@@ -259,6 +259,8 @@ class Expense:
     category_id: str
     description: str = ""
     attachment: str | None = None
+    # Échéance d'une dépense récurrente qui a créé cette dépense.
+    recurring_id: str | None = None
 
     def sort_key(self) -> tuple[dt.date, float]:
         """Clé de tri chronologique."""
@@ -274,6 +276,7 @@ class Expense:
             "category_id": self.category_id,
             "description": self.description,
             "attachment": self.attachment,
+            "recurring_id": self.recurring_id,
         }
 
     @classmethod
@@ -287,6 +290,7 @@ class Expense:
             category_id=data["category_id"],
             description=data.get("description", ""),
             attachment=data.get("attachment"),
+            recurring_id=data.get("recurring_id"),
         )
 
 
@@ -320,6 +324,94 @@ class OdometerReading:
             date=dt.date.fromisoformat(data["date"]),
             time=_time(data.get("time")),
             odometer=float(data["odometer"]),
+        )
+
+
+# Périodicités proposées pour une dépense récurrente, en mois.
+RECURRING_INTERVALS: tuple[int, ...] = (1, 2, 3, 6, 12)
+
+
+def _last_day(year: int, month: int) -> int:
+    nxt = dt.date(year + month // 12, month % 12 + 1, 1)
+    return (nxt - dt.timedelta(days=1)).day
+
+
+@dataclass(slots=True, kw_only=True)
+class RecurringExpense:
+    """Dépense récurrente (abonnement, assurance mensuelle…).
+
+    Chaque échéance arrivée crée une dépense ordinaire (``Expense``), comptée
+    dans les statistiques comme les autres. ``last_date`` est la dernière
+    échéance déjà créée : modifier la récurrence ne touche que les suivantes.
+    """
+
+    id: str = field(default_factory=new_id)
+    label: str
+    amount: float
+    category_id: str
+    interval_months: int = 1
+    start_date: dt.date
+    end_date: dt.date | None = None
+    active: bool = True
+    last_date: dt.date | None = None
+
+    def occurrence(self, index: int) -> dt.date:
+        """Date de l'échéance numéro ``index`` (0 = première).
+
+        Le quantième de départ est conservé, borné à la fin du mois (une
+        échéance du 31 tombe le 30 avril puis le 31 mai).
+        """
+        months = self.start_date.month - 1 + index * self.interval_months
+        year = self.start_date.year + months // 12
+        month = months % 12 + 1
+        return dt.date(year, month, min(self.start_date.day, _last_day(year, month)))
+
+    def next_date(self) -> dt.date | None:
+        """Prochaine échéance non encore créée (``None`` si terminée)."""
+        if not self.active:
+            return None
+        index = 0
+        if self.last_date is not None:
+            # Saut direct près de la bonne échéance, puis ajustement.
+            elapsed = (self.last_date.year - self.start_date.year) * 12 + (
+                self.last_date.month - self.start_date.month
+            )
+            index = max(0, elapsed // self.interval_months - 1)
+            while self.occurrence(index) <= self.last_date:
+                index += 1
+        day = self.occurrence(index)
+        if self.end_date is not None and day > self.end_date:
+            return None
+        return day
+
+    def to_dict(self) -> dict[str, Any]:
+        """Sérialiser."""
+        return {
+            "id": self.id,
+            "label": self.label,
+            "amount": self.amount,
+            "category_id": self.category_id,
+            "interval_months": self.interval_months,
+            "start_date": self.start_date.isoformat(),
+            "end_date": _iso(self.end_date),
+            "active": self.active,
+            "last_date": _iso(self.last_date),
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> RecurringExpense:
+        """Désérialiser."""
+        interval = int(data.get("interval_months", 1))
+        return cls(
+            id=data["id"],
+            label=str(data["label"])[:MAX_SHORT_TEXT],
+            amount=float(data["amount"]),
+            category_id=data["category_id"],
+            interval_months=interval if interval in RECURRING_INTERVALS else 1,
+            start_date=dt.date.fromisoformat(data["start_date"]),
+            end_date=_date(data.get("end_date")),
+            active=bool(data.get("active", True)),
+            last_date=_date(data.get("last_date")),
         )
 
 

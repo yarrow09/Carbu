@@ -7,10 +7,12 @@ se terminent aujourd'hui inclus.
 
 from __future__ import annotations
 
+from bisect import bisect_left
 from collections.abc import Iterable
 from dataclasses import dataclass
 import datetime as dt
 from enum import StrEnum
+from itertools import pairwise
 
 from . import carbon, costs, distance
 from .consumption import ConsumptionSegment, average_consumption, consumption_segments
@@ -234,3 +236,89 @@ def consumption_series(
             )
         )
     return points
+
+
+# Distance minimale (km) avant le premier point de la courbe du coût au km :
+# sur quelques dizaines de km, un plein ou une dépense donnerait des €/km
+# absurdes (375 € sur 50 km = 7,5 €/km) et écraserait l'échelle du graphique.
+MIN_COST_DISTANCE_KM = 1000.0
+
+
+@dataclass(frozen=True, slots=True)
+class CostPoint:
+    """Coût au km cumulé depuis le premier relevé, à la fin d'une journée."""
+
+    date: dt.date
+    total_per_km: float
+    fuel_per_km: float
+
+
+def cost_per_km_series(
+    records: VehicleRecords,
+    today: dt.date,
+    start: dt.date | None = None,
+    min_distance: float = MIN_COST_DISTANCE_KM,
+) -> list[CostPoint]:
+    """Évolution du coût au km, cumulé depuis le début du carnet.
+
+    Un point par jour comportant un plein ou une dépense (et aujourd'hui) :
+    Σ montants jusqu'à ce jour ÷ distance parcourue jusqu'à ce jour. Le cumul
+    lisse les à-coups (assurance annuelle, gros entretien) et converge vers le
+    coût réel du véhicule. Seuls les points à partir de ``start`` sont renvoyés,
+    et seulement une fois ``min_distance`` km parcourus.
+    """
+    fuel = records.fuel.items
+    expenses = records.expenses.items
+    readings = distance.collect_readings(fuel, expenses, records.odometer.items)
+    if len(readings) < 2:
+        return []
+    # Distance cumulée à chaque relevé (progressions positives uniquement).
+    reading_at = [r.at for r in readings]
+    cumulated = [0.0]
+    for previous, current in pairwise(readings):
+        cumulated.append(cumulated[-1] + max(0.0, current.odometer - previous.odometer))
+    outlays = sorted(
+        [(e.date, e.total_cost, e.total_cost) for e in fuel]
+        + [(x.date, x.amount, 0.0) for x in expenses if x.date <= today]
+    )
+    days = sorted({day for day, _, _ in outlays} | {today})
+    points: list[CostPoint] = []
+    total = fuel_total = 0.0
+    index = 0
+    for day in days:
+        while index < len(outlays) and outlays[index][0] <= day:
+            total += outlays[index][1]
+            fuel_total += outlays[index][2]
+            index += 1
+        if start is not None and day < start:
+            continue
+        cutoff = dt.datetime.combine(day + dt.timedelta(days=1), dt.time.min)
+        count = bisect_left(reading_at, cutoff)
+        km = cumulated[count - 1] if count else 0.0
+        if km <= 0 or km < min_distance:
+            continue
+        points.append(CostPoint(day, total / km, fuel_total / km))
+    return points
+
+
+@dataclass(frozen=True, slots=True)
+class OdometerPoint:
+    """Kilométrage total relevé en fin de journée."""
+
+    date: dt.date
+    odometer: float
+
+
+def odometer_series(
+    records: VehicleRecords, start: dt.date | None = None
+) -> list[OdometerPoint]:
+    """Courbe du compteur : dernier relevé de chaque jour à partir de ``start``."""
+    readings = distance.collect_readings(
+        records.fuel.items, records.expenses.items, records.odometer.items
+    )
+    by_day: dict[dt.date, float] = {}
+    for reading in readings:
+        day = reading.at.date()
+        if start is None or day >= start:
+            by_day[day] = reading.odometer
+    return [OdometerPoint(day, km) for day, km in by_day.items()]

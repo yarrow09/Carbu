@@ -122,6 +122,7 @@ async def test_all_services_from_an_automation(hass: HomeAssistant, entry: Any) 
     assert files == [
         "categories.csv",
         "depenses.csv",
+        "depenses_recurrentes.csv",
         "pleins.csv",
         "rappels.csv",
         "releves.csv",

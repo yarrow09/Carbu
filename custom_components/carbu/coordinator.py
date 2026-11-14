@@ -20,9 +20,22 @@ from homeassistant.util import dt as dt_util
 from .attachments import AttachmentStore
 from .const import CONF_MOVING_AVERAGE, DEFAULT_MOVING_AVERAGE, DOMAIN
 from .core.distance import Reading, collect_readings
-from .core.inputs import expense_from_input, fuel_entry_from_input, reminder_from_input
-from .core.models import Expense, FuelEntry, OdometerReading, Reminder, Vehicle
+from .core.inputs import (
+    expense_from_input,
+    fuel_entry_from_input,
+    recurring_from_input,
+    reminder_from_input,
+)
+from .core.models import (
+    Expense,
+    FuelEntry,
+    OdometerReading,
+    RecurringExpense,
+    Reminder,
+    Vehicle,
+)
 from .core.presenter import VehicleUnits
+from .core.recurring import generate_due
 from .core.reminders import (
     ReminderStatus,
     mark_done,
@@ -85,6 +98,9 @@ class VehicleLogCoordinator(DataUpdateCoordinator[dict[str, VehicleSummary]]):
         self.attachments = attachments
 
     async def _async_update_data(self) -> dict[str, VehicleSummary]:
+        # Passage horaire (et démarrage) : échéances des dépenses récurrentes.
+        if self._generate_recurring():
+            self.storage.async_schedule_save()
         data = self._compute()
         # Passage horaire : prend en compte les échéances par date.
         self._async_process_notifications(data)
@@ -96,6 +112,13 @@ class VehicleLogCoordinator(DataUpdateCoordinator[dict[str, VehicleSummary]]):
             vid: compute_summary(vehicle, self.records(vid), now)
             for vid, vehicle in self.vehicles.items()
         }
+
+    def _generate_recurring(self) -> bool:
+        """Créer les dépenses des échéances arrivées (véhicules connus)."""
+        created = generate_due(self.storage.data, local_now().date(), self.vehicles)
+        if created:
+            _LOGGER.debug("%s dépense(s) récurrente(s) créée(s)", created)
+        return created > 0
 
     # --- Accès ----------------------------------------------------------
 
@@ -345,6 +368,32 @@ class VehicleLogCoordinator(DataUpdateCoordinator[dict[str, VehicleSummary]]):
         reminders.update(updated)
         self.async_commit()
         return updated
+
+    # --- Dépenses récurrentes ------------------------------------------------
+
+    @callback
+    def async_save_recurring(
+        self,
+        vehicle_id: str,
+        data: Mapping[str, Any],
+        recurring_id: str | None = None,
+    ) -> RecurringExpense:
+        """Créer ou modifier une dépense récurrente ; crée les échéances arrivées."""
+        self.vehicle(vehicle_id)
+        rec = self.records(vehicle_id)
+        existing = rec.recurring.get(recurring_id) if recurring_id else None
+        item = recurring_from_input(data, existing, local_now().date())
+        self.storage.data.save_recurring(vehicle_id, item)
+        self._generate_recurring()
+        self.async_commit()
+        return item
+
+    @callback
+    def async_delete_recurring(self, vehicle_id: str, recurring_id: str) -> None:
+        """Supprimer une dépense récurrente (les dépenses déjà créées restent)."""
+        self.vehicle(vehicle_id)
+        self.records(vehicle_id).recurring.delete(recurring_id)
+        self.async_commit()
 
     # --- Notifications ------------------------------------------------------
 

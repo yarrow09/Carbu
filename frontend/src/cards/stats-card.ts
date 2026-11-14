@@ -5,6 +5,7 @@ import { fetchCategories, fetchStats } from "../api";
 import { co2Mass, money, num, shortDate } from "../format";
 import { t, type Key } from "../i18n";
 import { sharedStyles } from "../styles";
+import type { LineSeries } from "../components/line-chart";
 import type { CardConfig, Category, StatsPeriod, StatsView } from "../types";
 import { VehicleCardBase } from "./base";
 
@@ -264,6 +265,22 @@ export class VehicleLogStatsCard extends VehicleCardBase {
         maximumFractionDigits: 0,
       }).format(total > 0 ? v / total : 0);
 
+    const costSeries: LineSeries[] = [
+      {
+        label: t(hass, "stats.cost_curve_total"),
+        color: "#1e88e5",
+        points: s.cost_curve.map((p) => ({ date: p.date, value: p.total })),
+      },
+      {
+        label: t(hass, "stats.cost_curve_fuel"),
+        color: "#2e7d32",
+        points: s.cost_curve.map((p) => ({ date: p.date, value: p.fuel })),
+      },
+    ];
+    const odometerSeries: LineSeries[] = [
+      { label: t(hass, "stats.odometer_label"), color: "#6d4c41", points: s.odometer_curve },
+    ];
+
     return html`<ha-card>
       <div class="head">
         <h2>${this._config.title || `${t(hass, "stats.name")} · ${vehicle.name}`}</h2>
@@ -388,6 +405,25 @@ export class VehicleLogStatsCard extends VehicleCardBase {
             ></vl-price-chart>
           </section>`,
         )}
+      <section aria-labelledby="cost-curve">
+        <h3 id="cost-curve">${t(hass, "stats.cost_curve", { unit })}</h3>
+        <vl-line-chart
+          .hass=${hass}
+          .name=${t(hass, "stats.cost_curve", { unit })}
+          .series=${costSeries}
+          .format=${(v: number) => money(hass, v, currency, 3)}
+        ></vl-line-chart>
+        <p class="note">${t(hass, "stats.cost_curve_note")}</p>
+      </section>
+      <section aria-labelledby="odometer-curve">
+        <h3 id="odometer-curve">${t(hass, "stats.odometer_curve")}</h3>
+        <vl-line-chart
+          .hass=${hass}
+          .name=${t(hass, "stats.odometer_curve")}
+          .series=${odometerSeries}
+          .format=${(v: number) => `${num(hass, v, 0)} ${unit}`}
+        ></vl-line-chart>
+      </section>
       ${rows.length
         ? html`<section aria-labelledby="by-category">
             <h3 id="by-category">${t(hass, "stats.by_category")}</h3>

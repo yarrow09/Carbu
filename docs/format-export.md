@@ -31,10 +31,21 @@ du format : **1**. Il servira à l'import et à la restauration en phase 3.
 
 ### `depenses.csv`
 
-`vehicle_id;vehicle_name;id;date;odometer_km;amount;category_id;category_name;description;attachment`
+`vehicle_id;vehicle_name;id;date;odometer_km;amount;category_id;category_name;description;attachment;recurring_id`
 
 * `attachment` : nom du fichier dans `<config>/carbu/attachments/<vehicle_id>/`.
   Les fichiers eux-mêmes ne sont pas copiés.
+* `recurring_id` : identifiant de la dépense récurrente qui a créé la ligne (vide
+  pour une saisie manuelle). Ignoré à l'import.
+
+### `depenses_recurrentes.csv`
+
+`vehicle_id;vehicle_name;id;label;amount;category_id;category_name;interval_months;start_date;end_date;active;last_date`
+
+* `interval_months` : périodicité en mois (`1`, `2`, `3`, `6` ou `12`).
+* `last_date` : dernière échéance déjà ajoutée aux dépenses.
+* Fichier informatif : il n'est pas réimporté (la sauvegarde complète, elle,
+  restaure les récurrences).
 
 ### `releves.csv`
 
@@ -58,6 +69,10 @@ Relevés manuels du compteur (entité « Kilométrage actuel » ou service
 La configuration des véhicules (unités, réservoirs…) n'est pas incluse : elle fait
 partie de l'entrée de configuration Home Assistant. Seuls les véhicules existants
 sont exportés.
+
+Depuis la page Carbu, le bouton **Exporter** du journal télécharge ces fichiers
+pour un véhicule (sans `categories.csv`), directement dans le navigateur. Le
+service `carbu.export_data` les écrit sur le serveur, pour tous les véhicules.
 
 ## Réimport
 

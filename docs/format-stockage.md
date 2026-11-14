@@ -55,6 +55,12 @@ saisie et à l'affichage.
          "interval_days": 365, "interval_distance": 15000, "active": true,
          "last_done_date": "2026-01-01", "last_done_odometer": 15000,
          "notified": ["alert"]}
+      ],
+      "recurring": [
+        {"id": "…", "label": "Assurance", "amount": 42.5,
+         "category_id": "insurance", "interval_months": 1,
+         "start_date": "2026-01-31", "end_date": null, "active": true,
+         "last_date": "2026-03-31"}
       ]
     }
   }
@@ -74,6 +80,12 @@ saisie et à l'affichage.
   critère atteint). `interval_*` : récurrence facultative. `notified` : étapes
   déjà notifiées pour l'échéance en cours (`alert`, `due`), remis à zéro quand
   l'échéance change. `active: false` : rappel non récurrent déjà fait.
+* `recurring` : dépenses récurrentes (ajouté en 1.0.0-alpha.2, absent = liste
+  vide, sans changement de version du stockage). Chaque échéance arrivée crée
+  une dépense dans `expenses`, avec `recurring_id` ; `last_date` est la dernière
+  échéance créée. Le quantième de `start_date` est conservé, borné à la fin du
+  mois (31 janvier → 28 février → 31 mars).
+* `expenses[].recurring_id` : facultatif, `null` pour une saisie manuelle.
 
 ## Migrations
 

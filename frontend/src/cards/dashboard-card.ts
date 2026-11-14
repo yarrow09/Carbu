@@ -5,6 +5,7 @@ import { deleteExpense, deleteFuel, fetchDashboard } from "../api";
 import type { VlConfirmDialog } from "../components/confirm-dialog";
 import type { VlExpenseDialog } from "../components/expense-dialog";
 import type { VlFuelDialog } from "../components/fuel-dialog";
+import type { VlRecurringList } from "../components/recurring-list";
 import type { VlReminderList } from "../components/reminder-list";
 import { icon } from "../components/icon";
 import { gradeLabel, money, num, shortDate } from "../format";
@@ -257,7 +258,10 @@ export class VehicleLogCard extends VehicleCardBase {
   protected async loadVehicleData(): Promise<void> {
     const vehicle = this.vehicle;
     this._data = vehicle ? await fetchDashboard(this.hass, vehicle.id) : null;
-    await (this.renderRoot.querySelector("vl-reminder-list") as VlReminderList | null)?.reload();
+    await Promise.all([
+      (this.renderRoot.querySelector("vl-reminder-list") as VlReminderList | null)?.reload(),
+      (this.renderRoot.querySelector("vl-recurring-list") as VlRecurringList | null)?.reload(),
+    ]);
   }
 
   private _dialog<T>(selector: string): T {
@@ -469,6 +473,27 @@ export class VehicleLogCard extends VehicleCardBase {
               </button>
             </div>
             <vl-reminder-list .hass=${hass} .vehicle=${data}></vl-reminder-list>
+          </section>`
+        : nothing}
+      ${config.show_recurring !== false
+        ? html`<section aria-labelledby="recurring">
+            <div class="head">
+              <h3 id="recurring">${t(hass, "recurring.title")}</h3>
+              <button
+                aria-label=${t(hass, "recurring.add_long")}
+                @click=${() =>
+                  (this.renderRoot.querySelector("vl-recurring-list") as VlRecurringList).openEditor()}
+              >
+                ${icon(mdiPlus)} ${t(hass, "recurring.add")}
+              </button>
+            </div>
+            <vl-recurring-list
+              .hass=${hass}
+              .vehicle=${data}
+              .categories=${data.categories}
+              .currency=${data.currency}
+              @saved=${() => this.reload()}
+            ></vl-recurring-list>
           </section>`
         : nothing}
       ${config.show_recent

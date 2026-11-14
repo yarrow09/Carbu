@@ -59,6 +59,7 @@ def test_export_contains_all_data() -> None:
         "pleins.csv",
         "depenses.csv",
         "releves.csv",
+        "depenses_recurrentes.csv",
         "rappels.csv",
         "categories.csv",
     }

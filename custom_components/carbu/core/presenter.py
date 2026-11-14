@@ -17,12 +17,19 @@ from .models import (
     Expense,
     FuelEntry,
     FuelType,
+    RecurringExpense,
     Reminder,
     Vehicle,
     VolumeUnit,
 )
 from .reminders import ReminderStatus
-from .statistics import ConsumptionPoint, PeriodStats, PricePoint
+from .statistics import (
+    ConsumptionPoint,
+    CostPoint,
+    OdometerPoint,
+    PeriodStats,
+    PricePoint,
+)
 from .summary import VehicleSummary
 from .validation import CoherenceWarning, WarningCode
 
@@ -162,6 +169,17 @@ class VehicleUnits:
             "category_id": expense.category_id,
             "description": expense.description,
             "attachment": expense.attachment,
+            "recurring_id": expense.recurring_id,
+        }
+
+    @staticmethod
+    def recurring_view(item: RecurringExpense) -> dict[str, Any]:
+        """Dépense récurrente avec sa prochaine échéance."""
+        next_date = item.next_date()
+        return {
+            **item.to_dict(),
+            "next_date": next_date.isoformat() if next_date else None,
+            "monthly_amount": item.amount / item.interval_months,
         }
 
     def summary_view(self, summary: VehicleSummary) -> dict[str, Any]:
@@ -298,4 +316,20 @@ class VehicleUnits:
             "odometer": self.distance_out(point.odometer),
             "value": self.consumption_out(point.l_per_100km, fuel),
             "moving_average": self.consumption_out(point.moving_average, fuel),
+        }
+
+    def cost_point_view(self, point: CostPoint) -> dict[str, Any]:
+        """Point de la courbe du coût par unité de distance du véhicule."""
+        km_per_unit = self.distance_in(1.0)
+        return {
+            "date": point.date.isoformat(),
+            "total": point.total_per_km * km_per_unit,
+            "fuel": point.fuel_per_km * km_per_unit,
+        }
+
+    def odometer_point_view(self, point: OdometerPoint) -> dict[str, Any]:
+        """Point de la courbe du compteur, dans l'unité du véhicule."""
+        return {
+            "date": point.date.isoformat(),
+            "value": self.distance_out(point.odometer),
         }

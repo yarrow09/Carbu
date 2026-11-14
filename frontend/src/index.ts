@@ -6,10 +6,14 @@ import { VehicleLogStatsCard } from "./cards/stats-card";
 import { VlConfirmDialog } from "./components/confirm-dialog";
 import { VlConsumptionChart } from "./components/consumption-chart";
 import { VlExpenseDialog } from "./components/expense-dialog";
+import { VlExportDialog } from "./components/export-dialog";
 import { VlFuelDialog } from "./components/fuel-dialog";
 import { VlImportDialog } from "./components/import-dialog";
+import { VlLineChart } from "./components/line-chart";
 import { VlMonthlyChart } from "./components/monthly-chart";
 import { VlPriceChart } from "./components/price-chart";
+import { VlRecurringDialog } from "./components/recurring-dialog";
+import { VlRecurringList } from "./components/recurring-list";
 import { VlReminderDialog } from "./components/reminder-dialog";
 import { VlReminderList } from "./components/reminder-list";
 import { t } from "./i18n";
@@ -31,6 +35,10 @@ const elements: Record<string, CustomElementConstructor> = {
   "vl-reminder-dialog": VlReminderDialog,
   "vl-reminder-list": VlReminderList,
   "vl-import-dialog": VlImportDialog,
+  "vl-export-dialog": VlExportDialog,
+  "vl-line-chart": VlLineChart,
+  "vl-recurring-dialog": VlRecurringDialog,
+  "vl-recurring-list": VlRecurringList,
 };
 
 for (const [name, ctor] of Object.entries(elements)) {

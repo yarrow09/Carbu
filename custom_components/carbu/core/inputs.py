@@ -12,10 +12,13 @@ import datetime as dt
 from typing import Any
 
 from .models import (
+    MAX_SHORT_TEXT,
+    RECURRING_INTERVALS,
     Expense,
     FuelEntry,
     FuelGrade,
     FuelType,
+    RecurringExpense,
     Reminder,
     ReminderKind,
     new_id,
@@ -100,6 +103,42 @@ def expense_from_input(
         category_id=data["category_id"],
         description=(data.get("description") or "").strip(),
         attachment=existing.attachment if existing else None,
+        recurring_id=existing.recurring_id if existing else None,
+    )
+
+
+def recurring_from_input(
+    data: Mapping[str, Any], existing: RecurringExpense | None, today: dt.date
+) -> RecurringExpense:
+    """Dépense récurrente à enregistrer (la catégorie est contrôlée par ``LogData``).
+
+    Les échéances déjà créées le restent : seule ``last_date`` est conservée.
+    """
+    label = (data.get("label") or "").strip()[:MAX_SHORT_TEXT]
+    if not label:
+        raise ValueError("Libellé obligatoire")
+    amount = data.get("amount")
+    if amount is None or amount <= 0:
+        raise ValueError("Montant invalide")
+    interval = int(data.get("interval_months") or 1)
+    if interval not in RECURRING_INTERVALS:
+        raise ValueError("Périodicité invalide")
+    start: dt.date = data.get("start_date") or (
+        existing.start_date if existing else today
+    )
+    end: dt.date | None = data.get("end_date")
+    if end is not None and end < start:
+        raise ValueError("La date de fin précède la date de début")
+    return RecurringExpense(
+        id=existing.id if existing else new_id(),
+        label=label,
+        amount=float(amount),
+        category_id=data["category_id"],
+        interval_months=interval,
+        start_date=start,
+        end_date=end,
+        active=bool(data.get("active", True)),
+        last_date=existing.last_date if existing else None,
     )
 
 

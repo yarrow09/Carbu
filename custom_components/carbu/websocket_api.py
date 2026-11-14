@@ -7,7 +7,9 @@ phase 2). Toutes les valeurs échangées sont dans les unités du véhicule.
 from __future__ import annotations
 
 from collections.abc import Callable
+import csv
 import datetime as dt
+import io
 from typing import Any
 
 from homeassistant.components.websocket_api import async_register_command
@@ -27,12 +29,15 @@ from .const import DOMAIN, MAX_LONG_TEXT, MAX_SHORT_TEXT, SIGNAL_UPDATED
 from .coordinator import VehicleLogCoordinator, VehicleNotFoundError, local_now
 from .core.aggregation import filter_expenses, latest, monthly_costs_by_category
 from .core.consumption import fill_metrics
-from .core.models import FuelGrade, FuelType, ReminderKind
+from .core.export import DELIMITER, build_export
+from .core.models import RECURRING_INTERVALS, FuelGrade, FuelType, ReminderKind
 from .core.presenter import VehicleUnits
 from .core.repository import CategoryError, RecordNotFoundError
 from .core.statistics import (
     StatsPeriod,
     consumption_series,
+    cost_per_km_series,
+    odometer_series,
     period_stats,
     price_series,
 )
@@ -105,6 +110,10 @@ def async_register_websocket_commands(hass: HomeAssistant) -> None:
         ws_reminder_delete,
         ws_reminder_done,
         ws_stats,
+        ws_recurring_list,
+        ws_recurring_save,
+        ws_recurring_delete,
+        ws_export,
     ):
         async_register_command(hass, handler)
 
@@ -676,5 +685,117 @@ def ws_stats(
                 ]
                 for fuel in vehicle.fuel_types
             },
+            "cost_curve": [
+                units.cost_point_view(point)
+                for point in cost_per_km_series(records, stats.end, stats.start)
+            ],
+            "odometer_curve": [
+                units.odometer_point_view(point)
+                for point in odometer_series(records, stats.start)
+            ],
         },
     )
+
+
+# --- Dépenses récurrentes -------------------------------------------------------
+
+
+@websocket_command({vol.Required("type"): f"{DOMAIN}/recurring", **_VEHICLE})
+@_guarded
+def ws_recurring_list(
+    hass: HomeAssistant,
+    connection: ActiveConnection,
+    msg: dict[str, Any],
+    coordinator: VehicleLogCoordinator,
+) -> None:
+    """Dépenses récurrentes d'un véhicule, avec leur prochaine échéance."""
+    coordinator.vehicle(msg["vehicle_id"])
+    connection.send_result(
+        msg["id"],
+        [
+            VehicleUnits.recurring_view(item)
+            for item in coordinator.records(msg["vehicle_id"]).recurring
+        ],
+    )
+
+
+@websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/recurring/save",
+        **_VEHICLE,
+        vol.Optional("recurring_id"): str,
+        vol.Required("label"): _SHORT,
+        vol.Required("amount"): _POSITIVE,
+        vol.Required("category_id"): str,
+        vol.Optional("interval_months", default=1): vol.In(RECURRING_INTERVALS),
+        vol.Optional("start_date"): cv.date,
+        vol.Optional("end_date"): vol.Any(None, cv.date),
+        vol.Optional("active", default=True): bool,
+    }
+)
+@_guarded
+def ws_recurring_save(
+    hass: HomeAssistant,
+    connection: ActiveConnection,
+    msg: dict[str, Any],
+    coordinator: VehicleLogCoordinator,
+) -> None:
+    """Créer ou modifier une dépense récurrente."""
+    item = coordinator.async_save_recurring(
+        msg["vehicle_id"], msg, msg.get("recurring_id")
+    )
+    connection.send_result(msg["id"], VehicleUnits.recurring_view(item))
+
+
+@websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/recurring/delete",
+        **_VEHICLE,
+        vol.Required("recurring_id"): str,
+    }
+)
+@_guarded
+def ws_recurring_delete(
+    hass: HomeAssistant,
+    connection: ActiveConnection,
+    msg: dict[str, Any],
+    coordinator: VehicleLogCoordinator,
+) -> None:
+    """Supprimer une dépense récurrente."""
+    coordinator.async_delete_recurring(msg["vehicle_id"], msg["recurring_id"])
+    connection.send_result(msg["id"])
+
+
+# --- Export ---------------------------------------------------------------------
+
+
+@websocket_command({vol.Required("type"): f"{DOMAIN}/export", **_VEHICLE})
+@async_response
+async def ws_export(
+    hass: HomeAssistant, connection: ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Fichiers CSV d'un véhicule, à télécharger depuis le navigateur.
+
+    Rien n'est écrit sur le disque du serveur : le contenu est renvoyé à
+    l'utilisateur, qui voit déjà ces données dans les cartes.
+    """
+    from .config_flow import async_category_labels  # noqa: PLC0415
+
+    labels = await async_category_labels(hass)
+    _guarded(_export)(hass, connection, {**msg, "labels": labels})
+
+
+def _export(
+    hass: HomeAssistant,
+    connection: ActiveConnection,
+    msg: dict[str, Any],
+    coordinator: VehicleLogCoordinator,
+) -> None:
+    vehicle = coordinator.vehicle(msg["vehicle_id"])
+    files = build_export(coordinator.storage.data, {vehicle.id: vehicle}, msg["labels"])
+    files.pop("categories.csv", None)
+    rows = {
+        name: sum(1 for _ in csv.reader(io.StringIO(text), delimiter=DELIMITER)) - 1
+        for name, text in files.items()
+    }
+    connection.send_result(msg["id"], {"files": files, "rows": rows})

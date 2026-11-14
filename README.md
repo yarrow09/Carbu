@@ -9,7 +9,7 @@ pleins, consommation réelle, dépenses par catégorie, coût par kilomètre, ra
 d'entretien.
 Tout se configure depuis l'interface, les données restent sur votre Home Assistant.
 
-> **Version 1.0.0-alpha.1** (préversion : des changements restent possibles avant la
+> **Version 1.0.0-alpha.2** (préversion : des changements restent possibles avant la
 > 1.0.0). L'intégration sert à suivre la consommation et les coûts. Elle
 > ne recherche pas les prix des carburants en ligne. Les véhicules électriques ne sont
 > pas pris en charge.
@@ -136,6 +136,15 @@ affichées.
 - **Rappels** : état (dû, bientôt, à jour, fait), échéance et temps ou distance
   restant. Le bouton **Fait** calcule l'échéance suivante d'un rappel récurrent. On
   peut aussi ajouter, modifier et supprimer des rappels.
+- **Dépenses récurrentes** (abonnement, assurance au mois, crédit…) : bouton
+  **+ Récurrence**, puis libellé, montant, catégorie, périodicité (tous les mois, 2
+  mois, trimestre, 6 mois, an), première échéance et, si besoin, dernière échéance.
+  - À chaque échéance, la dépense est ajoutée au journal automatiquement (vérifié
+    toutes les heures). Les échéances déjà passées sont ajoutées dès
+    l'enregistrement.
+  - Modifier une récurrence ne change que les échéances à venir ; la supprimer
+    conserve les dépenses déjà ajoutées. Décocher **Active** la met en pause.
+  - La liste affiche la prochaine échéance et l'équivalent mensuel.
 - Les 5 derniers pleins et les 5 dernières dépenses, modifiables et supprimables
   (masqués sur la page Carbu, où le journal les affiche déjà).
 - Histogramme des dépenses des 12 derniers mois, empilé par catégorie, carburant
@@ -153,6 +162,9 @@ affichées.
   recalculés.
 - **Importer** : import d'un fichier CSV dans le véhicule, avec un aperçu avant
   écriture (voir plus bas).
+- **Exporter** : téléchargement des données du véhicule en CSV (pleins, dépenses,
+  dépenses récurrentes, relevés, rappels), lisibles dans un tableur et
+  réimportables. Rien n'est écrit sur le serveur.
 
 ### Statistiques du véhicule (`custom:carbu-stats-card`)
 
@@ -169,6 +181,9 @@ affichées.
     (voir [calculs](docs/calculs.md#bilan-carbone)).
 - Courbe de consommation par plein complet, avec la moyenne mobile.
 - Courbe du prix du carburant payé à chaque plein, colorée par qualité d'essence.
+- Courbe du **coût au km**, cumulé depuis le début du carnet : tout compris et
+  carburant seul.
+- Courbe du **compteur** (kilométrage total relevé).
 - Dépenses de la période par catégorie, carburant compris : barre de répartition,
   pourcentages et montants.
 

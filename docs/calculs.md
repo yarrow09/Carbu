@@ -235,3 +235,34 @@ roue » :
 * **Par mois** : émissions de la période ÷ durée de la période en mois (30,44 jours).
 * Exemple : 40 L d'essence = 40 × 2,69 = **107,6 kg CO2e** ; 50 L de gazole =
   **155 kg CO2e**.
+
+### Coût au km
+
+* Courbe **cumulée depuis le début du carnet** : à chaque jour comportant un plein
+  ou une dépense (et aujourd'hui), Σ montants jusqu'à ce jour ÷ distance parcourue
+  jusqu'à ce jour. Deux courbes : tout compris, et carburant seul.
+* Le cumul lisse les dépenses ponctuelles (assurance annuelle, gros entretien) et
+  converge vers le coût réel du véhicule. La période choisie limite seulement la
+  partie affichée.
+* Pas de point avant **1 000 km** parcourus depuis le premier relevé : sur
+  quelques dizaines de km, un plein ou une dépense donnerait un coût au km
+  absurde (375 € sur 50 km = 7,50 €/km) et écraserait l'échelle du graphique.
+* La tuile **Coût par km** reste, elle, calculée sur la seule période.
+
+### Compteur
+
+* Dernier relevé connu de chaque jour (pleins, dépenses avec kilométrage, relevés
+  manuels), sur une échelle de temps réelle.
+
+## Dépenses récurrentes
+
+Module `core/recurring.py`.
+
+* Échéance n° *k* = date de début + *k* × périodicité (mois), même quantième borné à
+  la fin du mois : une récurrence du 31 tombe le 28 (ou 29) février, le 30 avril…
+* Chaque passage horaire, et chaque enregistrement, crée les dépenses des échéances
+  arrivées (date ≤ aujourd'hui) et avance `last_date`. Une dépense créée puis
+  supprimée n'est pas recréée.
+* Au plus 60 échéances par récurrence et par passage : une date de début très
+  ancienne est rattrapée progressivement.
+* **Équivalent mensuel** : montant ÷ périodicité en mois (120 € par an = 10 €/mois).

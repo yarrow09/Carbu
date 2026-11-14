@@ -11,12 +11,21 @@ import {
 } from "../api";
 import type { VlConfirmDialog } from "../components/confirm-dialog";
 import type { VlExpenseDialog } from "../components/expense-dialog";
+import type { VlExportDialog } from "../components/export-dialog";
 import type { VlFuelDialog } from "../components/fuel-dialog";
 import type { VlImportDialog } from "../components/import-dialog";
 import { icon } from "../components/icon";
 import { gradeLabel, isoDate, money, num, parseNumber, shortDate } from "../format";
 import { t } from "../i18n";
-import { mdiDelete, mdiPaperclip, mdiPencil, mdiPlus, mdiUpload, sharedStyles } from "../styles";
+import {
+  mdiDelete,
+  mdiDownload,
+  mdiPaperclip,
+  mdiPencil,
+  mdiPlus,
+  mdiUpload,
+  sharedStyles,
+} from "../styles";
 import type { CardConfig, Category, ExpenseView, FuelEntryView } from "../types";
 import { VehicleCardBase } from "./base";
 import { fuelDetails, listStyles } from "./dashboard-card";
@@ -441,6 +450,12 @@ export class VehicleLogJournalCard extends VehicleCardBase {
           ${icon(mdiUpload)} ${t(hass, "import.button")}
         </button>
         <button
+          aria-label=${t(hass, "export.button_long")}
+          @click=${() => (this.renderRoot.querySelector("vl-export-dialog") as VlExportDialog).open()}
+        >
+          ${icon(mdiDownload)} ${t(hass, "export.button")}
+        </button>
+        <button
           class="primary"
           aria-label=${t(hass, isFuel ? "action.add_fuel_long" : "action.add_expense_long")}
           @click=${() =>
@@ -463,6 +478,7 @@ export class VehicleLogJournalCard extends VehicleCardBase {
         .currency=${this._currency} @saved=${() => this.reload()}></vl-expense-dialog>
       <vl-import-dialog .hass=${hass} .vehicle=${vehicle} .categories=${this._categories}
         .currency=${this._currency} @saved=${() => this.reload()}></vl-import-dialog>
+      <vl-export-dialog .hass=${hass} .vehicle=${vehicle}></vl-export-dialog>
       <vl-confirm-dialog .hass=${hass}></vl-confirm-dialog>
     </ha-card>`;
   }

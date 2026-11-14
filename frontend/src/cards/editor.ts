@@ -112,6 +112,15 @@ export class VehicleLogCardEditor extends LitElement {
             <label class="check">
               <input
                 type="checkbox"
+                .checked=${this._config.show_recurring !== false}
+                @change=${(e: Event) =>
+                  this._change("show_recurring", (e.target as HTMLInputElement).checked)}
+              />
+              ${t(hass, "editor.show_recurring")}
+            </label>
+            <label class="check">
+              <input
+                type="checkbox"
                 .checked=${this._config.show_chart !== false}
                 @change=${(e: Event) =>
                   this._change("show_chart", (e.target as HTMLInputElement).checked)}

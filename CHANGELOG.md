@@ -3,6 +3,23 @@
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Le projet
 suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
+## [1.0.0-alpha.2] — non publiée
+
+### Ajouté
+
+- **Dépenses récurrentes** (abonnement, assurance au mois…) : libellé, montant,
+  catégorie, périodicité (1, 2, 3, 6 ou 12 mois), première et dernière échéance.
+  Chaque échéance arrivée est ajoutée automatiquement au journal comme une dépense
+  ordinaire, donc comptée dans les statistiques. Liste dans la carte principale
+  avec la prochaine échéance et l'équivalent mensuel.
+- **Export CSV depuis la page** : bouton **Exporter** du journal, téléchargement
+  direct de chaque fichier (pleins, dépenses, dépenses récurrentes, relevés,
+  rappels) sans passer par le disque du serveur.
+- Statistiques : **courbe du coût au km** (cumulé, tout compris et carburant seul)
+  et **courbe du compteur**.
+- Export : fichier `depenses_recurrentes.csv` et colonne `recurring_id` dans
+  `depenses.csv`.
+
 ## [1.0.0-alpha.1] — non publiée
 
 Première préversion de la 1.0. La numérotation passe en 1.0 Alpha ; les versions

@@ -26,7 +26,12 @@ FUEL_COLUMNS = (
 )  # fmt: skip
 EXPENSE_COLUMNS = (
     "vehicle_id", "vehicle_name", "id", "date", "odometer_km", "amount",
-    "category_id", "category_name", "description", "attachment",
+    "category_id", "category_name", "description", "attachment", "recurring_id",
+)  # fmt: skip
+RECURRING_COLUMNS = (
+    "vehicle_id", "vehicle_name", "id", "label", "amount", "category_id",
+    "category_name", "interval_months", "start_date", "end_date", "active",
+    "last_date",
 )  # fmt: skip
 ODOMETER_COLUMNS = ("vehicle_id", "vehicle_name", "id", "date", "time", "odometer_km")
 REMINDER_COLUMNS = (
@@ -84,7 +89,14 @@ def build_export(
     Seuls les véhicules connus sont exportés.
     """
     labels = category_labels or {}
-    fuel, expenses, odometer, reminders = [], [], [], []
+    fuel, expenses, odometer, reminders, recurring = [], [], [], [], []
+
+    def category_name(category_id: str) -> str:
+        category = data.categories.get(category_id)
+        return (category.name if category else None) or labels.get(
+            category_id, category_id
+        )
+
     for vehicle_id, vehicle in vehicles.items():
         rec = data.records(vehicle_id)
         common = {"vehicle_id": vehicle_id, "vehicle_name": vehicle.name}
@@ -100,13 +112,17 @@ def build_export(
                 "station": e.station, "notes": e.notes,
             })  # fmt: skip
         for x in rec.expenses:
-            category = data.categories.get(x.category_id)
             expenses.append({
                 **common, "id": x.id, "date": x.date, "odometer_km": x.odometer,
                 "amount": x.amount, "category_id": x.category_id,
-                "category_name": (category.name if category else None)
-                or labels.get(x.category_id, x.category_id),
+                "category_name": category_name(x.category_id),
                 "description": x.description, "attachment": x.attachment,
+                "recurring_id": x.recurring_id,
+            })  # fmt: skip
+        for p in rec.recurring:
+            recurring.append({
+                **common, **p.to_dict(),
+                "category_name": category_name(p.category_id),
             })  # fmt: skip
         for r in rec.odometer:
             odometer.append({
@@ -129,5 +145,6 @@ def build_export(
         "depenses.csv": to_csv(EXPENSE_COLUMNS, expenses),
         "releves.csv": to_csv(ODOMETER_COLUMNS, odometer),
         "rappels.csv": to_csv(REMINDER_COLUMNS, reminders),
+        "depenses_recurrentes.csv": to_csv(RECURRING_COLUMNS, recurring),
         "categories.csv": to_csv(CATEGORY_COLUMNS, categories),
     }

@@ -1,6 +1,6 @@
 [project]
 name = "carbu"
-version = "1.0.0a1"
+version = "1.0.0a2"
 description = "Carnet de bord véhicule pour Home Assistant"
 requires-python = ">=3.14"
 license = "GPL-3.0-or-later"

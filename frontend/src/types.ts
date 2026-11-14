@@ -78,6 +78,22 @@ export interface ExpenseView {
   category_id: string;
   description: string;
   attachment: string | null;
+  /** Dépense créée par une dépense récurrente. */
+  recurring_id?: string | null;
+}
+
+export interface RecurringView {
+  id: string;
+  label: string;
+  amount: number;
+  category_id: string;
+  interval_months: number;
+  start_date: string;
+  end_date: string | null;
+  active: boolean;
+  last_date: string | null;
+  next_date: string | null;
+  monthly_amount: number;
 }
 
 export interface Category {
@@ -137,6 +153,7 @@ export interface CardConfig {
   show_recent?: boolean;
   show_last_fill?: boolean;
   show_reminders?: boolean;
+  show_recurring?: boolean;
   period?: StatsPeriod;
   /** Journal : nombre d'entrées chargées à la fois. */
   page_size?: number;
@@ -195,6 +212,10 @@ export interface StatsView {
   prices: Record<string, PricePoint[]>;
   co2_kg: number;
   co2_per_distance: number | null;
+  /** Coût par unité de distance, cumulé depuis le début du carnet. */
+  cost_curve: { date: string; total: number; fuel: number }[];
+  /** Compteur en fin de journée, dans l'unité du véhicule. */
+  odometer_curve: { date: string; value: number }[];
 }
 
 export interface PricePoint {

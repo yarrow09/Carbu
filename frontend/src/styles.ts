@@ -153,8 +153,10 @@ export {
   mdiCheck,
   mdiClose,
   mdiDelete,
+  mdiDownload,
   mdiPaperclip,
   mdiPencil,
   mdiPlus,
+  mdiRepeat,
   mdiUpload,
 } from "@mdi/js";
