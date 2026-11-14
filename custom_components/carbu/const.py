@@ -2,6 +2,8 @@
 
 from typing import Final
 
+from .core import models
+
 DOMAIN: Final = "carbu"
 
 # Stockage (.storage/carbu.data)
@@ -21,3 +23,7 @@ CONF_NOTIFY_ENTITIES: Final = "notify_entities"
 CONF_NOTIFY_SERVICES: Final = "notify_services"
 CONF_MOVING_AVERAGE: Final = "moving_average_window"
 DEFAULT_MOVING_AVERAGE: Final = 5
+
+# Longueur maximale des textes saisis (station, libellé / notes, description).
+MAX_SHORT_TEXT: Final = models.MAX_SHORT_TEXT
+MAX_LONG_TEXT: Final = models.MAX_LONG_TEXT

@@ -20,6 +20,18 @@ Première préversion de la 1.0. La numérotation passe en 1.0 Alpha ; les versi
 - **Bilan carbone** : émissions de CO2e de la période, par km et par mois, à partir
   des quantités réellement achetées et des facteurs de la Base Empreinte de l'ADEME.
 
+### Sécurité
+
+- Services `carbu.export_data` et `carbu.backup` réservés aux administrateurs.
+- Restauration : identifiants de véhicules, options, couleurs et icônes des
+  catégories revalidés (une sauvegarde modifiée ne peut plus injecter de CSS ni
+  d'options inattendues) ; taille décompressée limitée à 256 Mo.
+- Pièces jointes : affichage des images dans un document isolé
+  (`Content-Security-Policy: sandbox`), PDF téléchargés ; nom invalide traité
+  proprement.
+- Export CSV protégé contre l'injection de formules dans les tableurs.
+- Longueur des textes saisis limitée.
+
 ### Modifié
 
 - Page Carbu : présentation des statistiques revue, listes d'entrées allégées.

@@ -47,7 +47,20 @@ def _cell(value: Any) -> str:
         return text.removesuffix(".0")
     if hasattr(value, "isoformat"):
         return str(value.isoformat())
-    return str(value)
+    return neutralize_formula(str(value))
+
+
+# Premiers caractères qu'un tableur interprète comme une formule.
+FORMULA_PREFIXES = ("=", "+", "-", "@", "\t", "\r")
+
+
+def neutralize_formula(text: str) -> str:
+    """Empêcher un tableur d'exécuter un texte saisi comme une formule.
+
+    Une note « =HYPERLINK(...) » ouverte dans Excel ou LibreOffice serait
+    évaluée : on la préfixe d'une apostrophe, retirée à l'import.
+    """
+    return f"'{text}" if text.startswith(FORMULA_PREFIXES) else text
 
 
 def to_csv(columns: Iterable[str], rows: Iterable[Mapping[str, Any]]) -> str:

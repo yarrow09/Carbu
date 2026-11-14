@@ -23,7 +23,7 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 import probatio as vol
 
-from .const import DOMAIN, SIGNAL_UPDATED
+from .const import DOMAIN, MAX_LONG_TEXT, MAX_SHORT_TEXT, SIGNAL_UPDATED
 from .coordinator import VehicleLogCoordinator, VehicleNotFoundError, local_now
 from .core.aggregation import filter_expenses, latest, monthly_costs_by_category
 from .core.consumption import fill_metrics
@@ -43,6 +43,8 @@ ERR_INVALID = "invalid_format"
 
 _POSITIVE = vol.All(vol.Coerce(float), vol.Range(min=0))
 _VEHICLE: dict[Any, Any] = {vol.Required("vehicle_id"): str}
+_SHORT = vol.All(str, vol.Length(max=MAX_SHORT_TEXT))
+_LONG = vol.All(str, vol.Length(max=MAX_LONG_TEXT))
 _PAGING: dict[Any, Any] = {
     vol.Optional("limit", default=50): vol.All(int, vol.Range(min=1, max=1000)),
     vol.Optional("offset", default=0): vol.All(int, vol.Range(min=0)),
@@ -412,8 +414,8 @@ def ws_expense_list(
         vol.Optional("fuel_type"): vol.In([f.value for f in FuelType]),
         vol.Optional("grade"): vol.Any(None, vol.In([g.value for g in FuelGrade])),
         vol.Optional("full_tank", default=True): bool,
-        vol.Optional("station"): vol.Any(None, str),
-        vol.Optional("notes", default=""): str,
+        vol.Optional("station"): vol.Any(None, _SHORT),
+        vol.Optional("notes", default=""): _LONG,
         vol.Optional("confirm", default=False): bool,
     }
 )
@@ -476,7 +478,7 @@ def ws_fuel_delete(
         vol.Optional("odometer"): vol.Any(None, _POSITIVE),
         vol.Required("amount"): _POSITIVE,
         vol.Required("category_id"): str,
-        vol.Optional("description", default=""): str,
+        vol.Optional("description", default=""): _LONG,
     }
 )
 @_guarded
@@ -547,7 +549,7 @@ _OPT_POSITIVE_INT = vol.Any(None, vol.All(vol.Coerce(int), vol.Range(min=0)))
         vol.Required("type"): f"{DOMAIN}/reminder/save",
         **_VEHICLE,
         vol.Optional("reminder_id"): str,
-        vol.Required("label"): str,
+        vol.Required("label"): _SHORT,
         vol.Required("kind"): vol.In([k.value for k in ReminderKind]),
         vol.Optional("due_date"): vol.Any(None, cv.date),
         vol.Optional("due_odometer"): vol.Any(None, _POSITIVE),

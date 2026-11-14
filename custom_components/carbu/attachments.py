@@ -11,6 +11,7 @@ Vue HTTP authentifiée :
 
 from __future__ import annotations
 
+import contextlib
 from http import HTTPStatus
 from pathlib import Path
 import re
@@ -191,16 +192,28 @@ class AttachmentView(HomeAssistantView):
         coordinator, expense = resolved
         if not expense.attachment:
             return _error("not_found", HTTPStatus.NOT_FOUND)
-        path = coordinator.attachments.path(vehicle_id, expense.attachment)
+        try:
+            path = coordinator.attachments.path(vehicle_id, expense.attachment)
+        except AttachmentError:
+            return _error("not_found", HTTPStatus.NOT_FOUND)
         hass = request.app[KEY_HASS]
         if not await hass.async_add_executor_job(path.is_file):
             return _error("not_found", HTTPStatus.NOT_FOUND)
+        # Les images s'affichent dans un document isolé (aucun script, aucun
+        # accès à la session Home Assistant). Les PDF, qui peuvent contenir du
+        # code exécuté par le lecteur du navigateur, sont téléchargés.
+        is_pdf = path.suffix == ".pdf"
         return web.FileResponse(
             path,
             headers={
                 "Content-Type": CONTENT_TYPES[path.suffix],
-                "Content-Disposition": f'inline; filename="{path.name}"',
+                "Content-Disposition": (
+                    f'{"attachment" if is_pdf else "inline"}; filename="{path.name}"'
+                ),
                 "X-Content-Type-Options": "nosniff",
+                "Content-Security-Policy": "sandbox; default-src 'none'; "
+                "img-src 'self'; style-src 'unsafe-inline'",
+                "Cache-Control": "private, no-store",
             },
         )
 
@@ -213,7 +226,11 @@ class AttachmentView(HomeAssistantView):
             return resolved
         coordinator, expense = resolved
         if expense.attachment:
-            await coordinator.attachments.async_delete(vehicle_id, expense.attachment)
+            # Nom invalide : rien à supprimer sur le disque.
+            with contextlib.suppress(AttachmentError):
+                await coordinator.attachments.async_delete(
+                    vehicle_id, expense.attachment
+                )
             expense.attachment = None
             coordinator.async_commit()
         return self.json({"attachment": None})

@@ -15,6 +15,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 import datetime as dt
+import re
 from typing import Any
 
 from .migrations import UnsupportedStorageVersionError, migrate
@@ -25,6 +26,13 @@ BACKUP_FORMAT = "carbu_backup"
 BACKUP_FORMAT_VERSION = 1
 BACKUP_JSON = "backup.json"
 ATTACHMENTS_DIR = "attachments"
+
+# Clés des options de l'intégration (mêmes valeurs que dans ``const.py``).
+CONF_NOTIFY_ENTITIES = "notify_entities"
+CONF_NOTIFY_SERVICES = "notify_services"
+CONF_MOVING_AVERAGE = "moving_average_window"
+# Entité notify.xxx ou nom de service notify (avec ou sans préfixe).
+_NOTIFY_TARGET = re.compile(r"^(notify\.)?[a-z0-9_]{1,100}$")
 
 
 class InvalidBackupError(ValueError):
@@ -85,6 +93,30 @@ def build_backup(
     }
 
 
+SAFE_ID = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
+
+
+def sanitize_options(raw: Any) -> dict[str, Any]:
+    """Options connues uniquement, avec des types contrôlés.
+
+    Une sauvegarde est un fichier modifiable : rien d'inattendu ne doit
+    atteindre la configuration de l'intégration.
+    """
+    if not isinstance(raw, dict):
+        return {}
+    options: dict[str, Any] = {}
+    for key in (CONF_NOTIFY_ENTITIES, CONF_NOTIFY_SERVICES):
+        values = raw.get(key)
+        if isinstance(values, list):
+            options[key] = [
+                v for v in values if isinstance(v, str) and _NOTIFY_TARGET.match(v)
+            ]
+    window = raw.get(CONF_MOVING_AVERAGE)
+    if isinstance(window, int) and not isinstance(window, bool) and 2 <= window <= 20:
+        options[CONF_MOVING_AVERAGE] = window
+    return options
+
+
 def parse_backup(obj: Any, attachments: list[str] | None = None) -> BackupContent:
     """Valider le contenu de ``backup.json`` (avec migration des données)."""
     if not isinstance(obj, dict) or obj.get("format") != BACKUP_FORMAT:
@@ -98,6 +130,8 @@ def parse_backup(obj: Any, attachments: list[str] | None = None) -> BackupConten
         vehicles = []
         for item in obj["vehicles"]:
             vehicle_id = str(item["id"])
+            if not SAFE_ID.match(vehicle_id):
+                raise ValueError("identifiant de véhicule invalide")
             # Contrôle : la configuration doit être lisible.
             Vehicle.from_dict(vehicle_id, item["data"])
             vehicles.append(
@@ -123,7 +157,7 @@ def parse_backup(obj: Any, attachments: list[str] | None = None) -> BackupConten
         created_at=str(obj.get("created_at", "")),
         integration_version=str(obj.get("integration_version", "")),
         vehicles=vehicles,
-        options=dict(obj.get("options") or {}),
+        options=sanitize_options(obj.get("options")),
         data=data,
         attachments=attached,
     )

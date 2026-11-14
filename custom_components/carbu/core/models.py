@@ -15,6 +15,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 import datetime as dt
 from enum import StrEnum
+import re
 from typing import Any
 import uuid
 
@@ -322,6 +323,24 @@ class OdometerReading:
         )
 
 
+# Longueur maximale des textes saisis : station et libellés / notes et descriptions.
+MAX_SHORT_TEXT = 100
+MAX_LONG_TEXT = 1000
+
+_COLOR = re.compile(r"^#[0-9a-fA-F]{6}$")
+_ICON = re.compile(r"^[a-z0-9-]{1,32}:[a-z0-9-]{1,64}$")
+
+
+def safe_color(value: Any) -> str | None:
+    """Couleur ``#rrggbb`` ou ``None`` : la valeur finit dans un style CSS."""
+    return value if isinstance(value, str) and _COLOR.match(value) else None
+
+
+def safe_icon(value: Any) -> str | None:
+    """Icône ``prefixe:nom`` (ex. ``mdi:car``) ou ``None``."""
+    return value if isinstance(value, str) and _ICON.match(value) else None
+
+
 @dataclass(slots=True, kw_only=True)
 class Category:
     """Catégorie de dépense.
@@ -352,8 +371,9 @@ class Category:
         return cls(
             id=data["id"],
             name=data.get("name"),
-            color=data.get("color"),
-            icon=data.get("icon"),
+            # Contrôlés : une sauvegarde modifiée ne doit pas injecter de CSS.
+            color=safe_color(data.get("color")),
+            icon=safe_icon(data.get("icon")),
             builtin=bool(data.get("builtin", False)),
         )
 

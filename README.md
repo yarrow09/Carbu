@@ -298,6 +298,24 @@ Les formules, les règles des pleins partiels et le jeu de données de référen
 - Aucune donnée n'est envoyée à un tiers et aucun compte en ligne n'est nécessaire.
 - Les sauvegardes de Home Assistant incluent ces fichiers.
 
+### Sécurité
+
+- Toutes les API (cartes, import, pièces jointes) exigent une session Home Assistant.
+  Tout utilisateur connecté peut consulter et saisir des données ; les services
+  `carbu.export_data` et `carbu.backup`, qui écrivent des fichiers, et la page
+  « Configurer » (restauration comprise) sont réservés aux administrateurs.
+- Pièces jointes : JPEG, PNG, WebP ou PDF reconnus d'après leur contenu, 10 Mo au
+  plus, rangés sous des noms contrôlés. Les images s'affichent dans un document
+  isolé (sans script) ; les PDF sont téléchargés plutôt qu'affichés.
+- Une sauvegarde restaurée est entièrement revalidée : identifiants, chemins des
+  fichiers de l'archive, couleurs et icônes des catégories, options connues
+  seulement. Taille décompressée limitée à 256 Mo.
+- Les textes exportés en CSV qui ressemblent à une formule (`=`, `+`, `-`, `@`) sont
+  précédés d'une apostrophe, pour qu'un tableur ne les exécute pas ; l'import la
+  retire.
+- Longueurs maximales : 100 caractères pour la station et les libellés, 1 000 pour
+  les notes et descriptions.
+
 ## Développement
 
 ```bash

@@ -34,8 +34,11 @@ if TYPE_CHECKING:
     from . import VehicleLogConfigEntry
 
 BACKUP_PREFIX = "carbu_backup_"
-# Limite de sécurité à la lecture (archive malveillante très compressée).
-MAX_UNCOMPRESSED = 1024 * 1024 * 1024
+# Limites de sécurité à la lecture (archive malveillante très compressée) :
+# l'archive est lue en mémoire, ce qui doit rester supportable sur un
+# Raspberry Pi.
+MAX_UNCOMPRESSED = 256 * 1024 * 1024
+MAX_FILE = 10 * 1024 * 1024  # comme une pièce jointe
 _ATTACHMENT_PATH = re.compile(
     rf"^{ATTACHMENTS_DIR}/[A-Za-z0-9_-]{{1,64}}/[A-Za-z0-9_-]{{1,64}}\.(jpg|png|webp|pdf)$"
 )
@@ -109,9 +112,9 @@ def _read(path: Path) -> tuple[Any, dict[str, bytes]]:
                 raise InvalidBackupError("not_a_backup")
             obj = json.loads(archive.read(BACKUP_JSON).decode("utf-8"))
             files = {
-                name: archive.read(name)
-                for name in names
-                if _ATTACHMENT_PATH.match(name)
+                info.filename: archive.read(info)
+                for info in infos
+                if _ATTACHMENT_PATH.match(info.filename) and info.file_size <= MAX_FILE
             }
     except (zipfile.BadZipFile, UnicodeDecodeError, json.JSONDecodeError) as err:
         raise InvalidBackupError("corrupted") from err

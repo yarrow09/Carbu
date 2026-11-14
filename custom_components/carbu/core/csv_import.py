@@ -24,8 +24,11 @@ from enum import StrEnum
 import io
 from typing import Any
 
+from .export import FORMULA_PREFIXES
 from .models import (
     CATEGORY_OTHER,
+    MAX_LONG_TEXT,
+    MAX_SHORT_TEXT,
     Category,
     Expense,
     FuelEntry,
@@ -164,6 +167,13 @@ def detect_kind(columns: list[str]) -> ImportKind:
     raise ImportFileError("unknown_format")
 
 
+def _unescape(value: str) -> str:
+    """Retirer l'apostrophe ajoutée à l'export devant une pseudo-formule."""
+    if value.startswith("'") and value[1:].startswith(FORMULA_PREFIXES):
+        return value[1:]
+    return value
+
+
 def _rows(text: str) -> tuple[list[str], list[tuple[int, dict[str, str]]]]:
     first = text.split("\n", 1)[0]
     delimiter = ";" if ";" in first or "," not in first else ","
@@ -180,7 +190,10 @@ def _rows(text: str) -> tuple[list[str], list[tuple[int, dict[str, str]]]]:
             raise ImportFileError("too_many_rows")
         # line_num : dernière ligne physique lue (gère les champs multilignes)
         rows.append(
-            (reader.line_num, {k: (v or "") for k, v in row.items() if k is not None})
+            (
+                reader.line_num,
+                {k: _unescape(v or "") for k, v in row.items() if k is not None},
+            )
         )
     return columns, rows
 
@@ -205,13 +218,13 @@ def _fuel(row: Mapping[str, str], default_fuel: FuelType) -> FuelEntry:
         total_cost=total,
         fuel_type=FuelType(fuel) if fuel else default_fuel,
         full_tank=_bool(row.get("full_tank", ""), True),
-        station=row.get("station", "").strip() or None,
+        station=row.get("station", "").strip()[:MAX_SHORT_TEXT] or None,
         grade=(
             parse_grade(row.get("grade"))
             if (FuelType(fuel) if fuel else default_fuel) is FuelType.GASOLINE
             else None
         ),
-        notes=row.get("notes", ""),
+        notes=row.get("notes", "")[:MAX_LONG_TEXT],
     )
 
 
@@ -225,7 +238,7 @@ def _odometer(row: Mapping[str, str]) -> OdometerReading:
 
 
 def _reminder(row: Mapping[str, str]) -> Reminder:
-    label = row.get("label", "").strip()
+    label = row.get("label", "").strip()[:MAX_SHORT_TEXT]
     if not label:
         raise ValueError("libellé manquant")
     kind = ReminderKind(row["kind"].strip())
@@ -348,7 +361,7 @@ def preview_import(
                         row.get("category_id", "").strip(),
                         row.get("category_name", ""),
                     ),
-                    description=row.get("description", "").strip(),
+                    description=row.get("description", "").strip()[:MAX_LONG_TEXT],
                     attachment=None,
                 )
         except (KeyError, ValueError) as err:

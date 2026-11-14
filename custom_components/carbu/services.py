@@ -24,9 +24,10 @@ from homeassistant.core import (
 )
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import config_validation as cv, device_registry as dr
+from homeassistant.helpers.service import async_register_admin_service
 import probatio as vol
 
-from .const import DOMAIN
+from .const import DOMAIN, MAX_LONG_TEXT, MAX_SHORT_TEXT
 from .coordinator import SaveResult, VehicleLogCoordinator, local_now
 from .core.export import build_export
 from .core.models import FuelGrade, FuelType
@@ -58,8 +59,10 @@ ADD_FUEL_SCHEMA = vol.Schema(
         vol.Optional("fuel_type"): vol.In([f.value for f in FuelType]),
         vol.Optional("grade"): vol.In([g.value for g in FuelGrade]),
         vol.Optional("full_tank", default=True): cv.boolean,
-        vol.Optional("station"): cv.string,
-        vol.Optional("notes", default=""): cv.string,
+        vol.Optional("station"): vol.All(cv.string, vol.Length(max=MAX_SHORT_TEXT)),
+        vol.Optional("notes", default=""): vol.All(
+            cv.string, vol.Length(max=MAX_LONG_TEXT)
+        ),
         vol.Optional(ATTR_STRICT, default=False): cv.boolean,
     }
 )
@@ -70,7 +73,9 @@ ADD_EXPENSE_SCHEMA = vol.Schema(
         vol.Required("category"): cv.string,
         vol.Optional("date"): cv.date,
         vol.Optional("odometer"): _POSITIVE,
-        vol.Optional("description", default=""): cv.string,
+        vol.Optional("description", default=""): vol.All(
+            cv.string, vol.Length(max=MAX_LONG_TEXT)
+        ),
     }
 )
 UPDATE_ODOMETER_SCHEMA = vol.Schema(
@@ -262,11 +267,23 @@ def async_register_services(hass: HomeAssistant) -> None:
         (SERVICE_ADD_FUEL, _add_fuel, ADD_FUEL_SCHEMA),
         (SERVICE_ADD_EXPENSE, _add_expense, ADD_EXPENSE_SCHEMA),
         (SERVICE_UPDATE_ODOMETER, _update_odometer, UPDATE_ODOMETER_SCHEMA),
-        (SERVICE_EXPORT_DATA, _export_data, EXPORT_SCHEMA),
-        (SERVICE_BACKUP, _backup, BACKUP_SCHEMA),
     ):
         hass.services.async_register(
             DOMAIN, name, handler, schema, supports_response=SupportsResponse.OPTIONAL
+        )
+    # Écrivent des fichiers dans le dossier de configuration : réservés aux
+    # administrateurs (les automatisations restent autorisées).
+    for name, handler, schema in (
+        (SERVICE_EXPORT_DATA, _export_data, EXPORT_SCHEMA),
+        (SERVICE_BACKUP, _backup, BACKUP_SCHEMA),
+    ):
+        async_register_admin_service(
+            hass,
+            DOMAIN,
+            name,
+            handler,
+            schema,
+            supports_response=SupportsResponse.OPTIONAL,
         )
 
 
