@@ -42,6 +42,7 @@ from .core.statistics import (
     period_stats,
     price_series,
 )
+from .labels import async_category_labels
 
 ERR_NOT_LOADED = "not_loaded"
 ERR_NOT_FOUND = "not_found"
@@ -211,8 +212,6 @@ async def ws_dashboard(
     hass: HomeAssistant, connection: ActiveConnection, msg: dict[str, Any]
 ) -> None:
     """Données du tableau de bord d'un véhicule, en un seul aller-retour."""
-    from .config_flow import async_category_labels  # noqa: PLC0415
-
     labels = await async_category_labels(hass)
     _dashboard(hass, connection, msg, labels)
 
@@ -277,8 +276,6 @@ async def ws_categories(
     hass: HomeAssistant, connection: ActiveConnection, msg: dict[str, Any]
 ) -> None:
     """Catégories avec libellés traduits."""
-    from .config_flow import async_category_labels  # noqa: PLC0415
-
     if (coordinator := _coordinator(hass)) is None:
         connection.send_error(msg["id"], ERR_NOT_LOADED, "Carbu not loaded")
         return
@@ -783,8 +780,6 @@ async def ws_export(
     Rien n'est écrit sur le disque du serveur : le contenu est renvoyé à
     l'utilisateur, qui voit déjà ces données dans les cartes.
     """
-    from .config_flow import async_category_labels  # noqa: PLC0415
-
     labels = await async_category_labels(hass)
     _guarded(_export)(hass, connection, {**msg, "labels": labels})
 

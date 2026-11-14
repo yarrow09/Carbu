@@ -33,6 +33,7 @@ from .core.export import build_export
 from .core.models import FuelGrade, FuelType
 from .core.repository import CategoryError
 from .core.validation import CoherenceWarning
+from .labels import async_category_labels
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -169,8 +170,6 @@ async def _add_fuel(call: ServiceCall) -> ServiceResponse:
 
 async def _add_expense(call: ServiceCall) -> ServiceResponse:
     """Service ``add_expense``."""
-    from .config_flow import async_category_labels  # noqa: PLC0415
-
     hass = call.hass
     coordinator = _coordinator(hass)
     vehicle_id = _vehicle_id(hass, coordinator, call.data[ATTR_VEHICLE])
@@ -222,8 +221,6 @@ async def _update_odometer(call: ServiceCall) -> ServiceResponse:
 
 async def _export_data(call: ServiceCall) -> ServiceResponse:
     """Service ``export_data``."""
-    from .config_flow import async_category_labels  # noqa: PLC0415
-
     hass = call.hass
     coordinator = _coordinator(hass)
     files = build_export(

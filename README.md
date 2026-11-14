@@ -354,7 +354,9 @@ custom_components/carbu/
   core/            calculs et modèle, Python pur, sans dépendance à Home Assistant
   storage.py       Store versionné et migrations
   coordinator.py   indicateurs et point d'entrée des modifications
-  config_flow.py   installation, assistant véhicule, page globale
+  config_flow.py   installation et assemblage des flows
+  flows/           assistant véhicule, catégories, réglages, sauvegarde
+  labels.py        libellés traduits lus côté serveur
   sensor.py, number.py, binary_sensor.py, services.py, notifications.py
   websocket_api.py, attachments.py, frontend.py
   backup_archive.py, csv_import_view.py

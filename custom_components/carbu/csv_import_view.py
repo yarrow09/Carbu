@@ -28,6 +28,7 @@ from .core.csv_import import (
     preview_import,
 )
 from .core.presenter import VehicleUnits
+from .labels import async_category_labels
 
 if TYPE_CHECKING:
     from .coordinator import VehicleLogCoordinator
@@ -99,8 +100,6 @@ class CsvImportView(HomeAssistantView):
 
     async def post(self, request: web.Request, vehicle_id: str) -> web.Response:
         """Analyser (et éventuellement importer) le fichier envoyé."""
-        from .config_flow import async_category_labels  # noqa: PLC0415
-
         hass = request.app[KEY_HASS]
         entries = hass.config_entries.async_loaded_entries(DOMAIN)
         if not entries:
