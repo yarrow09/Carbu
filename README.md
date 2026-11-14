@@ -85,17 +85,13 @@ réparation, autre.
 
 ## Saisir un plein ou des frais
 
-Trois accès, sans rien configurer de plus :
+Deux accès, sans rien configurer de plus :
 
 - **Page Carbu** dans la barre latérale : les cartes du véhicule choisi (sélecteur
   en haut à droite s'il y en a plusieurs), avec les boutons **Plein** et **Dépense**.
   Le carnet de bord et le journal (5 entrées à la fois, **Afficher plus** pour la
   suite) sont côte à côte, les statistiques en pleine largeur dessous. C'est l'accès
   le plus complet : modification, suppression, rappels, import CSV.
-- **Paramètres → Appareils et services → Carbu → Configurer** (roue dentée) :
-  **Saisir un plein** et **Saisir des frais** ouvrent des formulaires Home Assistant
-  standard. Un plein incohérent (réservoir dépassé, kilométrage inférieur au
-  précédent…) affiche les avertissements et demande une confirmation.
 - **Services** `carbu.add_fuel` et `carbu.add_expense`, pour les automatisations
   (voir [Services](#services)).
 

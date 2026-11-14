@@ -81,8 +81,6 @@
       "init": {
         "title": "Carbu settings",
         "menu_options": {
-          "add_fuel": "Record a fill-up",
-          "add_expense": "Record an expense",
           "add_category": "Add an expense category",
           "edit_category": "Edit a category",
           "delete_category": "Delete a category",
@@ -157,43 +155,6 @@
       "restore_confirm": {
         "title": "Restore this backup?",
         "description": "Backup from {created_at} (version {version}):\n{vehicles}\n{categories} categories.\n\n**All current vehicles and data will be replaced.** Create a backup first if needed. Submit to restore."
-      },
-      "choose_vehicle": {
-        "title": "Choose the vehicle",
-        "data": {
-          "vehicle": "Vehicle"
-        }
-      },
-      "add_fuel_form": {
-        "title": "Fill-up – {vehicle}",
-        "description": "Values are in the vehicle's units. Two of quantity, unit price and total amount are enough.{warnings}",
-        "data": {
-          "date": "Date",
-          "odometer": "Odometer",
-          "volume": "Quantity",
-          "unit_price": "Unit price",
-          "total_cost": "Total amount",
-          "fuel_type": "Fuel",
-          "grade": "Petrol grade",
-          "full_tank": "Full tank",
-          "station": "Station",
-          "notes": "Notes",
-          "confirm": "Save anyway"
-        },
-        "data_description": {
-          "full_tank": "Untick for a partial fill: consumption is then computed at the next full tank.",
-          "confirm": "Tick to save despite the warnings above."
-        }
-      },
-      "add_expense_form": {
-        "title": "Expense – {vehicle}",
-        "data": {
-          "date": "Date",
-          "category": "Category",
-          "amount": "Amount",
-          "odometer": "Odometer (optional)",
-          "description": "Description"
-        }
       }
     },
     "error": {
@@ -203,18 +164,12 @@
       "backup_not_a_backup": "This file is not a Carbu backup.",
       "backup_unsupported_version": "This backup was made by an incompatible version.",
       "backup_corrupted": "The backup is damaged or unreadable.",
-      "backup_too_large": "The backup is too large.",
-      "fuel_amounts": "Enter at least two of quantity, unit price and total amount, with a valid odometer.",
-      "coherence": "Please check this fill-up (see the warnings above).",
-      "expense_invalid": "This expense is invalid: check the amount and the category."
+      "backup_too_large": "The backup is too large."
     },
     "abort": {
       "not_loaded": "The integration must be loaded to change these settings.",
       "backup_created": "Backup created: {path}",
-      "restore_done": "Backup restored.",
-      "no_vehicle": "Add a vehicle first (\"Add vehicle\" button on the integration page).",
-      "fuel_saved": "Fill-up saved for {vehicle}.",
-      "expense_saved": "Expense saved for {vehicle}."
+      "restore_done": "Backup restored."
     }
   },
   "selector": {

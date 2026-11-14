@@ -3,6 +3,21 @@
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Le projet
 suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
+## [1.0.0-beta.1] — non publiée
+
+### Retiré
+
+- Saisie d'un plein ou de frais depuis **Configurer** (formulaires Home Assistant
+  standard). La page **Carbu** de la barre latérale la remplace : elle est
+  accessible à tous les utilisateurs connectés et offre les mêmes contrôles de
+  cohérence, en plus de la modification et de la suppression.
+
+### Modifié
+
+- Ménage du code, sans changement de comportement : config flow et API websocket
+  découpés par domaine, libellés traduits regroupés, bilan des exceptions et des
+  exclusions d'analyse. Tests unitaires du frontend (`node --test`) ajoutés à la CI.
+
 ## [1.0.0-alpha.3] — non publiée
 
 ### Ajouté
