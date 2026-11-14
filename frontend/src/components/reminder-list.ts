@@ -4,7 +4,7 @@ import { css, html, LitElement, nothing } from "lit";
 import { deleteReminder, fetchReminders, markReminderDone } from "../api";
 import { num, shortDate } from "../format";
 import { t, type Key } from "../i18n";
-import { mdiCheck, mdiDelete, mdiPencil, sharedStyles } from "../styles";
+import { mdiCheck, mdiDelete, mdiPencil, listStyles, sharedStyles } from "../styles";
 import type { HomeAssistant, ReminderView, VehicleView } from "../types";
 import type { VlConfirmDialog } from "./confirm-dialog";
 import { icon } from "./icon";
@@ -20,22 +20,8 @@ export class VlReminderList extends LitElement {
   };
   static override styles = [
     sharedStyles,
+    listStyles,
     css`
-      ul {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-      }
-      li {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 6px 0;
-        border-bottom: 1px solid var(--vl-border);
-      }
-      li:last-child {
-        border-bottom: none;
-      }
       .main {
         flex: 1;
         min-width: 0;
@@ -158,7 +144,7 @@ export class VlReminderList extends LitElement {
     const items = [...this._items].sort((a, b) => ORDER[a.state] - ORDER[b.state]);
     return html`
       ${items.length
-        ? html`<ul>
+        ? html`<ul class="entries">
             ${items.map(
               (r) => html`<li class=${r.state}>
                 <span class="state ${r.state}">${t(hass, `reminders.state_${r.state}` as Key)}</span>

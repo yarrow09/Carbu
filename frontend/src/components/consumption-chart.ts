@@ -1,12 +1,11 @@
 // Courbe de consommation par plein et moyenne mobile (SVG, sans bibliothèque).
-import { css, html, LitElement, svg } from "lit";
+import { html, svg } from "lit";
 
 import { longMonthLabel, num, shortDate } from "../format";
 import { t } from "../i18n";
-import { sharedStyles } from "../styles";
 import type { ConsumptionPoint, HomeAssistant } from "../types";
+import { CHART_HEIGHT as H, chartStyles, ResponsiveChart } from "./chart-base";
 
-const H = 220;
 const PAD = { top: 12, right: 12, bottom: 28, left: 44 };
 const POINT_COLOR = "#1e88e5";
 const AVERAGE_COLOR = "#ef6c00";
@@ -55,80 +54,24 @@ export function dateLabels(
   return kept;
 }
 
-export class VlConsumptionChart extends LitElement {
+export class VlConsumptionChart extends ResponsiveChart {
   static override properties = {
-    hass: { attribute: false },
+    ...ResponsiveChart.properties,
     points: { attribute: false },
     unit: { type: String },
     window: { type: Number },
-    _width: { state: true },
   };
-  static override styles = [
-    sharedStyles,
-    css`
-      :host {
-        display: block;
-        position: relative;
-      }
-      svg.chart {
-        width: 100%;
-        height: ${H}px;
-        display: block;
-      }
-      ul.legend svg {
-        flex: none;
-      }
-      .axis {
-        fill: var(--vl-muted);
-        font-size: 12px;
-      }
-      .grid {
-        stroke: var(--vl-border);
-      }
-      ul.legend {
-        list-style: none;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 4px 16px;
-        padding: 0;
-        margin: 8px 0 0;
-        font-size: 0.875rem;
-      }
-      ul.legend li {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-      }
-    `,
-  ];
+  static override styles = chartStyles;
 
-  declare hass: HomeAssistant;
   declare points: ConsumptionPoint[];
   declare unit: string;
   declare window: number;
-  declare _width: number;
-  private _observer?: ResizeObserver;
 
   constructor() {
     super();
     this.points = [];
     this.unit = "";
     this.window = 5;
-    this._width = 600;
-  }
-
-  override connectedCallback(): void {
-    super.connectedCallback();
-    this._observer = new ResizeObserver(([entry]) => {
-      const width = Math.round(entry.contentRect.width);
-      if (width > 0 && Math.abs(width - this._width) > 2) this._width = width;
-    });
-    this._observer.observe(this);
-  }
-
-  override disconnectedCallback(): void {
-    super.disconnectedCallback();
-    this._observer?.disconnect();
   }
 
   protected override render() {
@@ -162,13 +105,16 @@ export class VlConsumptionChart extends LitElement {
           (v) => svg`<line class="grid" x1=${PAD.left} x2=${W - PAD.right} y1=${y(v)} y2=${y(v)}></line>
             <text class="axis" x=${PAD.left - 6} y=${y(v) + 4} text-anchor="end">${num(hass, v, 1)}</text>`,
         )}
-        <path d=${line} fill="none" stroke=${AVERAGE_COLOR} stroke-width="2.5" stroke-linejoin="round"></path>
+        <g class="plot">
+        <path d=${line} fill="none" stroke=${AVERAGE_COLOR} stroke-width="2.5"
+          stroke-linejoin="round" stroke-linecap="round"></path>
         ${pts.map(
           (p, i) => svg`<circle cx=${x(i)} cy=${y(p.value)} r="4" fill=${POINT_COLOR}
               stroke="var(--card-background-color, #fff)" stroke-width="1.5">
               <title>${shortDate(hass, p.date)} : ${num(hass, p.value, 2)} ${this.unit} (${averageLabel} : ${num(hass, p.moving_average, 2)})</title>
             </circle>`,
         )}
+        </g>
         ${labels.map(
           (l) => svg`<text class="axis" x=${l.x} y=${H - 8} text-anchor=${l.anchor}>${l.text}</text>`,
         )}

@@ -281,6 +281,26 @@
       },
       "distance_year": {
         "name": "Distance cette année"
+      },
+      "next_fill": {
+        "name": "Prochain plein estimé",
+        "state_attributes": {
+          "days_left": {
+            "name": "Jours restants"
+          },
+          "odometer": {
+            "name": "Kilométrage prévu"
+          },
+          "distance_left": {
+            "name": "Distance restante"
+          },
+          "volume": {
+            "name": "Quantité prévue"
+          },
+          "cost": {
+            "name": "Montant prévu"
+          }
+        }
       }
     },
     "number": {

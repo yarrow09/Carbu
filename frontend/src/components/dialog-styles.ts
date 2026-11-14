@@ -3,17 +3,38 @@ import { css } from "lit";
 /** Boîte de dialogue native, plein écran sur mobile. */
 export const dialogStyles = css`
   dialog {
-    border: none;
-    border-radius: var(--vl-radius);
+    border: 1px solid color-mix(in srgb, var(--primary-text-color) 10%, transparent);
+    border-radius: 20px;
     padding: 0;
     width: min(560px, calc(100vw - 32px));
     max-height: calc(100dvh - 32px);
-    background: var(--card-background-color, var(--ha-card-background, #fff));
+    background:
+      radial-gradient(
+        100% 40% at 0% 0%,
+        color-mix(in srgb, var(--vl-accent) 10%, transparent),
+        transparent 70%
+      ),
+      var(--card-background-color, var(--ha-card-background, #fff));
     color: var(--primary-text-color);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.7);
+  }
+  dialog[open] {
+    animation: vl-pop 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  @keyframes vl-pop {
+    from {
+      opacity: 0;
+      transform: translateY(12px) scale(0.98);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    dialog[open] {
+      animation: none;
+    }
   }
   dialog::backdrop {
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(4px);
   }
   dialog.compact {
     height: fit-content;

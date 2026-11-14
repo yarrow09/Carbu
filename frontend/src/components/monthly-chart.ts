@@ -1,15 +1,14 @@
 // Histogramme empilé des dépenses mensuelles par catégorie (SVG, sans bibliothèque).
-import { html, LitElement, nothing, svg, css } from "lit";
+import { css, html, nothing, svg } from "lit";
 
 import { longMonthLabel, money, monthLabel } from "../format";
 import { t } from "../i18n";
-import { sharedStyles } from "../styles";
-import type { Category, HomeAssistant, MonthlyBucket } from "../types";
+import type { Category, MonthlyBucket } from "../types";
+import { CHART_HEIGHT as H, chartStyles, ResponsiveChart } from "./chart-base";
 
 // Vert foncé : contraste ≥ 3:1 sur fond clair et sombre, distinct des catégories.
 const FUEL_COLOR = "#2e7d32";
 const FALLBACK_COLORS = ["#1e88e5", "#8e24aa", "#00897b", "#f4511e", "#3949ab", "#e53935"];
-const H = 220;
 const PAD = { top: 12, right: 8, bottom: 28, left: 56 };
 
 interface Series {
@@ -25,52 +24,19 @@ function niceMax(value: number): number {
   return step * exp;
 }
 
-export class VlMonthlyChart extends LitElement {
+export class VlMonthlyChart extends ResponsiveChart {
   static override properties = {
-    hass: { attribute: false },
+    ...ResponsiveChart.properties,
     data: { attribute: false },
     categories: { attribute: false },
     currency: { type: String },
-    _width: { state: true },
   };
   static override styles = [
-    sharedStyles,
+    ...chartStyles,
     css`
-      :host {
-        display: block;
-        position: relative;
-      }
-      svg.chart {
-        width: 100%;
-        height: ${H}px;
-        display: block;
-        overflow: visible;
-      }
-      .axis {
-        fill: var(--vl-muted);
-        font-size: 12px;
-      }
-      .grid {
-        stroke: var(--vl-border);
-        stroke-width: 1;
-      }
       g.bar:hover rect.hit {
         fill: var(--primary-color);
         fill-opacity: 0.08;
-      }
-      ul.legend {
-        list-style: none;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 4px 16px;
-        padding: 0;
-        margin: 8px 0 0;
-        font-size: 0.875rem;
-      }
-      ul.legend li {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
       }
       .swatch {
         width: 12px;
@@ -82,34 +48,15 @@ export class VlMonthlyChart extends LitElement {
     `,
   ];
 
-  declare hass: HomeAssistant;
   declare data: MonthlyBucket[];
   declare categories: Category[];
   declare currency: string;
-  declare _width: number;
-  private _observer?: ResizeObserver;
 
   constructor() {
     super();
     this.data = [];
     this.categories = [];
     this.currency = "EUR";
-    this._width = 600;
-  }
-
-  override connectedCallback(): void {
-    super.connectedCallback();
-    // Dessin à la taille réelle : le texte garde sa taille en pixels.
-    this._observer = new ResizeObserver(([entry]) => {
-      const width = Math.round(entry.contentRect.width);
-      if (width > 0 && Math.abs(width - this._width) > 2) this._width = width;
-    });
-    this._observer.observe(this);
-  }
-
-  override disconnectedCallback(): void {
-    super.disconnectedCallback();
-    this._observer?.disconnect();
   }
 
   private _series(): Series[] {

@@ -4,7 +4,7 @@ import { css, html, LitElement, nothing } from "lit";
 import { deleteRecurring, fetchRecurring } from "../api";
 import { money, shortDate } from "../format";
 import { t, type Key } from "../i18n";
-import { mdiDelete, mdiPencil, sharedStyles } from "../styles";
+import { mdiDelete, mdiPencil, listStyles, sharedStyles } from "../styles";
 import type { Category, HomeAssistant, RecurringView, VehicleView } from "../types";
 import type { VlConfirmDialog } from "./confirm-dialog";
 import { icon } from "./icon";
@@ -20,22 +20,8 @@ export class VlRecurringList extends LitElement {
   };
   static override styles = [
     sharedStyles,
+    listStyles,
     css`
-      ul {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-      }
-      li {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 6px 0;
-        border-bottom: 1px solid var(--vl-border);
-      }
-      li:last-child {
-        border-bottom: none;
-      }
       .dot {
         flex: none;
         width: 10px;
@@ -132,7 +118,7 @@ export class VlRecurringList extends LitElement {
     const monthly = running.reduce((sum, r) => sum + r.monthly_amount, 0);
     return html`
       ${this._items.length
-        ? html`<ul>
+        ? html`<ul class="entries">
               ${this._items.map((r) => {
                 const category = this.categories.find((c) => c.id === r.category_id);
                 const on = r.active && r.next_date !== null;

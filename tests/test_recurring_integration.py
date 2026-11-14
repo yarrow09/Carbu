@@ -157,4 +157,20 @@ async def test_export_and_curves(call: Call) -> None:
 
 async def test_vehicles_reports_installed_version(call: Call) -> None:
     result = (await call("vehicles"))["result"]
-    assert result["version"] == "1.0.0-alpha.3"
+    assert result["version"] == "1.0.0-alpha.4"
+
+
+async def test_next_fill_sensor(hass: HomeAssistant, call: Call) -> None:
+    states = [
+        s
+        for s in hass.states.async_all("sensor")
+        if s.entity_id.endswith("next_fill_up")
+    ]
+    assert len(states) == 1
+    state = states[0]
+    # Jeu de référence : date ISO et attributs arrondis.
+    assert len(state.state) == 10
+    assert state.state > "2026-03-01"
+    assert state.attributes["odometer"] == round(state.attributes["odometer"])
+    vehicles = (await call("vehicles"))["result"]["vehicles"]
+    assert vehicles[0]["summary"]["next_fill"]["date"] == state.state

@@ -1,6 +1,6 @@
 // Mise en forme localisée (nombres, montants, dates).
 import { language } from "./i18n";
-import type { FuelGrade, HomeAssistant } from "./types";
+import type { FuelEntryView, FuelGrade, HomeAssistant, VehicleView } from "./types";
 
 export function num(
   hass: HomeAssistant | undefined,
@@ -104,4 +104,22 @@ export function co2Mass(hass: HomeAssistant | undefined, kg: number | null | und
   if (kg === null || kg === undefined) return { value: "—", unit: "kg CO₂e" };
   if (Math.abs(kg) >= 1000) return { value: num(hass, kg / 1000, 2), unit: "t CO₂e" };
   return { value: num(hass, kg, 0), unit: "kg CO₂e" };
+}
+
+/** Détails d'un plein : compteur, distance, consommation, prix, station. */
+export function fuelDetails(
+  hass: HomeAssistant,
+  vehicle: VehicleView,
+  e: FuelEntryView,
+  currency: string,
+): string {
+  const volumeUnit = vehicle.units.volume[e.fuel_type] ?? "L";
+  const parts = [`${num(hass, e.odometer, 0)} ${vehicle.units.distance}`];
+  if (e.distance != null) parts.push(`+${num(hass, e.distance, 0)} ${vehicle.units.distance}`);
+  if (e.consumption != null) {
+    parts.push(`${num(hass, e.consumption, 2)} ${vehicle.units.consumption[e.fuel_type] ?? ""}`);
+  }
+  parts.push(`${money(hass, e.unit_price, currency, 3)}/${volumeUnit}`);
+  if (e.station) parts.push(e.station);
+  return parts.join(" · ");
 }

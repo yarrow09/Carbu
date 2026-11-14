@@ -7,6 +7,7 @@ import datetime as dt
 
 from . import costs, distance
 from .consumption import average_consumption, consumption_segments
+from .forecast import NextFillEstimate, estimate_next_fill
 from .models import FuelType, Vehicle
 from .periods import Period, period_bounds
 from .repository import VehicleRecords
@@ -29,6 +30,7 @@ class VehicleSummary:
     total_expense_cost: float
     fill_count: int
     expense_count: int
+    next_fill: NextFillEstimate | None = None
 
     @property
     def month_cost(self) -> float:
@@ -87,4 +89,5 @@ def compute_summary(
         total_expense_cost=costs.expense_cost(expenses),
         fill_count=len(fuel),
         expense_count=len(expenses),
+        next_fill=estimate_next_fill(records, vehicle.fuel_type, now.date()),
     )

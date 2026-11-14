@@ -266,3 +266,25 @@ Module `core/recurring.py`.
 * Au plus 60 échéances par récurrence et par passage : une date de début très
   ancienne est rattrapée progressivement.
 * **Équivalent mensuel** : montant ÷ périodicité en mois (120 € par an = 10 €/mois).
+
+## Prochain plein estimé
+
+Module `core/forecast.py`, pour le carburant principal du véhicule.
+
+* **Distance entre deux pleins** : médiane des 10 derniers écarts de kilométrage
+  entre pleins de ce carburant. La médiane écarte un plein d'appoint ou un long
+  voyage isolé.
+* **Rythme** : km parcourus par jour sur les relevés des 120 derniers jours (à
+  défaut, les deux derniers relevés), sur au moins 7 jours.
+* **Kilométrage prévu** = kilométrage du dernier plein + distance habituelle.
+* **Date prévue** = date du dernier relevé + (kilométrage prévu − dernier
+  relevé) ÷ rythme.
+* **Distance restante aujourd'hui** = kilométrage prévu − dernier relevé −
+  rythme × jours écoulés depuis ce relevé (jamais négative).
+* **Quantité** = distance habituelle × consommation moyenne ÷ 100 (à défaut :
+  médiane des 5 dernières quantités) ; **montant** = quantité × dernier prix payé.
+* Il faut au moins 3 pleins de ce carburant et 7 jours de relevés, sinon
+  l'estimation est inconnue.
+* Exemple : pleins tous les 500 km, 50 km/jour, 6 L/100 km à 2 €/L, dernier
+  plein il y a 2 jours → prochain plein dans 8 jours, 400 km restants, ≈ 30 L,
+  ≈ 60 €.

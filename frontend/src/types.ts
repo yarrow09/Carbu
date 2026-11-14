@@ -38,6 +38,21 @@ export interface Summary {
   fuel_cost_per_distance: number | null;
   fill_count: number;
   expense_count: number;
+  next_fill: NextFill | null;
+}
+
+/** Prochain plein estimé, dans les unités du véhicule. */
+export interface NextFill {
+  fuel_type: FuelType;
+  date: string;
+  days_left: number;
+  overdue: boolean;
+  odometer: number;
+  distance_left: number;
+  distance_per_day: number;
+  interval: number;
+  volume: number | null;
+  cost: number | null;
 }
 
 export interface VehicleView {
@@ -152,6 +167,9 @@ export interface CardConfig {
   show_chart?: boolean;
   show_recent?: boolean;
   show_last_fill?: boolean;
+  show_next_fill?: boolean;
+  /** Boutons « + Plein / + Dépense » (masqués sur la page, déjà dans la barre). */
+  show_actions?: boolean;
   show_reminders?: boolean;
   show_recurring?: boolean;
   period?: StatsPeriod;

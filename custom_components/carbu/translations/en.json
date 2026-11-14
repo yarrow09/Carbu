@@ -281,6 +281,26 @@
       },
       "distance_year": {
         "name": "Distance this year"
+      },
+      "next_fill": {
+        "name": "Estimated next fill-up",
+        "state_attributes": {
+          "days_left": {
+            "name": "Days left"
+          },
+          "odometer": {
+            "name": "Expected odometer"
+          },
+          "distance_left": {
+            "name": "Distance left"
+          },
+          "volume": {
+            "name": "Expected quantity"
+          },
+          "cost": {
+            "name": "Expected amount"
+          }
+        }
       }
     },
     "number": {

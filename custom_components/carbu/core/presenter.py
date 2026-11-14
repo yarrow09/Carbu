@@ -12,6 +12,7 @@ from typing import Any
 
 from . import units
 from .consumption import FillMetrics
+from .forecast import NextFillEstimate
 from .models import (
     ConsumptionUnit,
     Expense,
@@ -22,6 +23,7 @@ from .models import (
     Vehicle,
     VolumeUnit,
 )
+from .recurring import monthly_amount
 from .reminders import ReminderStatus
 from .statistics import (
     ConsumptionPoint,
@@ -179,7 +181,7 @@ class VehicleUnits:
         return {
             **item.to_dict(),
             "next_date": next_date.isoformat() if next_date else None,
-            "monthly_amount": item.amount / item.interval_months,
+            "monthly_amount": monthly_amount(item),
         }
 
     def summary_view(self, summary: VehicleSummary) -> dict[str, Any]:
@@ -211,6 +213,27 @@ class VehicleUnits:
             "fuel_cost_per_distance": _per_distance(summary.fuel_cost_per_km),
             "fill_count": summary.fill_count,
             "expense_count": summary.expense_count,
+            "next_fill": self.next_fill_view(summary.next_fill),
+        }
+
+    def next_fill_view(
+        self, estimate: NextFillEstimate | None
+    ) -> dict[str, Any] | None:
+        """Prochain plein estimé dans les unités du véhicule."""
+        if estimate is None:
+            return None
+        fuel = estimate.fuel_type
+        return {
+            "fuel_type": fuel.value,
+            "date": estimate.date.isoformat(),
+            "days_left": estimate.days_left,
+            "overdue": estimate.overdue,
+            "odometer": self.distance_out(estimate.odometer),
+            "distance_left": self.distance_out(estimate.distance_left),
+            "distance_per_day": self.distance_out(estimate.km_per_day),
+            "interval": self.distance_out(estimate.interval),
+            "volume": self.volume_out(estimate.volume, fuel),
+            "cost": estimate.cost,
         }
 
     def warning_view(self, warning: CoherenceWarning, fuel: FuelType) -> dict[str, Any]:

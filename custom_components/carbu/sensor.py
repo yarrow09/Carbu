@@ -31,7 +31,7 @@ if TYPE_CHECKING:
 class VehicleSensorDescription(SensorEntityDescription):
     """Description d'un sensor de véhicule."""
 
-    value_fn: Callable[[VehicleSummary, VehicleUnits], float | None]
+    value_fn: Callable[[VehicleSummary, VehicleUnits], float | dt.date | None]
     unit_fn: Callable[[VehicleUnits, str], str | None]
     monthly_reset: bool = False
 
@@ -90,6 +90,13 @@ def _descriptions(vehicle: Vehicle) -> list[VehicleSensorDescription]:
         _distance("distance_week", "distance_week", None),
         _distance("distance_month", "distance_month", None),
         _distance("distance_year", "distance_year", None),
+        VehicleSensorDescription(
+            key="next_fill",
+            translation_key="next_fill",
+            device_class=SensorDeviceClass.DATE,
+            value_fn=lambda s, _u: s.next_fill.date if s.next_fill else None,
+            unit_fn=lambda _u, _currency: None,
+        ),
     ]
     if vehicle.secondary_fuel_type is not None:
         descriptions.insert(
@@ -139,7 +146,7 @@ class VehicleSensor(VehicleEntity, SensorEntity):
             self._attr_suggested_unit_of_measurement = unit
 
     @property
-    def native_value(self) -> float | None:
+    def native_value(self) -> float | dt.date | None:
         """Valeur dans les unités du véhicule."""
         if (summary := self.summary) is None:
             return None
@@ -175,4 +182,16 @@ class VehicleSensor(VehicleEntity, SensorEntity):
             }
         if key == "odometer":
             return {"distance_logged": self.units.distance_out(summary.total_distance)}
+        if key == "next_fill":
+            view = self.units.next_fill_view(summary.next_fill)
+            if view is None:
+                return None
+            digits = {"odometer": 0, "distance_left": 0, "volume": 1, "cost": 2}
+            return {
+                "days_left": view["days_left"],
+                **{
+                    key: round(view[key], places) if view[key] is not None else None
+                    for key, places in digits.items()
+                },
+            }
         return None

@@ -15,8 +15,9 @@ import type { VlExportDialog } from "../components/export-dialog";
 import type { VlFuelDialog } from "../components/fuel-dialog";
 import type { VlImportDialog } from "../components/import-dialog";
 import { icon } from "../components/icon";
-import { gradeLabel, isoDate, money, num, parseNumber, shortDate } from "../format";
+import { fuelDetails, gradeLabel, isoDate, money, num, parseNumber, shortDate } from "../format";
 import { t } from "../i18n";
+import { readPref, writePref } from "../prefs";
 import {
   mdiDelete,
   mdiDownload,
@@ -24,11 +25,11 @@ import {
   mdiPencil,
   mdiPlus,
   mdiUpload,
+  listStyles,
   sharedStyles,
 } from "../styles";
 import type { CardConfig, Category, ExpenseView, FuelEntryView } from "../types";
 import { VehicleCardBase } from "./base";
-import { fuelDetails, listStyles } from "./dashboard-card";
 
 const PAGE = 25;
 type Tab = "fuel" | "expenses";
@@ -59,10 +60,10 @@ export class VehicleLogJournalCard extends VehicleCardBase {
     listStyles,
     css`
       ha-card {
-        padding: 16px;
+        padding: 18px;
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 14px;
       }
       .head {
         display: flex;
@@ -73,32 +74,34 @@ export class VehicleLogJournalCard extends VehicleCardBase {
       }
       h2 {
         margin: 0;
-        font-size: 1.25rem;
-        font-weight: 500;
+        font-size: 1.35rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
       }
       .head-actions {
         display: flex;
         gap: 8px;
         flex-wrap: wrap;
       }
-      .head-actions button {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-      }
+      /* Onglets en contrôle segmenté. */
       [role="tablist"] {
-        display: flex;
+        display: inline-flex;
+        align-self: flex-start;
         gap: 4px;
-        border-bottom: 1px solid var(--vl-border);
+        padding: 4px;
+        border-radius: 999px;
+        background: var(--vl-surface-strong);
       }
       [role="tab"] {
         border: none;
-        border-bottom: 3px solid transparent;
-        border-radius: 0;
+        min-height: 34px;
+        color: var(--vl-muted);
       }
       [role="tab"][aria-selected="true"] {
-        border-bottom-color: var(--primary-color);
-        font-weight: 500;
+        color: var(--primary-text-color);
+        font-weight: 600;
+        background: var(--card-background-color, #1c1c1c);
+        box-shadow: 0 2px 10px -4px rgba(0, 0, 0, 0.6);
       }
       fieldset {
         border: 1px solid var(--vl-border);
@@ -150,7 +153,7 @@ export class VehicleLogJournalCard extends VehicleCardBase {
 
   constructor() {
     super();
-    this._tab = "fuel";
+    this._tab = readPref("journal-tab") === "expenses" ? "expenses" : "fuel";
     this._fuel = [];
     this._expenses = [];
     this._fuelTotal = 0;
@@ -265,6 +268,11 @@ export class VehicleLogJournalCard extends VehicleCardBase {
     }
   }
 
+  private _setTab(tab: Tab): void {
+    this._tab = tab;
+    writePref("journal-tab", tab);
+  }
+
   private _tabButton(tab: Tab, label: string) {
     const selected = this._tab === tab;
     return html`<button
@@ -273,10 +281,10 @@ export class VehicleLogJournalCard extends VehicleCardBase {
       aria-selected=${selected ? "true" : "false"}
       aria-controls="panel-${tab}"
       tabindex=${selected ? 0 : -1}
-      @click=${() => (this._tab = tab)}
+      @click=${() => this._setTab(tab)}
       @keydown=${(e: KeyboardEvent) => {
         if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
-          this._tab = this._tab === "fuel" ? "expenses" : "fuel";
+          this._setTab(this._tab === "fuel" ? "expenses" : "fuel");
           void this.updateComplete.then(() =>
             this.renderRoot.querySelector<HTMLButtonElement>(`#tab-${this._tab}`)?.focus(),
           );

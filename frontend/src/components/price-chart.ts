@@ -1,13 +1,13 @@
 // Évolution du prix du carburant, plein par plein (SVG, sans bibliothèque).
 // Chaque point prend la couleur de la qualité d'essence (SP95-E10, SP95, SP98).
-import { html, LitElement, svg } from "lit";
+import { html, svg } from "lit";
 
 import { gradeLabel, money, shortDate } from "../format";
 import { t } from "../i18n";
-import type { FuelGrade, HomeAssistant, PricePoint } from "../types";
-import { dateLabels, VlConsumptionChart } from "./consumption-chart";
+import type { FuelGrade, PricePoint } from "../types";
+import { CHART_HEIGHT as H, ResponsiveChart } from "./chart-base";
+import { dateLabels } from "./consumption-chart";
 
-const H = 220;
 const PAD = { top: 12, right: 12, bottom: 28, left: 52 };
 const LINE_COLOR = "#78909c";
 const GRADE_COLORS: Record<FuelGrade | "none", string> = {
@@ -17,44 +17,23 @@ const GRADE_COLORS: Record<FuelGrade | "none", string> = {
   none: "#757575",
 };
 
-export class VlPriceChart extends LitElement {
+export class VlPriceChart extends ResponsiveChart {
   static override properties = {
-    hass: { attribute: false },
+    ...ResponsiveChart.properties,
     points: { attribute: false },
     currency: { type: String },
     unit: { type: String },
-    _width: { state: true },
   };
-  // Même présentation que la courbe de consommation.
-  static override styles = VlConsumptionChart.styles;
 
-  declare hass: HomeAssistant;
   declare points: PricePoint[];
   declare currency: string;
   declare unit: string;
-  declare _width: number;
-  private _observer?: ResizeObserver;
 
   constructor() {
     super();
     this.points = [];
     this.currency = "EUR";
     this.unit = "L";
-    this._width = 600;
-  }
-
-  override connectedCallback(): void {
-    super.connectedCallback();
-    this._observer = new ResizeObserver(([entry]) => {
-      const width = Math.round(entry.contentRect.width);
-      if (width > 0 && Math.abs(width - this._width) > 2) this._width = width;
-    });
-    this._observer.observe(this);
-  }
-
-  override disconnectedCallback(): void {
-    super.disconnectedCallback();
-    this._observer?.disconnect();
   }
 
   protected override render() {
@@ -96,6 +75,7 @@ export class VlPriceChart extends LitElement {
           (v) => svg`<line class="grid" x1=${PAD.left} x2=${W - PAD.right} y1=${y(v)} y2=${y(v)}></line>
             <text class="axis" x=${PAD.left - 6} y=${y(v) + 4} text-anchor="end">${money(hass, v, this.currency, 2)}</text>`,
         )}
+        <g class="plot">
         <path d=${line} fill="none" stroke=${LINE_COLOR} stroke-width="1.5" stroke-linejoin="round"></path>
         ${pts.map(
           (p, i) => svg`<circle cx=${x(i)} cy=${y(p.value)} r="4"
@@ -104,6 +84,7 @@ export class VlPriceChart extends LitElement {
               <title>${shortDate(hass, p.date)} : ${price(p.value)}${p.grade ? ` (${gradeLabel(p.grade)})` : ""}</title>
             </circle>`,
         )}
+        </g>
         ${labels.map(
           (l) => svg`<text class="axis" x=${l.x} y=${H - 8} text-anchor=${l.anchor}>${l.text}</text>`,
         )}

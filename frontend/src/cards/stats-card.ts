@@ -2,9 +2,19 @@
 import { css, html, nothing } from "lit";
 
 import { fetchCategories, fetchStats } from "../api";
+import { icon } from "../components/icon";
+import { kpi, kpiStyles } from "../components/kpi";
 import { co2Mass, money, num, shortDate } from "../format";
 import { t, type Key } from "../i18n";
-import { sharedStyles } from "../styles";
+import { readPref, writePref } from "../prefs";
+import {
+  mdiCashMultiple,
+  mdiChartLine,
+  mdiGasStation,
+  mdiLeaf,
+  mdiMapMarkerDistance,
+  sharedStyles,
+} from "../styles";
 import type { LineSeries } from "../components/line-chart";
 import type { CardConfig, Category, StatsPeriod, StatsView } from "../types";
 import { VehicleCardBase } from "./base";
@@ -20,6 +30,7 @@ export class VehicleLogStatsCard extends VehicleCardBase {
   };
   static override styles = [
     sharedStyles,
+    kpiStyles,
     css`
       ha-card {
         padding: 16px;
@@ -39,10 +50,16 @@ export class VehicleLogStatsCard extends VehicleCardBase {
         font-size: 1.25rem;
         font-weight: 500;
       }
-      h3 {
-        margin: 0 0 4px;
-        font-size: 1rem;
-        font-weight: 500;
+      h2 {
+        letter-spacing: -0.01em;
+      }
+      .chart-box {
+        padding: 14px 14px 10px;
+        border-radius: 16px;
+        background: var(--vl-surface);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
       }
       .periods {
         display: flex;
@@ -54,34 +71,6 @@ export class VehicleLogStatsCard extends VehicleCardBase {
         font-size: 0.875rem;
         margin: -8px 0 0;
       }
-      dl.tiles {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-        gap: 8px;
-        margin: 0;
-      }
-      .tile {
-        border: 1px solid var(--vl-border);
-        border-radius: 10px;
-        padding: 8px 12px;
-        display: flex;
-        flex-direction: column-reverse;
-      }
-      .tile dt {
-        font-size: 0.8125rem;
-        color: var(--vl-muted);
-      }
-      .tile dd {
-        margin: 0;
-        font-size: 1.2rem;
-        font-weight: 500;
-        font-variant-numeric: tabular-nums;
-      }
-      .tile dd small {
-        font-size: 0.8125rem;
-        font-weight: 400;
-        color: var(--vl-muted);
-      }
       .groups {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
@@ -92,16 +81,11 @@ export class VehicleLogStatsCard extends VehicleCardBase {
         flex-direction: column;
         gap: 8px;
       }
-      .group dl.tiles {
+      .group h3.section svg.mdi {
+        color: var(--group-color);
+      }
+      .group dl.kpis {
         grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-      .tile.main {
-        grid-column: 1 / -1;
-        background: color-mix(in srgb, var(--primary-color) 10%, transparent);
-        border-color: transparent;
-      }
-      .tile.main dd {
-        font-size: 1.6rem;
       }
       .note {
         margin: 0;
@@ -174,7 +158,9 @@ export class VehicleLogStatsCard extends VehicleCardBase {
 
   override setConfig(config: CardConfig): void {
     super.setConfig(config);
+    const remembered = readPref("stats-period") as StatsPeriod | undefined;
     if (config.period) this._period = config.period;
+    else if (remembered && PERIODS.includes(remembered)) this._period = remembered;
   }
 
   static getStubConfig(): CardConfig {
@@ -208,6 +194,7 @@ export class VehicleLogStatsCard extends VehicleCardBase {
 
   private async _select(period: StatsPeriod): Promise<void> {
     this._period = period;
+    writePref("stats-period", period);
     await this.loadVehicleData();
   }
 
@@ -225,11 +212,10 @@ export class VehicleLogStatsCard extends VehicleCardBase {
     const currency = this._currency;
     const multi = vehicle.fuel_types.length > 1;
     const fuelName = (f: string) => (multi ? ` (${t(hass, `fuel_type.${f}` as Key)})` : "");
-    const tile = (label: string, value: string, suffix = "", main = false) =>
-      html`<div class="tile ${main ? "main" : ""}">
-        <dt>${label}</dt>
-        <dd>${value}${suffix ? html` <small>${suffix}</small>` : nothing}</dd>
-      </div>`;
+    // Tuiles d'un groupe : même couleur, la première mise en avant.
+    let rank = 0;
+    const tile = (label: string, value: string, suffix = "", main = false, color = "") =>
+      kpi(label, value, suffix, { main, color: color || undefined, index: rank++ });
     const totalVolume = Object.values(s.fuel_volume).reduce((a, b) => a + b, 0);
     const categories = Object.entries(s.expenses_by_category).sort((a, b) => b[1] - a[1]);
     type Row = { label: string; color: string; value: number };
@@ -297,9 +283,9 @@ export class VehicleLogStatsCard extends VehicleCardBase {
       </div>
       <p class="range">${shortDate(hass, s.start)} – ${shortDate(hass, s.end)}</p>
       <div class="groups">
-        <section class="group" aria-labelledby="g-consumption">
-          <h3 id="g-consumption">${t(hass, "stats.group_consumption")}</h3>
-          <dl class="tiles">
+        <section class="group" style="--group-color:#26c6da" aria-labelledby="g-consumption">
+          <h3 class="section" id="g-consumption">${icon(mdiGasStation)} ${t(hass, "stats.group_consumption")}</h3>
+          <dl class="kpis">
             ${vehicle.fuel_types.map((f) => {
               const values = (s.series[f] ?? []).map((p) => p.value);
               const cu = vehicle.units.consumption[f];
@@ -318,9 +304,9 @@ export class VehicleLogStatsCard extends VehicleCardBase {
             })}
           </dl>
         </section>
-        <section class="group" aria-labelledby="g-distance">
-          <h3 id="g-distance">${t(hass, "stats.group_distance")}</h3>
-          <dl class="tiles">
+        <section class="group" style="--group-color:#66bb6a" aria-labelledby="g-distance">
+          <h3 class="section" id="g-distance">${icon(mdiMapMarkerDistance)} ${t(hass, "stats.group_distance")}</h3>
+          <dl class="kpis">
             ${tile(t(hass, "stats.distance"), num(hass, s.distance, 0), unit, true)}
             ${tile(t(hass, "stats.fills"), num(hass, s.fill_count, 0))}
             ${tile(
@@ -337,9 +323,9 @@ export class VehicleLogStatsCard extends VehicleCardBase {
             )}
           </dl>
         </section>
-        <section class="group" aria-labelledby="g-costs">
-          <h3 id="g-costs">${t(hass, "stats.group_costs")}</h3>
-          <dl class="tiles">
+        <section class="group" style="--group-color:#ffb300" aria-labelledby="g-costs">
+          <h3 class="section" id="g-costs">${icon(mdiCashMultiple)} ${t(hass, "stats.group_costs")}</h3>
+          <dl class="kpis">
             ${tile(t(hass, "stats.total_cost"), money(hass, s.total_cost, currency), "", true)}
             ${tile(t(hass, "stats.per_month"), money(hass, s.total_cost / months, currency))}
             ${tile(
@@ -362,9 +348,9 @@ export class VehicleLogStatsCard extends VehicleCardBase {
             )}
           </dl>
         </section>
-        <section class="group" aria-labelledby="g-carbon">
-          <h3 id="g-carbon">${t(hass, "stats.group_carbon")}</h3>
-          <dl class="tiles">
+        <section class="group" style="--group-color:#9ccc65" aria-labelledby="g-carbon">
+          <h3 class="section" id="g-carbon">${icon(mdiLeaf)} ${t(hass, "stats.group_carbon")}</h3>
+          <dl class="kpis">
             ${tile(t(hass, "stats.co2_total"), co2.value, co2.unit, true)}
             ${tile(
               t(hass, "stats.co2_per_distance", { unit }),
@@ -378,8 +364,8 @@ export class VehicleLogStatsCard extends VehicleCardBase {
       </div>
       <div class="bottom">
       ${vehicle.fuel_types.map(
-        (f) => html`<section aria-labelledby="curve-${f}">
-          <h3 id="curve-${f}">
+        (f) => html`<section class="chart-box" aria-labelledby="curve-${f}">
+          <h3 class="section" id="curve-${f}">${icon(mdiChartLine)} 
             ${t(hass, "stats.curve")}${vehicle.fuel_types.length > 1
               ? ` · ${t(hass, `fuel_type.${f}` as Key)}`
               : ""}
@@ -395,8 +381,8 @@ export class VehicleLogStatsCard extends VehicleCardBase {
       ${vehicle.fuel_types
         .filter((f) => (s.prices[f] ?? []).length)
         .map(
-          (f) => html`<section aria-labelledby="price-${f}">
-            <h3 id="price-${f}">${t(hass, "stats.price_curve")}${fuelName(f)}</h3>
+          (f) => html`<section class="chart-box" aria-labelledby="price-${f}">
+            <h3 class="section" id="price-${f}">${icon(mdiChartLine)} ${t(hass, "stats.price_curve")}${fuelName(f)}</h3>
             <vl-price-chart
               .hass=${hass}
               .points=${s.prices[f]}
@@ -405,8 +391,8 @@ export class VehicleLogStatsCard extends VehicleCardBase {
             ></vl-price-chart>
           </section>`,
         )}
-      <section aria-labelledby="cost-curve">
-        <h3 id="cost-curve">${t(hass, "stats.cost_curve", { unit })}</h3>
+      <section class="chart-box" aria-labelledby="cost-curve">
+        <h3 class="section" id="cost-curve">${icon(mdiChartLine)} ${t(hass, "stats.cost_curve", { unit })}</h3>
         <vl-line-chart
           .hass=${hass}
           .name=${t(hass, "stats.cost_curve", { unit })}
@@ -415,8 +401,8 @@ export class VehicleLogStatsCard extends VehicleCardBase {
         ></vl-line-chart>
         <p class="note">${t(hass, "stats.cost_curve_note")}</p>
       </section>
-      <section aria-labelledby="odometer-curve">
-        <h3 id="odometer-curve">${t(hass, "stats.odometer_curve")}</h3>
+      <section class="chart-box" aria-labelledby="odometer-curve">
+        <h3 class="section" id="odometer-curve">${icon(mdiChartLine)} ${t(hass, "stats.odometer_curve")}</h3>
         <vl-line-chart
           .hass=${hass}
           .name=${t(hass, "stats.odometer_curve")}
@@ -425,8 +411,8 @@ export class VehicleLogStatsCard extends VehicleCardBase {
         ></vl-line-chart>
       </section>
       ${rows.length
-        ? html`<section aria-labelledby="by-category">
-            <h3 id="by-category">${t(hass, "stats.by_category")}</h3>
+        ? html`<section class="chart-box" aria-labelledby="by-category">
+            <h3 class="section" id="by-category">${icon(mdiChartLine)} ${t(hass, "stats.by_category")}</h3>
             <div class="stack" aria-hidden="true">
               ${rows.map(
                 ({ color, value }) =>

@@ -4,7 +4,7 @@ import { css, html, LitElement, nothing } from "lit";
 import { fetchExport } from "../api";
 import { num, todayIso } from "../format";
 import { t, type Key } from "../i18n";
-import { mdiClose, mdiDownload, sharedStyles } from "../styles";
+import { mdiClose, mdiDownload, listStyles, sharedStyles } from "../styles";
 import type { HomeAssistant, VehicleView } from "../types";
 import { dialogStyles } from "./dialog-styles";
 import { icon } from "./icon";
@@ -48,22 +48,8 @@ export class VlExportDialog extends LitElement {
   static override styles = [
     sharedStyles,
     dialogStyles,
+    listStyles,
     css`
-      ul {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-      }
-      li {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 6px 0;
-        border-bottom: 1px solid var(--vl-border);
-      }
-      li:last-child {
-        border-bottom: none;
-      }
       .main {
         flex: 1;
         display: flex;
@@ -152,7 +138,7 @@ export class VlExportDialog extends LitElement {
         <p class="help">${t(hass, "export.help")}</p>
         ${this._error ? html`<p class="error" role="alert">${this._error}</p>` : nothing}
         ${files
-          ? html`<ul>
+          ? html`<ul class="entries">
               ${this._names().map((name) => {
                 const key = name.replace(/\.csv$/, "");
                 const rows = this._rows[name] ?? 0;

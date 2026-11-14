@@ -1,13 +1,12 @@
 // Courbe(s) datée(s) sur un axe de temps réel (SVG, sans bibliothèque).
 // Utilisée pour le coût au km cumulé et pour le compteur.
-import { html, LitElement, nothing, svg } from "lit";
+import { html, nothing, svg } from "lit";
 
 import { shortDate } from "../format";
 import { t } from "../i18n";
-import type { HomeAssistant } from "../types";
-import { dateLabels, VlConsumptionChart } from "./consumption-chart";
+import { CHART_HEIGHT as H, nextGradientId, ResponsiveChart } from "./chart-base";
+import { dateLabels } from "./consumption-chart";
 
-const H = 220;
 const PAD = { top: 12, right: 12, bottom: 28, left: 80 };
 
 export interface LineSeries {
@@ -30,25 +29,20 @@ function dayNumber(iso: string): number {
   return Date.UTC(y, m - 1, d) / 86_400_000;
 }
 
-export class VlLineChart extends LitElement {
+export class VlLineChart extends ResponsiveChart {
   static override properties = {
-    hass: { attribute: false },
+    ...ResponsiveChart.properties,
     series: { attribute: false },
     format: { attribute: false },
     name: { type: String },
     zeroBased: { type: Boolean, attribute: "zero-based" },
-    _width: { state: true },
   };
-  // Même présentation que la courbe de consommation.
-  static override styles = VlConsumptionChart.styles;
 
-  declare hass: HomeAssistant;
   declare series: LineSeries[];
+  private readonly _gradient = nextGradientId();
   declare format: (value: number) => string;
   declare name: string;
   declare zeroBased: boolean;
-  declare _width: number;
-  private _observer?: ResizeObserver;
 
   constructor() {
     super();
@@ -56,21 +50,6 @@ export class VlLineChart extends LitElement {
     this.format = (v) => String(v);
     this.name = "";
     this.zeroBased = false;
-    this._width = 600;
-  }
-
-  override connectedCallback(): void {
-    super.connectedCallback();
-    this._observer = new ResizeObserver(([entry]) => {
-      const width = Math.round(entry.contentRect.width);
-      if (width > 0 && Math.abs(width - this._width) > 2) this._width = width;
-    });
-    this._observer.observe(this);
-  }
-
-  override disconnectedCallback(): void {
-    super.disconnectedCallback();
-    this._observer?.disconnect();
   }
 
   protected override render() {
@@ -112,17 +91,35 @@ export class VlLineChart extends LitElement {
           (v) => svg`<line class="grid" x1=${PAD.left} x2=${W - PAD.right} y1=${y(v)} y2=${y(v)}></line>
             <text class="axis" x=${PAD.left - 6} y=${y(v) + 4} text-anchor="end">${this.format(v)}</text>`,
         )}
-        ${series.map(
-          (s) => svg`<path
-              d=${s.points.map((p, i) => `${i ? "L" : "M"}${xDate(p.date)},${y(p.value)}`).join(" ")}
-              fill="none" stroke=${s.color} stroke-width="2" stroke-linejoin="round"></path>
+        <defs>
+          ${series.map(
+            (s, i) => svg`<linearGradient id="${this._gradient}-${i}" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color=${s.color} stop-opacity="0.28"></stop>
+              <stop offset="100%" stop-color=${s.color} stop-opacity="0"></stop>
+            </linearGradient>`,
+          )}
+        </defs>
+        ${series.map((s, i) => {
+          const line = s.points.map((p, k) => `${k ? "L" : "M"}${xDate(p.date)},${y(p.value)}`).join(" ");
+          const first = s.points[0];
+          const last = s.points[s.points.length - 1];
+          // Aire sous la courbe : seulement pour la première série (la plus haute).
+          const area =
+            i === 0
+              ? `${line} L${xDate(last.date)},${y(lo)} L${xDate(first.date)},${y(lo)} Z`
+              : "";
+          return svg`<g class="plot">
+            ${area ? svg`<path d=${area} fill="url(#${this._gradient}-${i})" stroke="none"></path>` : nothing}
+            <path d=${line} fill="none" stroke=${s.color} stroke-width="2.25"
+              stroke-linejoin="round" stroke-linecap="round"></path>
             ${s.points.map(
               (p) => svg`<circle cx=${xDate(p.date)} cy=${y(p.value)} r=${marks ? 3 : 0}
                 fill=${s.color} stroke="var(--card-background-color, #fff)" stroke-width="1">
                 <title>${shortDate(hass, p.date)} · ${s.label} : ${this.format(p.value)}</title>
               </circle>`,
-            )}`,
-        )}
+            )}
+          </g>`;
+        })}
         ${labels.map(
           (l) => svg`<text class="axis" x=${l.x} y=${H - 8} text-anchor=${l.anchor}>${l.text}</text>`,
         )}

@@ -6,8 +6,10 @@
 import { css, html, LitElement, nothing } from "lit";
 
 import { fetchVehicles, subscribeUpdates } from "./api";
-import { t } from "./i18n";
-import { sharedStyles } from "./styles";
+import { icon } from "./components/icon";
+import { t, type Key } from "./i18n";
+import { readPref, writePref } from "./prefs";
+import { mdiCashPlus, mdiGasStation, sharedStyles } from "./styles";
 import type { CardConfig, HomeAssistant, VehicleView } from "./types";
 
 declare const __CARBU_VERSION__: string;
@@ -15,37 +17,26 @@ declare const __CARBU_VERSION__: string;
 /** Version du bundle chargé dans le navigateur (fixée à la construction). */
 export const PAGE_VERSION = __CARBU_VERSION__;
 
-const STORAGE_KEY = "carbu-panel-vehicle";
 // Titres courts : la page porte déjà le nom de l'application.
 // Les dernières entrées sont dans le journal (5 à la fois) : la carte principale
 // ne les répète pas.
 // Carnet et journal côte à côte, statistiques en pleine largeur dessous.
 const CARDS = [
-  { type: "carbu-card", extra: { show_recent: false } },
-  { type: "carbu-journal-card", extra: { title: "panel.journal", page_size: 5 } },
-  { type: "carbu-stats-card", extra: { title: "panel.stats" } },
+  { type: "carbu-card", section: "overview", extra: { show_recent: false, show_actions: false } },
+  {
+    type: "carbu-journal-card",
+    section: "journal",
+    extra: { title: "panel.journal", page_size: 5 },
+  },
+  { type: "carbu-stats-card", section: "stats", extra: { title: "panel.stats" } },
 ] as const;
 
 type CardElement = HTMLElement & {
   hass?: HomeAssistant;
   setConfig(config: CardConfig): void;
+  openFuel?(): void;
+  openExpense?(): void;
 };
-
-function readStoredVehicle(): string | undefined {
-  try {
-    return window.localStorage.getItem(STORAGE_KEY) ?? undefined;
-  } catch {
-    return undefined;
-  }
-}
-
-function storeVehicle(id: string): void {
-  try {
-    window.localStorage.setItem(STORAGE_KEY, id);
-  } catch {
-    // Stockage indisponible (navigation privée) : le choix n'est pas retenu.
-  }
-}
 
 export class CarbuPanel extends LitElement {
   static override properties = {
@@ -64,36 +55,107 @@ export class CarbuPanel extends LitElement {
       :host {
         display: block;
         min-height: 100vh;
-        background: var(--primary-background-color);
         color: var(--primary-text-color);
+        /* Fond sobre avec deux halos de la couleur d'accent. */
+        background:
+          radial-gradient(
+            60rem 30rem at 0% -10%,
+            color-mix(in srgb, var(--vl-accent) 14%, transparent),
+            transparent 70%
+          ),
+          radial-gradient(
+            50rem 30rem at 110% 10%,
+            color-mix(in srgb, var(--vl-accent-2) 9%, transparent),
+            transparent 70%
+          ),
+          var(--primary-background-color);
+        background-attachment: fixed;
       }
       .toolbar {
+        position: sticky;
+        top: 0;
+        z-index: 2;
         display: flex;
         align-items: center;
         gap: 8px;
-        height: var(--header-height, 56px);
+        min-height: var(--header-height, 56px);
         padding: 0 12px;
         box-sizing: border-box;
-        background: var(--app-header-background-color, var(--primary-color));
-        color: var(--app-header-text-color, var(--text-primary-color, #fff));
-        border-bottom: var(--app-header-border-bottom, none);
+        background: color-mix(in srgb, var(--primary-background-color) 72%, transparent);
+        backdrop-filter: blur(14px) saturate(140%);
+        -webkit-backdrop-filter: blur(14px) saturate(140%);
+        border-bottom: 1px solid color-mix(in srgb, var(--primary-text-color) 8%, transparent);
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: 1;
+        min-width: 0;
+      }
+      .logo {
+        flex: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 10px;
+        background: var(--vl-gradient);
+        box-shadow: 0 6px 18px -6px color-mix(in srgb, var(--vl-accent) 80%, transparent);
+        display: grid;
+        place-items: center;
+        color: #0b1218;
+      }
+      .logo svg {
+        width: 18px;
+        height: 18px;
+        fill: currentColor;
+      }
+      .quick {
+        display: flex;
+        gap: 6px;
+      }
+      .nav {
+        display: flex;
+        gap: 6px;
+        overflow-x: auto;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 12px 16px 0;
+        scrollbar-width: none;
+      }
+      .nav button {
+        flex: none;
+        min-height: 34px;
+        padding: 0 14px;
+        font-size: 0.875rem;
+        border-color: color-mix(in srgb, var(--primary-text-color) 14%, transparent);
+        background: var(--vl-surface);
+      }
+      @media (max-width: 600px) {
+        .quick .label {
+          display: none;
+        }
+        .quick button {
+          padding: 0 10px;
+        }
       }
       .title {
-        flex: 1;
         font-size: 20px;
-        font-weight: 400;
-        margin: 0 0 0 4px;
+        font-weight: 650;
+        letter-spacing: -0.01em;
+        margin: 0;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
       }
       select {
-        max-width: 50%;
+        width: auto;
+        max-width: 40vw;
+        min-height: 36px;
         font: inherit;
-        padding: 6px 8px;
-        border-radius: 6px;
-        border: 1px solid currentColor;
-        background: transparent;
+        padding: 0 12px;
+        border-radius: 999px;
+        border: 1px solid color-mix(in srgb, var(--primary-text-color) 18%, transparent);
+        background: var(--vl-surface);
         color: inherit;
       }
       select option {
@@ -103,14 +165,24 @@ export class CarbuPanel extends LitElement {
       .content {
         display: grid;
         gap: 16px;
-        padding: 16px;
+        padding: 12px 16px 16px;
         max-width: 1400px;
         margin: 0 auto;
-        grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+        grid-template-columns: minmax(0, 1fr);
         align-items: start;
+      }
+      /* Écran large : la carte principale prend plus de place que le journal. */
+      @media (min-width: 1100px) {
+        .content {
+          grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+        }
       }
       .wide {
         grid-column: 1 / -1;
+      }
+      /* Sous la barre d'outils collante quand on saute à une section. */
+      .content > * {
+        scroll-margin-top: calc(var(--header-height, 56px) + 16px);
       }
       .message {
         padding: 24px 16px;
@@ -163,7 +235,7 @@ export class CarbuPanel extends LitElement {
     this._vehicles = [];
     this._loading = true;
     this._error = "";
-    this._vehicleId = readStoredVehicle();
+    this._vehicleId = readPref("panel-vehicle");
   }
 
   override connectedCallback(): void {
@@ -214,10 +286,12 @@ export class CarbuPanel extends LitElement {
   /** Cartes du véhicule, recréées seulement quand il change. */
   private _cardsFor(vehicleId: string): CardElement[] {
     if (this._cardsVehicle !== vehicleId) {
-      this._cards = CARDS.map(({ type, extra }) => {
+      this._cards = CARDS.map(({ type, section, extra }) => {
         const card = document.createElement(type) as CardElement;
+        card.id = `section-${section}`;
         const config: CardConfig = { type: `custom:${type}`, vehicle_id: vehicleId };
         if ("show_recent" in extra) config.show_recent = extra.show_recent;
+        if ("show_actions" in extra) config.show_actions = extra.show_actions;
         if ("title" in extra) config.title = t(this.hass, extra.title);
         if ("page_size" in extra) config.page_size = extra.page_size;
         card.setConfig(config);
@@ -230,10 +304,22 @@ export class CarbuPanel extends LitElement {
     return this._cards;
   }
 
+  /** Carte principale (saisie d'un plein ou d'une dépense). */
+  private _mainCard(): CardElement | undefined {
+    return this._cards.find((c) => c.id === "section-overview");
+  }
+
+  private _goTo(section: string): void {
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    this.renderRoot
+      .querySelector(`#section-${section}`)
+      ?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+  }
+
   private _select(ev: Event): void {
     const id = (ev.target as HTMLSelectElement).value;
     this._vehicleId = id;
-    storeVehicle(id);
+    writePref("panel-vehicle", id);
   }
 
   private _body() {
@@ -259,7 +345,10 @@ export class CarbuPanel extends LitElement {
     return html`
       <div class="toolbar">
         <ha-menu-button .hass=${this.hass} .narrow=${this.narrow}></ha-menu-button>
-        <h1 class="title">Carbu</h1>
+        <div class="brand">
+          <span class="logo" aria-hidden="true">${icon(mdiGasStation)}</span>
+          <h1 class="title">Carbu</h1>
+        </div>
         ${this._vehicles.length > 1
           ? html`<select
               aria-label=${t(this.hass, "panel.vehicle")}
@@ -272,7 +361,34 @@ export class CarbuPanel extends LitElement {
               )}
             </select>`
           : nothing}
+        ${vehicle
+          ? html`<div class="quick">
+              <button
+                class="primary"
+                aria-label=${t(this.hass, "action.add_fuel_long")}
+                @click=${() => this._mainCard()?.openFuel?.()}
+              >
+                ${icon(mdiGasStation)}<span class="label">${t(this.hass, "action.add_fuel")}</span>
+              </button>
+              <button
+                aria-label=${t(this.hass, "action.add_expense_long")}
+                @click=${() => this._mainCard()?.openExpense?.()}
+              >
+                ${icon(mdiCashPlus)}<span class="label">${t(this.hass, "action.add_expense")}</span>
+              </button>
+            </div>`
+          : nothing}
       </div>
+      ${vehicle && !this._loading && !this._error
+        ? html`<nav class="nav" aria-label=${t(this.hass, "panel.sections")}>
+            ${CARDS.map(
+              ({ section }) =>
+                html`<button @click=${() => this._goTo(section)}>
+                  ${t(this.hass, `panel.section_${section}` as Key)}
+                </button>`,
+            )}
+          </nav>`
+        : nothing}
       ${this._serverVersion && this._serverVersion !== PAGE_VERSION
         ? html`<div class="outdated" role="alert">
             <p>

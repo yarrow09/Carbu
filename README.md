@@ -9,7 +9,7 @@ pleins, consommation réelle, dépenses par catégorie, coût par kilomètre, ra
 d'entretien.
 Tout se configure depuis l'interface, les données restent sur votre Home Assistant.
 
-> **Version 1.0.0-alpha.3** (préversion : des changements restent possibles avant la
+> **Version 1.0.0-alpha.4** (préversion : des changements restent possibles avant la
 > 1.0.0). L'intégration sert à suivre la consommation et les coûts. Elle
 > ne recherche pas les prix des carburants en ligne. Les véhicules électriques ne sont
 > pas pris en charge.
@@ -112,6 +112,11 @@ affichées.
 - **Dernier plein** : distance parcourue depuis le plein précédent et consommation
   mesurée, avec l'écart à la moyenne. Pour un plein partiel, la consommation attend le
   prochain plein complet.
+- **Prochain plein estimé** : compte à rebours en jours, distance restante (anneau
+  de progression), kilométrage, quantité et montant prévus. Estimation d'après vos
+  habitudes : distance médiane entre deux pleins, km parcourus par jour, consommation
+  moyenne et dernier prix payé (voir [calculs](docs/calculs.md#prochain-plein-estimé)).
+  Il faut au moins 3 pleins et une semaine de relevés.
 - Indicateurs : consommation moyenne, coût du mois, coût par km (ou par mile),
   kilométrage, distance du mois.
 - **Saisie rapide d'un plein** : bouton **+ Plein**, puis kilométrage, quantité et
@@ -201,6 +206,7 @@ exprimées dans les unités choisies pour le véhicule.
 | Coût par distance | `sensor` | Total des montants ÷ distance parcourue. Attributs : `fuel_only`, `total_cost`, `distance` |
 | Kilométrage total | `sensor` (distance) | Dernier relevé du compteur. Attribut : `distance_logged` |
 | Distance cette semaine / ce mois-ci / cette année | `sensor` (distance) | Semaine du lundi au dimanche |
+| Prochain plein estimé | `sensor` (date) | Date prévue du prochain plein (carburant principal). Attributs : `days_left`, `odometer`, `distance_left`, `volume`, `cost`. Inconnu tant que l'historique est insuffisant |
 | Kilométrage actuel | `number` | Saisir une valeur crée un relevé daté de maintenant. Une valeur inférieure au dernier relevé est refusée |
 | *Libellé du rappel* | `binary_sensor` (problème) | Un par rappel. **Activé quand le rappel est dû.** Attributs : `state` (`ok`, `alert`, `due`, `inactive`), `due_date`, `due_odometer`, `days_left`, `distance_left`, `criterion`, `recurring`, `last_done_date` |
 

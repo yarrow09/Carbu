@@ -24,6 +24,9 @@
       },
       "distance_year": {
         "default": "mdi:map-marker-distance"
+      },
+      "next_fill": {
+        "default": "mdi:gas-station-outline"
       }
     },
     "number": {

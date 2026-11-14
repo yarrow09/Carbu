@@ -3,7 +3,28 @@
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Le projet
 suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
-## [1.0.0-beta.1] — non publiée
+## [1.0.0-alpha.4] — non publiée
+
+### Ajouté
+
+- **Prochain plein estimé** : date, kilométrage, distance restante, quantité et
+  montant prévus, d'après vos habitudes (distance médiane entre deux pleins, km
+  parcourus par jour sur 120 jours, consommation moyenne, dernier prix payé).
+  Encart avec compte à rebours sur la carte principale et nouveau capteur
+  « Prochain plein estimé » (type date) pour les automatisations.
+- Page Carbu : barre d'outils collante avec **+ Plein** et **+ Dépense**
+  toujours accessibles, raccourcis vers les sections (Aperçu, Journal,
+  Statistiques).
+- La période des statistiques et l'onglet du journal sont retenus.
+
+### Modifié
+
+- **Nouvel aspect visuel**, sobre et sombre : surfaces légères, dégradé
+  d'accent, tuiles avec puces d'icônes colorées, encarts « Dernier plein » et
+  « Prochain plein », onglets en contrôle segmenté, courbes avec aire en
+  dégradé, fenêtres de saisie arrondies. Animations d'entrée discrètes,
+  désactivées si le système demande moins de mouvement.
+- Écran large : la carte principale occupe plus de place que le journal.
 
 ### Retiré
 
@@ -15,8 +36,9 @@ suit le [versionnage sémantique](https://semver.org/lang/fr/).
 ### Modifié
 
 - Ménage du code, sans changement de comportement : config flow et API websocket
-  découpés par domaine, libellés traduits regroupés, bilan des exceptions et des
-  exclusions d'analyse. Tests unitaires du frontend (`node --test`) ajoutés à la CI.
+  découpés par domaine, libellés traduits regroupés ; côté cartes, base commune
+  des graphiques, tuiles et styles de listes partagés, préférences
+  d'affichage regroupées.
 
 ## [1.0.0-alpha.3] — non publiée
 
