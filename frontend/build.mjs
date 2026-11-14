@@ -1,5 +1,9 @@
 // Construit le bundle unique servi par l'intégration.
+import { readFileSync } from "node:fs";
+
 import * as esbuild from "esbuild";
+
+const { version } = JSON.parse(readFileSync(new URL("./package.json", import.meta.url)));
 
 const options = {
   entryPoints: ["src/index.ts"],
@@ -11,6 +15,7 @@ const options = {
   sourcemap: false,
   legalComments: "eof",
   logLevel: "info",
+  define: { __CARBU_VERSION__: JSON.stringify(version) },
 };
 
 if (process.argv.includes("--watch")) {

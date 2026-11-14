@@ -23,6 +23,7 @@ from homeassistant.components.websocket_api.messages import event_message
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
+from homeassistant.loader import async_get_loaded_integration
 import probatio as vol
 
 from .const import DOMAIN, MAX_LONG_TEXT, MAX_SHORT_TEXT, SIGNAL_UPDATED
@@ -187,6 +188,9 @@ def ws_vehicles(
         msg["id"],
         {
             "currency": hass.config.currency,
+            # Version installée côté serveur : la page la compare à la sienne
+            # pour signaler un navigateur resté sur l'ancienne version.
+            "version": str(async_get_loaded_integration(hass, DOMAIN).version),
             "vehicles": [
                 _vehicle_view(coordinator, vid) for vid in coordinator.vehicles
             ],

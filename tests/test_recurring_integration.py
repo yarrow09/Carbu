@@ -153,3 +153,8 @@ async def test_export_and_curves(call: Call) -> None:
     assert cost
     assert cost[-1]["date"] == "2026-03-25"
     assert cost[-1]["total"] > cost[-1]["fuel"] > 0
+
+
+async def test_vehicles_reports_installed_version(call: Call) -> None:
+    result = (await call("vehicles"))["result"]
+    assert result["version"] == "1.0.0-alpha.3"

@@ -10,6 +10,11 @@ import { t } from "./i18n";
 import { sharedStyles } from "./styles";
 import type { CardConfig, HomeAssistant, VehicleView } from "./types";
 
+declare const __CARBU_VERSION__: string;
+
+/** Version du bundle chargé dans le navigateur (fixée à la construction). */
+export const PAGE_VERSION = __CARBU_VERSION__;
+
 const STORAGE_KEY = "carbu-panel-vehicle";
 // Titres courts : la page porte déjà le nom de l'application.
 // Les dernières entrées sont dans le journal (5 à la fois) : la carte principale
@@ -50,6 +55,7 @@ export class CarbuPanel extends LitElement {
     _vehicleId: { state: true },
     _loading: { state: true },
     _error: { state: true },
+    _serverVersion: { state: true },
   };
 
   static override styles = [
@@ -114,6 +120,28 @@ export class CarbuPanel extends LitElement {
       .message a {
         color: var(--primary-color);
       }
+      .outdated {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px 16px;
+        max-width: 1400px;
+        margin: 16px auto 0;
+        padding: 12px 16px;
+        box-sizing: border-box;
+        border: 1px solid var(--warning-color, #ffa600);
+        border-radius: 10px;
+      }
+      .outdated p {
+        flex: 1 1 280px;
+        margin: 0;
+      }
+      .version {
+        text-align: center;
+        font-size: 0.75rem;
+        color: var(--secondary-text-color);
+        padding: 0 16px 16px;
+      }
     `,
   ];
 
@@ -123,6 +151,7 @@ export class CarbuPanel extends LitElement {
   declare _vehicleId: string | undefined;
   declare _loading: boolean;
   declare _error: string;
+  declare _serverVersion: string | undefined;
   private _cards: CardElement[] = [];
   private _cardsVehicle?: string;
   private _unsubscribe?: Promise<() => Promise<void>>;
@@ -168,6 +197,7 @@ export class CarbuPanel extends LitElement {
     try {
       const result = await fetchVehicles(this.hass);
       this._vehicles = result.vehicles;
+      this._serverVersion = result.version;
       this._error = "";
     } catch (err) {
       this._error = (err as { code?: string; message?: string }).code ?? (err as Error).message;
@@ -243,7 +273,19 @@ export class CarbuPanel extends LitElement {
             </select>`
           : nothing}
       </div>
+      ${this._serverVersion && this._serverVersion !== PAGE_VERSION
+        ? html`<div class="outdated" role="alert">
+            <p>
+              ${t(this.hass, "panel.outdated", {
+                page: PAGE_VERSION,
+                server: this._serverVersion,
+              })}
+            </p>
+            <button @click=${() => window.location.reload()}>${t(this.hass, "panel.reload")}</button>
+          </div>`
+        : nothing}
       ${this._body()}
+      <p class="version">${t(this.hass, "panel.version", { version: PAGE_VERSION })}</p>
     `;
   }
 }

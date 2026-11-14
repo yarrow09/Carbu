@@ -9,7 +9,7 @@ pleins, consommation réelle, dépenses par catégorie, coût par kilomètre, ra
 d'entretien.
 Tout se configure depuis l'interface, les données restent sur votre Home Assistant.
 
-> **Version 1.0.0-alpha.2** (préversion : des changements restent possibles avant la
+> **Version 1.0.0-alpha.3** (préversion : des changements restent possibles avant la
 > 1.0.0). L'intégration sert à suivre la consommation et les coûts. Elle
 > ne recherche pas les prix des carburants en ligne. Les véhicules électriques ne sont
 > pas pris en charge.

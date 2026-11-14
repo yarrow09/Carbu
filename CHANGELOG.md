@@ -3,6 +3,20 @@
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Le projet
 suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
+## [1.0.0-alpha.3] — non publiée
+
+### Ajouté
+
+- Version de Carbu affichée en bas de la page Carbu.
+- Avertissement quand la page du navigateur ne correspond pas à la version
+  installée dans Home Assistant (mise à jour HACS sans redémarrage, ou page
+  restée en cache), avec un bouton pour recharger.
+
+### Corrigé
+
+- Courbe du coût au km : premier point seulement après 1 000 km parcourus (un
+  premier point calculé sur quelques km écrasait l'échelle du graphique).
+
 ## [1.0.0-alpha.2] — non publiée
 
 ### Ajouté

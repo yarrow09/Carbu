@@ -20,7 +20,9 @@ import type {
 const P = "carbu";
 
 export const fetchVehicles = (hass: HomeAssistant) =>
-  hass.callWS<{ currency: string; vehicles: VehicleView[] }>({ type: `${P}/vehicles` });
+  hass.callWS<{ currency: string; version?: string; vehicles: VehicleView[] }>({
+    type: `${P}/vehicles`,
+  });
 
 export const fetchDashboard = (hass: HomeAssistant, vehicleId: string) =>
   hass.callWS<Dashboard>({ type: `${P}/dashboard`, vehicle_id: vehicleId });
